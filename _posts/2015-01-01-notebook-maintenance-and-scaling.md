@@ -31,8 +31,12 @@ sure, but no longer one voluminous tome on the desk.
 
 TO DO:
 
+- [ ] Plan for `labnotebook` repo.  History is preserved, but issues, github stars, etc.  Use as template for the new years?
+- [ ] Activate! Remove CNAME from `labnotebook` repo, add `www` CNAME to `cboettig.github.io`.  Consider removing `gh-pages` branch of lab-notebook? 
 - [ ] Fix / workaround for the root atom feeds.
 - [ ] Automated deploy for active and root repositories
+- [ ] Syncing assets, layout, and deploy scripts?  Or allow these to diverge and newer notebooks to look different than older ones? 
+
 
 <!--
 Repo files are 21Mb (zipped).
