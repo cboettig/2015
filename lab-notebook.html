@@ -1,0 +1,51 @@
+---
+title: Lab Notebook 
+subtitle: (<a href="http://www.carlboettiger.info/2012/09/28/Welcome-to-my-lab-notebook.html">Introduction</a>)
+redirects: [/research/lab-notebook, /wordpress/research/lab-notebook]
+layout: default
+
+---
+
+<div class="row postpreview">
+  <div class="col-md-11 col-md-offset-1">
+    <div class="row">
+			<h4> <a href="/{{site.repo}}/atom.xml"
+              onClick="recordOutboundLink(this,
+              'Outbound Links', 'RSS'); return false;"
+              style="color: inherit;"
+              ><i class="icon-rss" ></i> Entries</a></h4>
+      {% for post in site.posts limit:3 %}
+        <div class="col-md-3">
+          {% include postexcerpt.html %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="row">
+      {% for post in site.posts limit:3 offset:3 %}
+        <div class="col-md-3">
+          {% include postexcerpt.html %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="row">
+      {% for post in site.posts limit:3 offset:6 %}
+        <div class="col-md-3">
+          {% include postexcerpt.html %}
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div> <!--end row -->
+
+<div class="row socialicons">
+  <div class="col-md-11 col-md-offset-1">
+		<p> <a href="/{{site.repo}}/index.html"><i class="icon-calendar"></i> All entries by date</a></p> 
+      <p> <a href="/{{site.repo}}/categories.html"><i class="icon-list"></i> All entries by category</a> </p>
+      <p> <a href="/{{site.repo}}/tags.html"><i class="icon-tags"></i> All entries by tag</a> </p>
+  </div> <!--end col-md-9 -->
+</div> <!--end row -->
+
+
