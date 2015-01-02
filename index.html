@@ -1,0 +1,19 @@
+---
+layout: page
+---
+
+<h1> Notebook entries in {{ site.repo }}</h1>
+<h4>({{ site.posts | size }} entries)</h4>
+<div class="postpreview">
+  <div class="span6"> 
+		<ul class="list-unstyled">
+		{% for post in site.posts %}
+			<li> <a href="/{{site.repo}}{{ post.url }}">{{ post.title }}</a> 
+			<span style="text-align:right; font-style:italic"> {{ post.date | date_to_string }}</span></li>
+		{% endfor %}
+		</ul>
+  </div> 
+</div>
+<ul>
+
+For older posts, see the <a href="{{site.url}}/archive.html">archives</a>
