@@ -16,7 +16,7 @@ build:
 		cboettig/labnotebook
 
 deploy:
-	./deploy.sh	
+	./_deploy.sh	
 
 bash:
 	docker run -v $(PWD):/data \
