@@ -37,11 +37,7 @@ analytics: UA-18401403-1 ## Google Analytics key (in _includes/analytics.html)
 
 
 exclude:
-  - Gemfile
-  - Gemfile.lock
-  - .travis.yml
   - _posts/*.Rmd
-  - Dockerfile
   - build.R
-  - Makefile
-
+  - deploy.sh
+  - .drone.yml
