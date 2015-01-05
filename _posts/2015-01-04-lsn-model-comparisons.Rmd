@@ -31,7 +31,7 @@ plot(data)
 Test case: Set prior for `m` $\approx 0$:
 
 ```{r}
-lsn <- modelCode({
+lsn <- nimbleCode({
    theta ~ dunif(1e-10, 100.0)
    sigma_x ~ dunif(1e-10, 100.0)
    sigma_y ~ dunif(1e-10, 100.0)
