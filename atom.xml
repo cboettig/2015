@@ -4,12 +4,178 @@
  <title>Lab Notebook</title>
  <link href="/2015/atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-01-02T06:07:11+00:00</updated>
+ <updated>2015-01-05T05:15:58+00:00</updated>
  <id>http://www.carlboettiger.info/2015</id>
  <author>
    <name>Carl Boettiger</name>
    <email>cboettig@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Lsn Model Comparisons</title>
+	 <link href="/2015/01/04/lsn-model-comparisons.html"/>
+   <updated>2015-01-04T00:00:00+00:00</updated>
+   <id>/01/04/lsn-model-comparisons</id>
+   <content type="html">&lt;p&gt;some sample data&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(sde)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
+&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
+d &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;-x))
+s &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) 
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sde.sim&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;X0=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;drift=&lt;/span&gt;d, &lt;span class=&quot;dt&quot;&gt;sigma=&lt;/span&gt;s, &lt;span class=&quot;dt&quot;&gt;T=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;20&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;N=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;sigma.x not provided, attempting symbolic derivation.&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(data)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-1-1.svg&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;lsn-version&quot;&gt;LSN version&lt;/h2&gt;
+&lt;p&gt;Test case: Set prior for &lt;code&gt;m&lt;/code&gt; &lt;span class=&quot;math&quot;&gt;\(\approx 0\)&lt;/span&gt;:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;modelCode&lt;/span&gt;({
+   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+   sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+   sigma_y ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+       m ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+    y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;) 
+
+  for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+    mu_x[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i]) 
+    x[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_x[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_x) 
+    mu_y[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;m *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[i]
+    y[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_y[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_y) 
+  }
+})&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;modelCode&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Constants in the model definition are the length of the dataset, &lt;span class=&quot;math&quot;&gt;\(N\)&lt;/span&gt; and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(data$x), &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(data$x))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Initial values for the parameters&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;m =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_x =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_y =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,constants$N))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and here we go as before:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; lsn, 
+                      &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, 
+                      &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, 
+                      &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in nf_changeNimKeywords(code): object &amp;#39;lsn&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in compileNimble(Rmodel): object &amp;#39;Rmodel&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;MCMCspec&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;MCMCspec&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in inherits(mcmcspec, &amp;quot;modelBaseClass&amp;quot;): object &amp;#39;mcmcspec&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in compileNimble(Rmcmc, project = Cmodel): object &amp;#39;Rmcmc&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;Cmcmc&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e4&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;Cmcmc&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and examine results&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;nfVar&lt;/span&gt;(Cmcmc, &lt;span class=&quot;st&quot;&gt;&amp;#39;mvSamples&amp;#39;&lt;/span&gt;)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in as.matrix(nfVar(Cmcmc, &amp;quot;mvSamples&amp;quot;)): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;as.matrix&amp;#39;: Error in is.nfGenerator(f) : object &amp;#39;Cmcmc&amp;#39; not found
+Calls: nfVar -&amp;gt; nf_getRefClassObject -&amp;gt; is.nfGenerator&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$theta)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in mean(samples$theta): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;mean&amp;#39;: Error: object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$m)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in mean(samples$m): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;mean&amp;#39;: Error: object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$sigma_x)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in mean(samples$sigma_x): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;mean&amp;#39;: Error: object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in plot(samples[, &amp;quot;m&amp;quot;], type = &amp;quot;l&amp;quot;, xlab = &amp;quot;iteration&amp;quot;, ylab = &amp;quot;m&amp;quot;): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;plot&amp;#39;: Error: object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_x&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[x]))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in plot(samples[, &amp;quot;sigma_x&amp;quot;], type = &amp;quot;l&amp;quot;, xlab = &amp;quot;iteration&amp;quot;, ylab = expression(sigma[x])): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;plot&amp;#39;: Error: object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_y&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[y]))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in plot(samples[, &amp;quot;sigma_y&amp;quot;], type = &amp;quot;l&amp;quot;, xlab = &amp;quot;iteration&amp;quot;, ylab = expression(sigma[y])): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;plot&amp;#39;: Error: object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;theta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(theta))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in plot(samples[, &amp;quot;theta&amp;quot;], type = &amp;quot;l&amp;quot;, xlab = &amp;quot;iteration&amp;quot;, ylab = expression(theta)): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;plot&amp;#39;: Error: object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in hist(samples[, &amp;quot;m&amp;quot;], xlab = &amp;quot;m&amp;quot;): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_x&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[x]))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in hist(samples[, &amp;quot;sigma_x&amp;quot;], xlab = expression(sigma[x])): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_y&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[y]))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in hist(samples[, &amp;quot;sigma_y&amp;quot;], xlab = expression(sigma[y])): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;theta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(theta))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in hist(samples[, &amp;quot;theta&amp;quot;], xlab = expression(theta)): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] splines   stats4    methods   stats     graphics  grDevices
+[7] utils     datasets  base     
+
+other attached packages:
+[1] nimble_0.3   sde_2.0.13   zoo_1.7-11   fda_2.4.4    Matrix_1.1-4
+[6] MASS_7.3-35  yaml_2.1.13  knitr_1.8   
+
+loaded via a namespace (and not attached):
+[1] codetools_0.2-9 digest_0.6.8    evaluate_0.5.5  formatR_1.0    
+[5] grid_3.1.2      igraph_0.7.1    lattice_0.20-29 stringr_0.6.2  
+[9] tools_3.1.2    &lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Notebook Maintenance And Scaling</title>
+	 <link href="/2015/01/01/notebook-maintenance-and-scaling.html"/>
+   <updated>2015-01-01T00:00:00+00:00</updated>
+   <id>/01/01/notebook-maintenance-and-scaling</id>
+   <content type="html">&lt;p&gt;Electronic notebooks may not run out of pages like a paper notebook, but with five years of entries (963 posts, with a repository size approaching half a gigabyte), together with various files, layouts, experimentation and version history, some thought must be given to scale. Two closely related considerations add to this further: dynamic builds with &lt;code&gt;knitr&lt;/code&gt; from &lt;code&gt;.Rmd&lt;/code&gt; versions and hosting image files directly in the notebook repository rather than uploading to an external site (previously flickr or on the gh-pages of other project repositories). This has several advantages (more on that later) but in the immediate term it makes building the repository potentially slower (though knitr’s caching helps) and increases the repository size more rapidly (even with text-based &lt;code&gt;svg&lt;/code&gt; images).&lt;/p&gt;
+&lt;p&gt;The current Jekyll system keeps all posts in a single repository and rebuilds the HTML files for each every time. This is already showing some strains: for instance, for some reason the git hashes when generating the site automatically on Travis cease updating for older posts, though this problem doesn’t occur when building locally. Overall, the Jekyll platform is rather snappy so this isn’t an unmanageable size, but is sufficient to demonstrate that the approach isn’t able to scale indefinitely either.&lt;/p&gt;
+&lt;p&gt;So, as with the paper notebook whose pages are filled, it’s time to crack open a new binding and shelve the old notebooks – somewhere handy to be sure, but no longer one voluminous tome on the desk.&lt;/p&gt;
+&lt;h2 id=&quot;a-multi-repository-approach&quot;&gt;A multi-repository approach&lt;/h2&gt;
+&lt;p&gt;To address this, I’m am trying out breaking the notebook over multiple repositories: using a new repository for each year’s worth of entries, and an additional repository to provide the basic pages (&lt;code&gt;home&lt;/code&gt;, &lt;code&gt;teaching&lt;/code&gt;, &lt;code&gt;vita&lt;/code&gt;, etc. from the navbar) along with the assets used by all the other sites (css, fonts, javascript, etc). This avoids rebuilding the posts of notebooks from all previous years every time the Jekyll site is compiled, keeping the repositories smaller, the site more modular and more easy to scale.&lt;/p&gt;
+&lt;p&gt;This raises some challenges such as keeping the layout and appearance consistent without maintaining copies of layout files across multiple repositories; managing URLs and paths across different repositories, and aggregating metadata (posts, tags, categories).&lt;/p&gt;
+&lt;h2 id=&quot;repos-paths-and-urls-for-the-multi-notebook&quot;&gt;Repos, Paths, and URLs for the multi-notebook&lt;/h2&gt;
+&lt;p&gt;Even with the source files (such as &lt;code&gt;.md&lt;/code&gt; entries, templates, etc.) in different repositories it would be simple enough to combine the generated HTML files from each repository into a single output directory serving the site (on Github or elsewhere). However, GitHub’s &lt;code&gt;gh-pages&lt;/code&gt; provide an elegantly more modular way to do this already. GitHub uses the URL of the user’s repository (the repo named &lt;code&gt;username.github.io&lt;/code&gt;, which also serves as the site URL unless a different domain is specified using a CNAME file) as the root domain for all other &lt;code&gt;gh-pages&lt;/code&gt; branches on the Github repo.&lt;/p&gt;
+&lt;p&gt;Thus, I have created repositories named &lt;code&gt;2015&lt;/code&gt;, &lt;code&gt;2014&lt;/code&gt;, etc, which will serve the notebooks for the corresponding year from their own &lt;code&gt;gh-pages&lt;/code&gt; branch. Moving my &lt;code&gt;www.carlboettiger.info&lt;/code&gt; (the use of a subdomain such as &lt;code&gt;www&lt;/code&gt; is required in order to benefit from Github’s CDN, though if it is omitted the domain provider will add it) from my &lt;code&gt;labnotebook&lt;/code&gt; repo to my &lt;code&gt;cboettig.github.io&lt;/code&gt; repository means that the annual repositories now have base URLs such as &lt;code&gt;www.carlboettiger.info/2015&lt;/code&gt;, &lt;code&gt;www.carlboettiger.info/2014&lt;/code&gt;. Adjusting the &lt;code&gt;_config.yml&lt;/code&gt; to omit &lt;code&gt;/year:&lt;/code&gt; from the permalink, since it is already in the base URL, is all that is needed to ensure that the posts of all my old URLs will still resolve to the same pages. Excellent.&lt;/p&gt;
+&lt;p&gt;Dealing with the site pages is more tricky than dealing with the posts. Pages come in two variates: some, like &lt;code&gt;index.html&lt;/code&gt;, &lt;code&gt;research.html&lt;/code&gt;, &lt;code&gt;vita.html&lt;/code&gt;, contain only content that is independent of whatever is in the notebook pages and thus can live quite happily in the &lt;code&gt;cboettig.github.io&lt;/code&gt; repository. Others, like &lt;code&gt;tags.html&lt;/code&gt;, &lt;code&gt;categories.html&lt;/code&gt;, &lt;code&gt;archive.html&lt;/code&gt;, &lt;code&gt;lab-notebook.html&lt;/code&gt;, &lt;code&gt;atom.xml&lt;/code&gt; and other tag-specific RSS feeds are dynamically generated by Jekyll using the metadata of the posts, and thus need to live in the individual notebook repositories instead.&lt;/p&gt;
+&lt;p&gt;This instead of just having the page: &lt;a href=&quot;http://carlboettiger.info/tags&quot;&gt;carlboettiger.info/tags&lt;/a&gt;, each year begins a new notebook with it’s own tags, categories, etc: &lt;a href=&quot;http://carlboettiger.info/2014/tags&quot;&gt;carlboettiger.info/2014/tags&lt;/a&gt;, &lt;a href=&quot;http://carlboettiger.info/2013/tags&quot;&gt;carlboettiger.info/2013/tags&lt;/a&gt;. For tags, categories,it makes some sense to have this information aggregated by year, avoiding the clutter of too many or too stale tags or categories (though perhaps something is lost by not being able to see this in aggregate across all years, at least not without some effort). Likewise for the list of posts by date (previously at &lt;code&gt;archive.html&lt;/code&gt;, now just turned into &lt;code&gt;index.html&lt;/code&gt;) is produced for each annual notebook, such that &lt;a href=&quot;http://carlboettiger.info/2014&quot;&gt;carlboettiger.info/2014&lt;/a&gt; resolves a reverse-chronological list of posts for that year alone.&lt;/p&gt;
+&lt;p&gt;I must then address what to do about the original URLs such as &lt;a href=&quot;http://carlboettiger.info/tags&quot;&gt;carlboettiger.info/tags&lt;/a&gt;. Using a Jekyll liquid filter it is easy to define automatic redirects for &lt;code&gt;/tags.html&lt;/code&gt; and &lt;code&gt;/categories.html&lt;/code&gt; that will forward to the current year’s tag’s and categories, though perhaps an aggregated view would be preferable. For &lt;a href=&quot;http://carlboettiger.info/archive&quot;&gt;carlboettiger.info/archive&lt;/a&gt; I have provided manual links to the index of each annual notebook rather than a redirect to the index of only the most current notebook. Likewise for one of my most popular pages, &lt;a href=&quot;http://carlboettiger.info/lab-notebook&quot;&gt;carlboettiger.info/lab-notebook&lt;/a&gt;, I have retained the automated feeds from Github, Twitter, and Mendeley, but replaced the previews of the most recent posts with the less aesthetic link to the notebook by year. Meanwhile, I have provided each notebook with it’s own nine-panel preview page such as &lt;a href=&quot;http://carlboettiger.info/2014/lab-notebook&quot;&gt;carlboettiger.info/2014/lab-notebook&lt;/a&gt;, which has the preview but not the network feeds (Perhaps it would be better to move this to the index page). In this way, the social feeds can be updated merely by updating the &lt;code&gt;cboettig.github.io&lt;/code&gt; repo (since these are rendered as static text rather than javascript, written using the relevant API at the time the site is built.)&lt;/p&gt;
+&lt;p&gt;A more tricky case is that of the atom feeds. It doesn’t really make sense to subscribe to a &lt;code&gt;carlboettiger.info/2015/blog.xml&lt;/code&gt; feed that will be inactive in a year. Using HTML redirects in a &lt;code&gt;.xml&lt;/code&gt; file doesn’t make too much sense, so I will try the RSS-flavor redirect:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode xml&quot;&gt;&lt;code class=&quot;sourceCode xml&quot;&gt;&lt;span class=&quot;kw&quot;&gt;&amp;lt;newLocation&amp;gt;&lt;/span&gt;
+http://www.carlboettiger.info/2015/blog.xml
+&lt;span class=&quot;kw&quot;&gt;&amp;lt;/newLocation&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;though this seems less than ideal.&lt;/p&gt;
+&lt;h2 id=&quot;automated-deploy&quot;&gt;Automated deploy&lt;/h2&gt;
+&lt;p&gt;As I use the &lt;code&gt;jeykll-pandoc&lt;/code&gt; gem to have pandoc render the markdown, along with a few other custom plugins, I cannot take advantage of Github’s automated build for Jekyll and have instead relied on the trick of having Travis-CI build and deploy the site. Adding automated knitr building to the mix will make this too heavy for travis, even for more modular notebooks. Instead, I am relying on local building, together with automated builds from my own server running a Drone CI instance. More on this in a separate post.&lt;/p&gt;
+&lt;h2 id=&quot;site-assets-templates&quot;&gt;Site assets, templates&lt;/h2&gt;
+&lt;p&gt;Individual notebook repositories are thus much more light-weight. All css assets are in the root &lt;code&gt;cboettig.github.io&lt;/code&gt; repository or already provided by external CDNs (such as the FontAwesome icons or MathJax, and Bootstrap javascript). However, it is necessary that both all annual notebook repositories and the base repo have the Jekyll &lt;code&gt;_layouts&lt;/code&gt; and &lt;code&gt;_includes&lt;/code&gt; files required to template and build the pages. This is unfortunate, since it means maintaining multiple copies of the same file, but I haven’t figured out an easy way around it.&lt;/p&gt;
+&lt;h2 id=&quot;pruning-history&quot;&gt;Pruning history&lt;/h2&gt;
+&lt;p&gt;In breaking &lt;code&gt;labnotebook&lt;/code&gt; into component repos by year, I only want to preserve the history of that year, thus keeping the repositories small. This is particularly important for the root repo, &lt;code&gt;cboettig.github.io&lt;/code&gt;, since it will remain active.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;edit &lt;code&gt;_config.yml&lt;/code&gt; to remove &lt;code&gt;/:year&lt;/code&gt; from &lt;code&gt;_config.yml&lt;/code&gt; (the repository name will automatically be used as part of the URL)&lt;/li&gt;
+&lt;li&gt;delete all posts from different years (preferable to just wait until deleting their history, which will remove the files as well), e.g. for 2014:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;ot&quot;&gt;files=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;`echo&lt;/span&gt; &lt;span class=&quot;dt&quot;&gt;{_posts/2008-*,_posts/2009-*,_posts/2010-*,_posts/2011-*,_posts/2012-*,_posts/2013-*}&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;`&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;git&lt;/span&gt; filter-branch --index-filter &lt;span class=&quot;st&quot;&gt;&amp;quot;git rm -rf --cached --ignore-unmatch &lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;$files&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;&lt;/span&gt; HEAD&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and remove the temporary backups immediately so that repository actually shrinks in size:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;git update-ref -d refs/original/refs/heads/master
+git reflog expire --expire=now --all
+git gc --prune=now&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is more important in the root repository, since this will remain active. If the annual notebook entry repositories have some extra stuff in their &lt;code&gt;.git&lt;/code&gt; history it isn’t such an issue since they no longer need to grow or be moved around as much. (See this &lt;a href=&quot;http://stackoverflow.com/questions/2100907&quot;&gt;SO on rewriting git history&lt;/a&gt;.)&lt;/p&gt;
+&lt;h2 id=&quot;my-progress-notes-during-the-remapping&quot;&gt;My progress notes during the remapping:&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;[x] delete the CNAME file.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;[x] delete all the relatively static pages files that will be hosted directly from &lt;code&gt;cboettig.github.io&lt;/code&gt; (&lt;code&gt;index.html&lt;/code&gt;, &lt;code&gt;research.md&lt;/code&gt;, etc., but not dynamically created &lt;code&gt;tags.html&lt;/code&gt; etc).&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;[x] adjust &lt;code&gt;repo:&lt;/code&gt; in &lt;code&gt;_config.yml&lt;/code&gt; to match the repository year. This will automatically fix the sha and history links in the sidebar.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;[x] Other tweaks to the sidebar: &lt;code&gt;site.repo&lt;/code&gt; liquid must be added to categories, tags, next, and previous links.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;[x] Automated deploy for active and root repositories.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;[x] Plan for &lt;code&gt;labnotebook&lt;/code&gt; repo. History is preserved, but issues, github stars, etc. Use as template for the new years?&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;[x] Activate! Remove CNAME from &lt;code&gt;labnotebook&lt;/code&gt; repo, add &lt;code&gt;www&lt;/code&gt; CNAME to &lt;code&gt;cboettig.github.io&lt;/code&gt;. Consider removing &lt;code&gt;gh-pages&lt;/code&gt; branch of lab-notebook?&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;[x] Fix / workaround for the root atom feeds.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;[x] Syncing assets, layout, and deploy scripts? Perhaps it is best to allow these to diverge and newer notebooks to look different than older ones?&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+ </entry>
  
  

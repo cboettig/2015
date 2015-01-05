@@ -2,37 +2,37 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head prefix="dc: http://purl.org/dc/terms/ og: http://ogp.me/ns#"> <!-- namespaces used in metadata.html -->
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
-  <title>Lab Notebook</title>
+  <title>Notebook Maintenance And Scaling</title>
   <meta name="author" content="Carl Boettiger" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- HTML5 metadata -->
-<meta name="keywords" content="" />
+<meta name="keywords" content="blog" />
 <meta name="description" content="" />
 <!-- RDFa Metadata (in DublinCore) -->
-<meta property="dc:title" content="Lab Notebook" />
+<meta property="dc:title" content="Notebook Maintenance And Scaling" />
 <meta property="dc:creator" content="Carl Boettiger" />
-<meta property="dc:date" content="" />
+<meta property="dc:date" content="2015-01-01 00:00:00 +0000" />
 <meta property="dc:format" content="text/html" />
 <meta property="dc:language" content="en" />
-<meta property="dc:identifier" content="/lab-notebook.html" />
+<meta property="dc:identifier" content="/01/01/notebook-maintenance-and-scaling.html" />
 <meta property="dc:rights" content="CC0" />
 <meta property="dc:source" content="Lab Notebook" />
 <meta property="dc:subject" content="Ecology" /> 
 <meta property="dc:type" content="website" /> 
 <!-- RDFa Metadata (in OpenGraph) -->
-<meta property="og:title" content="Lab Notebook" />
+<meta property="og:title" content="Notebook Maintenance And Scaling" />
 <meta property="og:author" content="http://www.carlboettiger.info/index.html#me" />  <!-- Should be Liquid? URI? -->
 <meta property="http://ogp.me/ns/profile#first_name" content="Carl"/>
 <meta property="http://ogp.me/ns/profile#last_name" content="Boettiger"/>
-<meta property="http://ogp.me/ns/article#published_time" content="" />
+<meta property="http://ogp.me/ns/article#published_time" content="2015-01-01 00:00:00 +0000" />
 <meta property="og:site_name" content="Lab Notebook" /> <!-- Same as dc:source? -->
-<meta property="og:url" content="http://www.carlboettiger.info/lab-notebook.html" />
+<meta property="og:url" content="http://www.carlboettiger.info/01/01/notebook-maintenance-and-scaling.html" />
 <meta property="og:type" content="website" /> 
 <!-- Google Scholar Metadata -->
 <!--
 <meta name="citation_author" content="Carl Boettiger"/>
-<meta name="citation_date" content=""/>
-<meta name="citation_title" content="Lab Notebook"/>
+<meta name="citation_date" content="2015-01-01 00:00:00 +0000"/>
+<meta name="citation_title" content="Notebook Maintenance And Scaling"/>
 <meta name="citation_journal_title" content="Lab Notebook"/>
 -->
 <!--NOTE: see also the COinS Metadata in span element in footer -->
@@ -78,7 +78,7 @@
           <a href="/teaching.html">Teaching</a></li>
           <li  >
           <a href="/community.html">Community</a></li>
-          <li  class="active" >
+          <li  >
           <a href="/lab-notebook.html">Lab Notebook</a></li>
 
         </ul>
@@ -100,149 +100,14 @@
 
     <div class="container"> <!-- Responsive grid layout, doesn't jump to full-width --> 
       <header>
-        <h1 class="entry-title">Lab Notebook</h1>
-        <h2>(<a href="http://www.carlboettiger.info/2012/09/28/Welcome-to-my-lab-notebook.html">Introduction</a>)</h2>
+        <h1 class="entry-title">Notebook Maintenance And Scaling</h1>
+        <h2></h2>
       </header>
 
-      <div class="row postpreview">
-  <div class="col-md-11 col-md-offset-1">
-    <div class="row">
-			<h4> <a href="/2015/atom.xml"
-              onClick="recordOutboundLink(this,
-              'Outbound Links', 'RSS'); return false;"
-              style="color: inherit;"
-              ><i class="icon-rss" ></i> Entries</a></h4>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/01/04/lsn-model-comparisons.html">Lsn Model Comparisons</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 04 Jan 2015</p>
-
-<article>
-<div class="excerpt">
-<p>some sample data</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sde)
-<span class="kw">library</span>(nimble)
-<span class="kw">set.seed</span>(<span class="dv">123</span>)
-d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
-s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
-data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))</code></pre>
-<pre><code>sigma.x not provided, attempting symbolic derivation.</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(data)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-1-1.svg" />
-</figure>
-<h2 id="lsn-version">LSN version</h2>
-<p>Test case: Set prior for <code>m</code> <span class="math">\(\approx 0\)</span>:</p>
-<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">modelCode</span>({
-   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-   sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-   sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
-    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
-
-  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
-    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
-    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x) 
-    mu_y[i] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i]
-    y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_y[i], <span class="dt">sd =</span> sigma_y) 
-  }
-})</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;modelCode&quot;</code></pre>
-<p>Constants in the model definition are the length of the dataset, <span class="math">\(N\)</span> and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.</p>
-<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> <span class="kw">length</span>(data$x), <span class="dt">t =</span> <span class="dv">1</span>:<span class="kw">length</span>(data$x))</code></pre>
-<p>Initial values for the parameters</p>
-<pre class="sourceCode r"><code class="sourceCode r">inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">6</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,constants$N))</code></pre>
-<p>and here we go as before:</p>
-<pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> lsn, 
-                      <span class="dt">constants =</span> constants, 
-                      <span class="dt">data =</span> data, 
-                      <span class="dt">inits =</span> inits)</code></pre>
-<pre><code>Error in nf_changeNimKeywords(code): object &#39;lsn&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
-<pre><code>Error in compileNimble(Rmodel): object &#39;Rmodel&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">MCMCspec</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">1e2</span>)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;MCMCspec&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)</code></pre>
-<pre><code>Error in inherits(mcmcspec, &quot;modelBaseClass&quot;): object &#39;mcmcspec&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
-<pre><code>Error in compileNimble(Rmcmc, project = Cmodel): object &#39;Rmcmc&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Cmcmc</span>(<span class="fl">1e4</span>)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;Cmcmc&quot;</code></pre>
-<p>and examine results</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(<span class="kw">nfVar</span>(Cmcmc, <span class="st">&#39;mvSamples&#39;</span>)))</code></pre>
-<pre><code>Error in as.matrix(nfVar(Cmcmc, &quot;mvSamples&quot;)): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;as.matrix&#39;: Error in is.nfGenerator(f) : object &#39;Cmcmc&#39; not found
-Calls: nfVar -&gt; nf_getRefClassObject -&gt; is.nfGenerator</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(samples)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(samples$theta)</code></pre>
-<pre><code>Error in mean(samples$theta): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;mean&#39;: Error: object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(samples$m)</code></pre>
-<pre><code>Error in mean(samples$m): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;mean&#39;: Error: object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(samples$sigma_x)</code></pre>
-<pre><code>Error in mean(samples$sigma_x): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;mean&#39;: Error: object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;m&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="st">&#39;m&#39;</span>)</code></pre>
-<pre><code>Error in plot(samples[, &quot;m&quot;], type = &quot;l&quot;, xlab = &quot;iteration&quot;, ylab = &quot;m&quot;): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;plot&#39;: Error: object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;sigma_x&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(sigma[x]))</code></pre>
-<pre><code>Error in plot(samples[, &quot;sigma_x&quot;], type = &quot;l&quot;, xlab = &quot;iteration&quot;, ylab = expression(sigma[x])): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;plot&#39;: Error: object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;sigma_y&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(sigma[y]))</code></pre>
-<pre><code>Error in plot(samples[, &quot;sigma_y&quot;], type = &quot;l&quot;, xlab = &quot;iteration&quot;, ylab = expression(sigma[y])): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;plot&#39;: Error: object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;theta&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(theta))</code></pre>
-<pre><code>Error in plot(samples[, &quot;theta&quot;], type = &quot;l&quot;, xlab = &quot;iteration&quot;, ylab = expression(theta)): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;plot&#39;: Error: object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;m&#39;</span>], <span class="dt">xlab =</span> <span class="st">&#39;m&#39;</span>)</code></pre>
-<pre><code>Error in hist(samples[, &quot;m&quot;], xlab = &quot;m&quot;): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;sigma_x&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(sigma[x]))</code></pre>
-<pre><code>Error in hist(samples[, &quot;sigma_x&quot;], xlab = expression(sigma[x])): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;sigma_y&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(sigma[y]))</code></pre>
-<pre><code>Error in hist(samples[, &quot;sigma_y&quot;], xlab = expression(sigma[y])): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;theta&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(theta))</code></pre>
-<pre><code>Error in hist(samples[, &quot;theta&quot;], xlab = expression(theta)): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.2 (2014-10-31)
-Platform: x86_64-pc-linux-gnu (64-bit)
-
-locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
- [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] splines   stats4    methods   stats     graphics  grDevices
-[7] utils     datasets  base     
-
-other attached packages:
-[1] nimble_0.3   sde_2.0.13   zoo_1.7-11   fda_2.4.4    Matrix_1.1-4
-[6] MASS_7.3-35  yaml_2.1.13  knitr_1.8   
-
-loaded via a namespace (and not attached):
-[1] codetools_0.2-9 digest_0.6.8    evaluate_0.5.5  formatR_1.0    
-[5] grid_3.1.2      igraph_0.7.1    lattice_0.20-29 stringr_0.6.2  
-[9] tools_3.1.2    </code></pre>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/01/04/lsn-model-comparisons.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/01/01/notebook-maintenance-and-scaling.html">Notebook Maintenance And Scaling</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 01 Jan 2015</p>
-
-<article>
-<div class="excerpt">
-<p>Electronic notebooks may not run out of pages like a paper notebook, but with five years of entries (963 posts, with a repository size approaching half a gigabyte), together with various files, layouts, experimentation and version history, some thought must be given to scale. Two closely related considerations add to this further: dynamic builds with <code>knitr</code> from <code>.Rmd</code> versions and hosting image files directly in the notebook repository rather than uploading to an external site (previously flickr or on the gh-pages of other project repositories). This has several advantages (more on that later) but in the immediate term it makes building the repository potentially slower (though knitr’s caching helps) and increases the repository size more rapidly (even with text-based <code>svg</code> images).</p>
+      <div class="row">
+  <div class="col-md-7 col-md-offset-1">
+    <article>
+    <p>Electronic notebooks may not run out of pages like a paper notebook, but with five years of entries (963 posts, with a repository size approaching half a gigabyte), together with various files, layouts, experimentation and version history, some thought must be given to scale. Two closely related considerations add to this further: dynamic builds with <code>knitr</code> from <code>.Rmd</code> versions and hosting image files directly in the notebook repository rather than uploading to an external site (previously flickr or on the gh-pages of other project repositories). This has several advantages (more on that later) but in the immediate term it makes building the repository potentially slower (though knitr’s caching helps) and increases the repository size more rapidly (even with text-based <code>svg</code> images).</p>
 <p>The current Jekyll system keeps all posts in a single repository and rebuilds the HTML files for each every time. This is already showing some strains: for instance, for some reason the git hashes when generating the site automatically on Travis cease updating for older posts, though this problem doesn’t occur when building locally. Overall, the Jekyll platform is rather snappy so this isn’t an unmanageable size, but is sufficient to demonstrate that the approach isn’t able to scale indefinitely either.</p>
 <p>So, as with the paper notebook whose pages are filled, it’s time to crack open a new binding and shelve the old notebooks – somewhere handy to be sure, but no longer one voluminous tome on the desk.</p>
 <h2 id="a-multi-repository-approach">A multi-repository approach</h2>
@@ -288,37 +153,81 @@ git gc --prune=now</code></pre>
 <li><p>[x] Fix / workaround for the root atom feeds.</p></li>
 <li><p>[x] Syncing assets, layout, and deploy scripts? Perhaps it is best to allow these to diverge and newer notebooks to look different than older ones?</p></li>
 </ul>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/01/01/notebook-maintenance-and-scaling.html"> <em>Read more</em></a> </p>
-<br />
-<br />
 
-
-        </div>
-      
-    </div>
-
-    <div class="row">
-      
-    </div>
-
-    <div class="row">
-      
-    </div>
-
+    </article>
   </div>
-</div> <!--end row -->
+  <div class="col-md-4">
+    <div class="sidebar">
+      <aside prefix="og:http://ogp.me/ns/article#">
+  <p> <i class="icon-calendar"></i>
+    <time datetime="2015-01-01 00:00:00 +0000" 
+    property="dc:created">01 Jan 2015</time></p>
+   
 
-<div class="row socialicons">
-  <div class="col-md-11 col-md-offset-1">
-		<p> <a href="/2015/index.html"><i class="icon-calendar"></i> All entries by date</a></p> 
-      <p> <a href="/2015/categories.html"><i class="icon-list"></i> All entries by category</a> </p>
-      <p> <a href="/2015/tags.html"><i class="icon-tags"></i> All entries by tag</a> </p>
-  </div> <!--end col-md-9 -->
-</div> <!--end row -->
+ <br />
+
+  
+  
+  <a class="btn btn-default" rel="next" href='/2015/01/04/lsn-model-comparisons.html'>next <i class="icon-chevron-right"></i></a></p>
+  
+
+  <br />
+
+  <p> <a  onclick="recordOutboundLink(this, 'Outbound Links', 'history'); 
+            return false;" 
+          class="btn btn-default" 
+          href="https://github.com/cboettig/2015/commits/master/_posts/2015-01-01-notebook-maintenance-and-scaling.md"><i class="icon-time"></i> history</a></p>
+
+  <br />
+
+  <p><i class="icon-list"></i> Posted in 
+     
+      <a rel="dc:subject" class="category" 
+         href="/2015/categories.html#open-science">open-science</a>
+    
+    </p>
+
+  <p> <i class="icon-tag"></i> tags: 
+    
+    <!-- http://schema.org/BlogPosting/keywords -->
+    <a rel="og:tag" class="tag" 
+			href="/2015/tags.html#blog">#blog</a>
+    </p>
+
+  <br/>
+
+  
+
+  <br/>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/c1677826a1c97e0874a66bd00829aa845c7aed19/_posts/2015-01-01-notebook-maintenance-and-scaling.md"> c1677826a1c97e0874a66bd00829aa845c7aed19</a></small></p>
+    
+  <br/>
+  
+
+</aside>
+
+    </div>
+  </div>
+</div>
+
+      <!-- Disqus Comments -->
+      <div class="row disqus">
+        <div class="col-md-8">          
+            <div id="disqus_thread"></div>
+            <script type="text/javascript">
+                var disqus_shortname = 'cboettig'; // required: replace example with your forum shortname
+                /* * * DON'T EDIT BELOW THIS LINE * * */
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        </div>
+      </div>
+
+
 
 
 
@@ -382,12 +291,12 @@ git gc --prune=now</code></pre>
       title="ctx_ver=Z39.88-2004
       &amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc
       &amp;rfr_id=info%3Asid%2Focoins.info%3Agenerator
-      &amp;rft.title=Lab Notebook
+      &amp;rft.title=Notebook Maintenance And Scaling
       &amp;rft.creator=Carl Boettiger
-      &amp;rft.date=
+      &amp;rft.date=2015-01-01
       &amp;rft.language=EN
       &amp;rft.rights=CC0
-      &amp;rft_id=http://www.carlboettiger.info/lab-notebook.html">
+      &amp;rft_id=http://www.carlboettiger.info/01/01/notebook-maintenance-and-scaling.html">
   </span>
 
 
