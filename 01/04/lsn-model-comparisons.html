@@ -148,8 +148,8 @@ data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span c
 Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">MCMCspec</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">1e2</span>)</code></pre>
 <pre><code>Error in eval(expr, envir, enclos): could not find function &quot;MCMCspec&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)</code></pre>
-<pre><code>Error in inherits(mcmcspec, &quot;modelBaseClass&quot;): object &#39;mcmcspec&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">Rmcmc &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(mcmcspec)</code></pre>
+<pre><code>Error in .Object$initialize(...): object &#39;mcmcspec&#39; not found</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre><code>Error in compileNimble(Rmcmc, project = Cmodel): object &#39;Rmcmc&#39; not found</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e4</span>)</code></pre>
