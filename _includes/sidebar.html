@@ -1,3 +1,4 @@
+{% capture true_path %} {% if page.code %}{{ page.path | replace:'.md','.Rmd' }}{% else %} {{ page.path }}{% endif %} {% endcapture %}
 <aside prefix="og:http://ogp.me/ns/article#">
   <p> <i class="icon-calendar"></i>
     <time datetime="{{ page.date }}" 
@@ -24,7 +25,7 @@
   <p> <a  onclick="recordOutboundLink(this, 'Outbound Links', 'history'); 
             return false;" 
           class="btn btn-default" 
-          href="https://github.com/{{site.author.github}}/{{ site.repo }}/commits/master/_posts/{{page.path}}"><i class="icon-time"></i> history</a></p>
+          href="https://github.com/{{site.author.github}}/{{ site.repo }}/commits/master/_posts/{{ true_path }}"><i class="icon-time"></i> history</a></p>
 
   <br />
 
@@ -47,7 +48,7 @@
   {% if site.pageviews %} <p style="font-style:italic"> <i class="icon-signal"></i> pageviews: {{ page.pageviews }}</p>{% endif %}
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/{{site.author.github}}/{{ site.repo }}/commit/{{page.path | prepend:'_posts/' | git_sha }}/_posts/{{ page.path }}"> {{ page.path | prepend:'_posts/' | git_sha }}</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/{{site.author.github}}/{{ site.repo }}/commit/{{ true_path | prepend:'_posts/' | git_sha }}/_posts/{{ true_path }}"> {{ true_path | prepend:'_posts/' | git_sha }}</a></small></p>
     
   <br/>
   {% if page.code %}
