@@ -117,3 +117,8 @@ hist(samples[, 'sigma_y'], xlab = expression(sigma[y]))
 hist(samples[, 'theta'], xlab = expression(theta))
 ```
 
+
+
+```{r }
+sessionInfo()
+```
