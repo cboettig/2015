@@ -152,12 +152,11 @@ Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmode
 <pre><code>Error in inherits(mcmcspec, &quot;modelBaseClass&quot;): object &#39;mcmcspec&#39; not found</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre><code>Error in compileNimble(Rmcmc, project = Cmodel): object &#39;Rmcmc&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Cmcmc</span>(<span class="fl">1e4</span>)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;Cmcmc&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e4</span>)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;Cmcmc&#39; not found</code></pre>
 <p>and examine results</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(<span class="kw">nfVar</span>(Cmcmc, <span class="st">&#39;mvSamples&#39;</span>)))</code></pre>
-<pre><code>Error in as.matrix(nfVar(Cmcmc, &quot;mvSamples&quot;)): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;as.matrix&#39;: Error in is.nfGenerator(f) : object &#39;Cmcmc&#39; not found
-Calls: nfVar -&gt; nf_getRefClassObject -&gt; is.nfGenerator</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))</code></pre>
+<pre><code>Error in as.matrix(Cmcmc$mvSamples): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;as.matrix&#39;: Error: object &#39;Cmcmc&#39; not found</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(samples)</code></pre>
 <pre><code>Error in eval(expr, envir, enclos): object &#39;samples&#39; not found</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]</code></pre>
