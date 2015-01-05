@@ -81,14 +81,14 @@ Cmcmc <- compileNimble(Rmcmc, project = Cmodel)
 
 
 ```{r} 
-Cmcmc(1e4)
+Cmcmc$run(1e4)
 ```
 
 
 and examine results
 
 ```{r}
-samples <- as.data.frame(as.matrix(nfVar(Cmcmc, 'mvSamples')))
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
 dim(samples)
 samples <- samples[,1:4]
 ```
