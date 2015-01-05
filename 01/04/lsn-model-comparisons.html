@@ -121,7 +121,7 @@ data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span c
 </figure>
 <h2 id="lsn-version">LSN version</h2>
 <p>Test case: Set prior for <code>m</code> <span class="math">\(\approx 0\)</span>:</p>
-<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">modelCode</span>({
+<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
    theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
    sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
    sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
@@ -136,7 +136,6 @@ data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span c
     y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_y[i], <span class="dt">sd =</span> sigma_y) 
   }
 })</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;modelCode&quot;</code></pre>
 <p>Constants in the model definition are the length of the dataset, <span class="math">\(N\)</span> and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.</p>
 <pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> <span class="kw">length</span>(data$x), <span class="dt">t =</span> <span class="dv">1</span>:<span class="kw">length</span>(data$x))</code></pre>
 <p>Initial values for the parameters</p>
@@ -145,10 +144,8 @@ data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span c
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> lsn, 
                       <span class="dt">constants =</span> constants, 
                       <span class="dt">data =</span> data, 
-                      <span class="dt">inits =</span> inits)</code></pre>
-<pre><code>Error in nf_changeNimKeywords(code): object &#39;lsn&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
-<pre><code>Error in compileNimble(Rmodel): object &#39;Rmodel&#39; not found</code></pre>
+                      <span class="dt">inits =</span> inits)
+Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">MCMCspec</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">1e2</span>)</code></pre>
 <pre><code>Error in eval(expr, envir, enclos): could not find function &quot;MCMCspec&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)</code></pre>

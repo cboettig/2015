@@ -4,7 +4,7 @@
  <title>Lab Notebook</title>
  <link href="/2015/atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-01-05T05:15:58+00:00</updated>
+ <updated>2015-01-05T05:43:30+00:00</updated>
  <id>http://www.carlboettiger.info/2015</id>
  <author>
    <name>Carl Boettiger</name>
@@ -31,7 +31,7 @@ data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;/figure&gt;
 &lt;h2 id=&quot;lsn-version&quot;&gt;LSN version&lt;/h2&gt;
 &lt;p&gt;Test case: Set prior for &lt;code&gt;m&lt;/code&gt; &lt;span class=&quot;math&quot;&gt;\(\approx 0\)&lt;/span&gt;:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;modelCode&lt;/span&gt;({
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
    theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
    sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
    sigma_y ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
@@ -46,7 +46,6 @@ data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
     y[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_y[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_y) 
   }
 })&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;modelCode&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Constants in the model definition are the length of the dataset, &lt;span class=&quot;math&quot;&gt;\(N\)&lt;/span&gt; and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(data$x), &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(data$x))&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Initial values for the parameters&lt;/p&gt;
@@ -55,10 +54,8 @@ data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; lsn, 
                       &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, 
                       &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, 
-                      &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in nf_changeNimKeywords(code): object &amp;#39;lsn&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in compileNimble(Rmodel): object &amp;#39;Rmodel&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+                      &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)
+Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;MCMCspec&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;MCMCspec&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)&lt;/code&gt;&lt;/pre&gt;
