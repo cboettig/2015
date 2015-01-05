@@ -22,7 +22,8 @@ library(earlywarning)
 set.seed(123)
 data(ibms)
 plot(ibm_critical)
-data <- as.data.frame(ibm_critical)[[1]]
+data <- as.data.frame(ibm_critical)
+names(data) <- "X"
 ```
 
 
@@ -50,7 +51,7 @@ lsn <- nimbleCode({
 Constants in the model definition are the length of the dataset, $N$ and the time points of the sample. Note we've made time explicit, we'll assume uniform spacing here. 
 
 ```{r}
-constants <- list(N = length(data), t = 1:length(data))
+constants <- list(N = length(data[[1]]), t = 1:length(data[[1]]))
 ```
 
 Initial values for the parameters
