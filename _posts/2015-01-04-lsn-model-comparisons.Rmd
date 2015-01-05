@@ -74,8 +74,8 @@ Cmodel <- compileNimble(Rmodel)
 
 
 ```{r, echo=TRUE, results = 'hide', message = FALSE}
-mcmcspec <- MCMCspec(Rmodel, print=TRUE,thin=1e2)
-Rmcmc <- configureMCMC(mcmcspec)
+mcmcspec <- configureMCMC(Rmodel, print=TRUE,thin=1e2)
+Rmcmc <- buildMCMC(mcmcspec)
 Cmcmc <- compileNimble(Rmcmc, project = Cmodel)
 ```
 
