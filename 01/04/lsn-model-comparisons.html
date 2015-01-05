@@ -112,7 +112,7 @@
 devtools::<span class="kw">install_github</span>(<span class="st">&quot;cboettig/earlywarning&quot;</span>)</code></pre>
 <pre><code>
 The downloaded source packages are in
-    &#39;/tmp/RtmpbV7E7k/downloaded_packages&#39;</code></pre>
+    &#39;/tmp/RtmpKzmhP0/downloaded_packages&#39;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(earlywarning)
 <span class="kw">set.seed</span>(<span class="dv">123</span>)
 <span class="kw">data</span>(ibms)
@@ -145,9 +145,9 @@ The downloaded source packages are in
 <p>and here we go:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> lsn, 
                       <span class="dt">constants =</span> constants, 
-                      <span class="dt">data =</span> data[,<span class="dv">2</span>], 
+                      <span class="dt">data =</span> data, 
                       <span class="dt">inits =</span> inits)</code></pre>
-<pre><code>Error in data[, 2]: incorrect number of dimensions</code></pre>
+<pre><code>Error in model$setData(data): &#39;data&#39; argument must by a named list</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
 <pre><code>Error in compileNimble(Rmodel): object &#39;Rmodel&#39; not found</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">1e2</span>)</code></pre>
@@ -261,7 +261,7 @@ loaded via a namespace (and not attached):
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/f213b89c4ec52ac9964223df723b37a1c4dba68e/_posts/2015-01-04-lsn-model-comparisons.Rmd"> f213b89c4ec52ac9964223df723b37a1c4dba68e</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/6937c939987cbf408cc6a4dbc9d29e83db00244a/_posts/2015-01-04-lsn-model-comparisons.Rmd"> 6937c939987cbf408cc6a4dbc9d29e83db00244a</a></small></p>
     
   <br/>
   
