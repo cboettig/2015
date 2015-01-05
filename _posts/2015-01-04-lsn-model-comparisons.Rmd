@@ -3,32 +3,29 @@ layout: post
 category: ecology
 tags:
   - earlywarning
+code: true
 ---
 
 
 ```{r embedded-svgs, include=FALSE}
 library(knitr)
-opts_chunk$set(dev='svg', fig.width=2, fig.height=3, cache=TRUE)
+opts_chunk$set(dev='svg', fig.width=3, fig.height=3, cache=2)
 ```
 
 
 some sample data
 
 ```{r}
-library(sde)
 library(nimble)
+library(earlywarning)
 set.seed(123)
-d <- expression(0.5 * (10-x))
-s <- expression(1) 
-data <- as.data.frame(sde.sim(X0=6,drift=d, sigma=s, T=20, N=100))
+data(ibm)
 plot(data)
 ```
 
 
 
 ## LSN version ##
-
-Test case: Set prior for `m` $\approx 0$:
 
 ```{r}
 lsn <- nimbleCode({
@@ -51,7 +48,7 @@ lsn <- nimbleCode({
 Constants in the model definition are the length of the dataset, $N$ and the time points of the sample. Note we've made time explicit, we'll assume uniform spacing here. 
 
 ```{r}
-constants <- list(N = length(data$x), t = 1:length(data$x))
+constants <- list(N = length(data[,1]), t = 1:length(data[,1]))
 ```
 
 Initial values for the parameters
@@ -61,12 +58,12 @@ inits <- list(theta = 6, m = 0, sigma_x = 1, sigma_y = 1, y = rep(1,constants$N)
 ```
 
 
-and here we go as before:
+and here we go:
 
 ```{r}
 Rmodel <- nimbleModel(code = lsn, 
                       constants = constants, 
-                      data = data, 
+                      data = data[,2], 
                       inits = inits)
 Cmodel <- compileNimble(Rmodel)
 ```

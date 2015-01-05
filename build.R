@@ -34,15 +34,15 @@ local({
 		fig.cap = ""
   )
 
-	## Embed svgs directly -- doesn't work, causes weird knitr errors instead
-	## see: https://github.com/yihui/knitr/issues/754#issuecomment-68470335
-#	local({
-#		hook_plot = knit_hooks$get('plot')
-#		knit_hooks$set(plot = function(x, options) {
-#			if (!grepl('\\.svg', x)) return(hook_plot(x, options))
-#			paste(readLines(x)[-1], collapse = '\n')
-#		})
-#	})
+	## Embed svgs directly
+	knitr::render_markdown()
+	local({
+		hook_plot = knit_hooks$get('plot')
+		knit_hooks$set(plot = function(x, options) {
+			if (!grepl('\\.svg', x)) return(hook_plot(x, options))
+			paste(readLines(x)[-1], collapse = '\n')
+		})
+	})
 
 ## Embed any non-svgs directly into HTML as data-uris
 
