@@ -65,7 +65,7 @@ and here we go:
 ```{r}
 Rmodel <- nimbleModel(code = lsn, 
                       constants = constants, 
-                      data = data[,2], 
+                      data = data, 
                       inits = inits)
 Cmodel <- compileNimble(Rmodel)
 ```
