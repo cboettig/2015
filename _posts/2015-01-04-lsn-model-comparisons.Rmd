@@ -9,7 +9,7 @@ code: true
 
 ```{r embedded-svgs, include=FALSE}
 library(knitr)
-opts_chunk$set(dev='svg', fig.width=3, fig.height=3, cache=2)
+opts_chunk$set(dev='png', fig.width=3, fig.height=3, cache=2)
 ```
 
 
@@ -81,7 +81,7 @@ Cmcmc <- compileNimble(Rmcmc, project = Cmodel)
 
 
 ```{r} 
-Cmcmc$run(1e4)
+Cmcmc$run(1e6)
 ```
 
 
