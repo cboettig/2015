@@ -7,7 +7,7 @@ code: true
 ---
 
 
-```{r embedded-svgs, include=FALSE}
+```{r settings, include=FALSE}
 library(knitr)
 opts_chunk$set(dev='png', fig.width=3, fig.height=3, cache=2)
 ```
@@ -104,17 +104,17 @@ mean(samples$sigma_x)
 
 
 ```{r fig.show='hold'}
-plot(samples[ , 'm'], type = 'l', xlab = 'iteration', ylab = 'm')
-plot(samples[ , 'sigma_x'], type = 'l', xlab = 'iteration', ylab = expression(sigma[x]))
-plot(samples[ , 'sigma_y'], type = 'l', xlab = 'iteration', ylab = expression(sigma[y]))
-plot(samples[ , 'theta'], type = 'l', xlab = 'iteration', ylab = expression(theta))
+plot(samples[ , 'm'], type = 'l', xlab = 'iteration', ylab = 'm', main='')
+plot(samples[ , 'sigma_x'], type = 'l', xlab = 'iteration', ylab = expression(sigma[x]), main='')
+plot(samples[ , 'sigma_y'], type = 'l', xlab = 'iteration', ylab = expression(sigma[y]), main='')
+plot(samples[ , 'theta'], type = 'l', xlab = 'iteration', ylab = expression(theta), main='')
 ```
 
 ```{r fig.show='hold'}
-hist(samples[, 'm'], xlab = 'm')
-hist(samples[, 'sigma_x'], xlab = expression(sigma[x]))
-hist(samples[, 'sigma_y'], xlab = expression(sigma[y]))
-hist(samples[, 'theta'], xlab = expression(theta))
+hist(samples[, 'm'], xlab = 'm', main='')
+hist(samples[, 'sigma_x'], xlab = expression(sigma[x]), main='')
+hist(samples[, 'sigma_y'], xlab = expression(sigma[y]), main='')
+hist(samples[, 'theta'], xlab = expression(theta), main='')
 ```
 
 
