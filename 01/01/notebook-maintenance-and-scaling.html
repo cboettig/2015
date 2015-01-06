@@ -111,7 +111,7 @@
 <p>The current Jekyll system keeps all posts in a single repository and rebuilds the HTML files for each every time. This is already showing some strains: for instance, for some reason the git hashes when generating the site automatically on Travis cease updating for older posts, though this problem doesn’t occur when building locally. Overall, the Jekyll platform is rather snappy so this isn’t an unmanageable size, but is sufficient to demonstrate that the approach isn’t able to scale indefinitely either.</p>
 <p>So, as with the paper notebook whose pages are filled, it’s time to crack open a new binding and shelve the old notebooks – somewhere handy to be sure, but no longer one voluminous tome on the desk.</p>
 <figure>
-<img src="/assets/figures/posts/2015-01-01/notebooks-shelf.jpg" />
+<img src="/2015/assets/figures/posts/2015-01-01/notebooks-shelf.jpg" />
 </figure>
 <h2 id="a-multi-repository-approach">A multi-repository approach</h2>
 <p>To address this, I’m am trying out breaking the notebook over multiple repositories: using a new repository for each year’s worth of entries, and an additional repository to provide the basic pages (<code>home</code>, <code>teaching</code>, <code>vita</code>, etc. from the navbar) along with the assets used by all the other sites (css, fonts, javascript, etc). This avoids rebuilding the posts of notebooks from all previous years every time the Jekyll site is compiled, keeping the repositories smaller, the site more modular and more easy to scale.</p>
@@ -203,7 +203,7 @@ git gc --prune=now</code></pre>
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/27410cbb1aa3621b18252aa934bff0bcb0dda485/_posts/2015-01-01-notebook-maintenance-and-scaling.md"> 27410cbb1aa3621b18252aa934bff0bcb0dda485</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/2e2e9d6bbec4b7685673c67592d3d6d53b4dee24/_posts/2015-01-01-notebook-maintenance-and-scaling.md"> 2e2e9d6bbec4b7685673c67592d3d6d53b4dee24</a></small></p>
     
   <br/>
   
