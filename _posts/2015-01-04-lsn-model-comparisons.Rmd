@@ -13,7 +13,7 @@ opts_chunk$set(dev='svg', fig.width=3, fig.height=3, cache=2)
 ```
 
 
-some sample data
+some sample data:
 
 ```{r}
 library(nimble)
@@ -23,7 +23,7 @@ set.seed(123)
 data(ibms)
 plot(ibm_critical)
 data <- as.data.frame(ibm_critical)
-names(data) <- "X"
+names(data) <- "x"
 ```
 
 
