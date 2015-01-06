@@ -30,6 +30,8 @@ So, as with the paper notebook whose pages are filled, it's time to crack
 open a new binding and shelve the old notebooks -- somewhere handy to be
 sure, but no longer one voluminous tome on the desk. 
 
+![](/assets/figures/posts/2015-01-01/notebooks-shelf.jpg)
+
 ## A multi-repository approach ##
 
 To address this, I'm am trying out breaking the notebook over multiple
