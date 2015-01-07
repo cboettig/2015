@@ -17,7 +17,10 @@ local({
 		baseurl <- strsplit(baseurl, ':\\s*')[[1]][2]
 		if(length(grep('*.github.io', baseurl)) == 1) { 
 			baseurl <- "/"
-		}
+		} 
+	} else {
+		baseurl <- "/"
+	}
 	## Default to png since svgs with lots of points can be huge and also choke pandoc
 	## Cache in an underscored dir since we never want to commit cache
 	## figures in a usable path, though excluded in _config.yml since we embed as data_uris
@@ -57,3 +60,5 @@ local({
   knitr::opts_knit$set(width = 70)
   knitr::knit(a[1], a[2], quiet = TRUE, encoding = 'UTF-8', envir = .GlobalEnv)
 })
+
+
