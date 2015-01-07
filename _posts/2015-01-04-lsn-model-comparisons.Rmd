@@ -118,6 +118,6 @@ hist(samples[, 'theta'], xlab = expression(theta), main='')
 
 
 
-```{r }
+```{r results='markup'}
 sessionInfo()
 ```
