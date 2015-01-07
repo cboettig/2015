@@ -12,10 +12,10 @@
  <br />
 
   {% if page.previous %}
-	<p><a class="btn btn-default" rel="prev" href='/{{site.repo}}{{ page.previous.url }}'><i class="icon-chevron-left"></i> prev</a>
+	<p><a class="btn btn-default" rel="prev" href='{{site.baseurl}}{{ page.previous.url }}'><i class="icon-chevron-left"></i> prev</a>
   {% endif %}
   {% if page.next %}
-  <a class="btn btn-default" rel="next" href='/{{site.repo}}{{ page.next.url }}'>next <i class="icon-chevron-right"></i></a></p>
+  <a class="btn btn-default" rel="next" href='{{site.baseurl}}{{ page.next.url }}'>next <i class="icon-chevron-right"></i></a></p>
   {% else %}
     </p>
     {% endif %}
@@ -32,7 +32,7 @@
   <p><i class="icon-list"></i> Posted in 
     {% for category in page.categories %} 
       <a rel="dc:subject" class="category" 
-         href="/{{site.repo}}/categories.html#{{ category | cgi_escape }}">{{ category }}</a>
+         href="{{site.baseurl}}/categories.html#{{ category | cgi_escape }}">{{ category }}</a>
     {% unless page.categories.last == category %}, {% endunless %}
     {% endfor %}</p>
 
@@ -40,7 +40,7 @@
     {% for tag in page.tags %}
     <!-- http://schema.org/BlogPosting/keywords -->
     <a rel="og:tag" class="tag" 
-			href="/{{site.repo}}/tags.html#{{ tag | cgi_escape }}">#{{ tag }}</a>{% unless page.tags.last == tag %}, {% endunless %}
+			href="{{site.baseurl}}/tags.html#{{ tag | cgi_escape }}">#{{ tag }}</a>{% unless page.tags.last == tag %}, {% endunless %}
     {% endfor %}</p>
 
   <br/>

@@ -8,7 +8,7 @@ layout: page
   <div class="span6"> 
 		<ul class="list-unstyled">
 		{% for post in site.posts %}
-			<li> <a href="/{{site.repo}}{{ post.url }}">{{ post.title }}</a> 
+		<li> <a href="{{site.baseurl}}{{ post.url }}">{{ post.title }}</a> 
 			<span style="text-align:right; font-style:italic"> {{ post.date | date_to_string }}</span></li>
 		{% endfor %}
 		</ul>

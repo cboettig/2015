@@ -10,8 +10,8 @@ author:
   mendeley: carl-boettiger
   email: cboettig@gmail.com
 url: http://www.carlboettiger.info
+baseurl: /2015
 username: cboettig
-repo: 2015 
 
 gems:
   - jekyll-pandoc
