@@ -1,8 +1,7 @@
 image: cboettig/labnotebook
 
 script:
-  - ./_build.sh
-
+    - ./_build.sh
 deploy:
   bash:
     script:
