@@ -51,7 +51,7 @@ local({
 		}
 #	knitr::opts_knit$set(upload.fun = embed)
 
-  knitr::opts_knit$set(base.url = baseurl)
+  knitr::opts_knit$set(base.url = paste0(baseurl, "/"))
   knitr::opts_knit$set(width = 70)
   knitr::knit(a[1], a[2], quiet = TRUE, encoding = 'UTF-8', envir = .GlobalEnv)
 })
