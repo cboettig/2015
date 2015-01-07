@@ -2,9 +2,9 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
  
  <title>Lab Notebook - R</title>
- <link href="/2015/R.xml" rel="self"/>
+ <link href="//R.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-01-06T23:06:34+00:00</updated>
+ <updated>2015-01-07T00:25:27+00:00</updated>
  <id>http://www.carlboettiger.info</id>
  <author>
    <name>Carl Boettiger</name>

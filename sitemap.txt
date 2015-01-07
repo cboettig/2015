@@ -1,14 +1,14 @@
  
-http://www.carlboettiger.info/2015/R.xml  
-http://www.carlboettiger.info/2015/archive.html  
-http://www.carlboettiger.info/2015/atom.xml  
-http://www.carlboettiger.info/2015/blog.xml  
-http://www.carlboettiger.info/2015/categories.html  
-http://www.carlboettiger.info/2015/index.html  
-http://www.carlboettiger.info/2015/lab-notebook.html  
-http://www.carlboettiger.info/2015/sitemap.txt  
-http://www.carlboettiger.info/2015/tags.html 
+http://www.carlboettiger.info//R.xml  
+http://www.carlboettiger.info//archive.html  
+http://www.carlboettiger.info//atom.xml  
+http://www.carlboettiger.info//blog.xml  
+http://www.carlboettiger.info//categories.html  
+http://www.carlboettiger.info//index.html  
+http://www.carlboettiger.info//lab-notebook.html  
+http://www.carlboettiger.info//sitemap.txt  
+http://www.carlboettiger.info//tags.html 
 
  
-http://www.carlboettiger.info/2015/01/04/lsn-model-comparisons.html  
-http://www.carlboettiger.info/2015/01/01/notebook-maintenance-and-scaling.html 
+http://www.carlboettiger.info//01/04/lsn-model-comparisons.html  
+http://www.carlboettiger.info//01/01/notebook-maintenance-and-scaling.html 
