@@ -4,7 +4,7 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-01-07T00:25:27+00:00</updated>
+ <updated>2015-01-07T00:37:22+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
@@ -17,7 +17,7 @@
 	 <link href="//01/04/lsn-model-comparisons.html"/>
    <updated>2015-01-04T00:00:00+00:00</updated>
    <id>/01/04/lsn-model-comparisons</id>
-   <content type="html">&lt;p&gt;some sample data:&lt;/p&gt;
+   <content type="html">&lt;p&gt;some sample data from earlywarning:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## 
 ## Attaching package: &amp;#39;nimble&amp;#39;
@@ -31,12 +31,9 @@
 ## Installing dependencies for earlywarning:
 ## deSolve, psych
 ## Installing packages into &amp;#39;/usr/local/lib/R/site-library&amp;#39;
-## (as &amp;#39;lib&amp;#39; is unspecified)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## 
-## The downloaded source packages are in
-##  &amp;#39;/tmp/RtmpH4R5tV/downloaded_packages&amp;#39;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## &amp;#39;/usr/lib/R/bin/R&amp;#39; --vanilla CMD INSTALL  \
-##   &amp;#39;/tmp/RtmpH4R5tV/devtools33542b321a/cboettig-earlywarning-4a8c173&amp;#39;  \
+## (as &amp;#39;lib&amp;#39; is unspecified)
+## &amp;#39;/usr/lib/R/bin/R&amp;#39; --vanilla CMD INSTALL  \
+##   &amp;#39;/tmp/Rtmpk5AftJ/devtools38672a53d4/cboettig-earlywarning-4a8c173&amp;#39;  \
 ##   --library=&amp;#39;/usr/local/lib/R/site-library&amp;#39; --install-tests&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(earlywarning)
 &lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
@@ -75,7 +72,7 @@
 &lt;pre&gt;&lt;code&gt;## Error in modelDefClass$new: could not find function &amp;quot;loadMethod&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## Error in compileNimble(Rmodel): object &amp;#39;Rmodel&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;2e2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## Error in .Object$initialize: could not find function &amp;quot;loadMethod&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## Error in inherits(mcmcspec, &amp;quot;modelBaseClass&amp;quot;): object &amp;#39;mcmcspec&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
@@ -113,29 +110,6 @@
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;theta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(theta), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## Error in hist(samples[, &amp;quot;theta&amp;quot;], xlab = expression(theta), main = &amp;quot;&amp;quot;): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## R version 3.1.2 (2014-10-31)
-## Platform: x86_64-pc-linux-gnu (64-bit)
-## 
-## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
-##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-## 
-## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  base     
-## 
-## other attached packages:
-## [1] earlywarning_0.0-1 nimble_0.3         knitr_1.8         
-## 
-## loaded via a namespace (and not attached):
-##  [1] bitops_1.0-6    codetools_0.2-9 deSolve_1.11    devtools_1.6.1 
-##  [5] digest_0.6.8    evaluate_0.5.5  formatR_1.0     httr_0.6.1     
-##  [9] igraph_0.7.1    methods_3.1.2   plyr_1.8.1      psych_1.4.8.11 
-## [13] Rcpp_0.11.3     RCurl_1.95-4.5  reshape2_1.4.1  stringr_0.6.2  
-## [17] tools_3.1.2&lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  

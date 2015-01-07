@@ -120,7 +120,7 @@
 
 <article>
 <div class="excerpt">
-<p>some sample data:</p>
+<p>some sample data from earlywarning:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nimble)</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;nimble&#39;
@@ -134,12 +134,9 @@
 ## Installing dependencies for earlywarning:
 ## deSolve, psych
 ## Installing packages into &#39;/usr/local/lib/R/site-library&#39;
-## (as &#39;lib&#39; is unspecified)</code></pre>
-<pre><code>## 
-## The downloaded source packages are in
-##  &#39;/tmp/RtmpH4R5tV/downloaded_packages&#39;</code></pre>
-<pre><code>## &#39;/usr/lib/R/bin/R&#39; --vanilla CMD INSTALL  \
-##   &#39;/tmp/RtmpH4R5tV/devtools33542b321a/cboettig-earlywarning-4a8c173&#39;  \
+## (as &#39;lib&#39; is unspecified)
+## &#39;/usr/lib/R/bin/R&#39; --vanilla CMD INSTALL  \
+##   &#39;/tmp/Rtmpk5AftJ/devtools38672a53d4/cboettig-earlywarning-4a8c173&#39;  \
 ##   --library=&#39;/usr/local/lib/R/site-library&#39; --install-tests</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(earlywarning)
 <span class="kw">set.seed</span>(<span class="dv">123</span>)
@@ -178,7 +175,7 @@
 <pre><code>## Error in modelDefClass$new: could not find function &quot;loadMethod&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
 <pre><code>## Error in compileNimble(Rmodel): object &#39;Rmodel&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">1e2</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">2e2</span>)</code></pre>
 <pre><code>## Error in .Object$initialize: could not find function &quot;loadMethod&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)</code></pre>
 <pre><code>## Error in inherits(mcmcspec, &quot;modelBaseClass&quot;): object &#39;mcmcspec&#39; not found</code></pre>
@@ -216,29 +213,6 @@
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;theta&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(theta), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
 <pre><code>## Error in hist(samples[, &quot;theta&quot;], xlab = expression(theta), main = &quot;&quot;): object &#39;samples&#39; not found</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>## R version 3.1.2 (2014-10-31)
-## Platform: x86_64-pc-linux-gnu (64-bit)
-## 
-## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
-##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-## 
-## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  base     
-## 
-## other attached packages:
-## [1] earlywarning_0.0-1 nimble_0.3         knitr_1.8         
-## 
-## loaded via a namespace (and not attached):
-##  [1] bitops_1.0-6    codetools_0.2-9 deSolve_1.11    devtools_1.6.1 
-##  [5] digest_0.6.8    evaluate_0.5.5  formatR_1.0     httr_0.6.1     
-##  [9] igraph_0.7.1    methods_3.1.2   plyr_1.8.1      psych_1.4.8.11 
-## [13] Rcpp_0.11.3     RCurl_1.95-4.5  reshape2_1.4.1  stringr_0.6.2  
-## [17] tools_3.1.2</code></pre>
  
 <!-- not that raw_content depends on custom generator, 
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
