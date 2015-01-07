@@ -9,11 +9,11 @@ code: true
 
 ```{r settings, include=FALSE}
 library(knitr)
-opts_chunk$set(dev='png', fig.width=3, fig.height=3, cache=2)
+opts_chunk$set(dev='png', fig.width=3, fig.height=3, cache=2,results='hide')
 ```
 
 
-some sample data:
+some sample data from earlywarning:
 
 ```{r}
 library(nimble)
@@ -74,7 +74,7 @@ Cmodel <- compileNimble(Rmodel)
 
 
 ```{r, echo=TRUE, results = 'hide', message = FALSE}
-mcmcspec <- configureMCMC(Rmodel, print=TRUE,thin=1e2)
+mcmcspec <- configureMCMC(Rmodel, print=TRUE,thin=2e2)
 Rmcmc <- buildMCMC(mcmcspec)
 Cmcmc <- compileNimble(Rmcmc, project = Cmodel)
 ```
