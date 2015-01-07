@@ -13,20 +13,14 @@ local({
 	library(yaml)
   config <- yaml::yaml.load_file('_config.yml')
 	baseurl <- config$baseurl 
-	if(is.character(baseurl) && length(baseurl) > 1){
-		baseurl <- strsplit(baseurl, ':\\s*')[[1]][2]
-		if(length(grep('*.github.io', baseurl)) == 1) { 
+	if(length(grep('*.github.io', baseurl)) == 1) { 
 			baseurl <- "/"
-		} 
-	} else {
-		baseurl <- "/"
 	}
-	repo <- sub("/", "", baseurl)
 	## Default to png since svgs with lots of points can be huge and also choke pandoc
 	## Cache in an underscored dir since we never want to commit cache
 	## figures in a usable path, though excluded in _config.yml since we embed as data_uris
   knitr::opts_chunk$set(
-    fig.path   = sprintf('%s/assets/figures/%s/', repo, d),
+    fig.path   = sprintf('assets/figures/%s/', d),
     cache.path = sprintf('_cache/%s/', d),
 		comment = NA,
 	  message = FALSE,
