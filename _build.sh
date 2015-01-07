@@ -7,6 +7,6 @@ if [ "$DRONE_BRANCH" ]
   then 
     if [ "$DRONE_BRANCH" = "master" ]
       then 
-				Rscript -e 'servr::jekyll(serve=FALSE)'
+				Rscript -e 'servr::jekyll(serve=FALSE, script="_build.R")'
     fi
 fi
