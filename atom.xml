@@ -4,7 +4,7 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-01-07T00:37:22+00:00</updated>
+ <updated>2015-01-07T06:42:08+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
@@ -18,29 +18,14 @@
    <updated>2015-01-04T00:00:00+00:00</updated>
    <id>/01/04/lsn-model-comparisons</id>
    <content type="html">&lt;p&gt;some sample data from earlywarning:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## 
-## Attaching package: &amp;#39;nimble&amp;#39;
-## 
-## The following object is masked from &amp;#39;package:stats&amp;#39;:
-## 
-##     simulate&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;cboettig/earlywarning&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Downloading github repo cboettig/earlywarning@master
-## Installing earlywarning
-## Installing dependencies for earlywarning:
-## deSolve, psych
-## Installing packages into &amp;#39;/usr/local/lib/R/site-library&amp;#39;
-## (as &amp;#39;lib&amp;#39; is unspecified)
-## &amp;#39;/usr/lib/R/bin/R&amp;#39; --vanilla CMD INSTALL  \
-##   &amp;#39;/tmp/Rtmpk5AftJ/devtools38672a53d4/cboettig-earlywarning-4a8c173&amp;#39;  \
-##   --library=&amp;#39;/usr/local/lib/R/site-library&amp;#39; --install-tests&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(earlywarning)
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
+devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;cboettig/earlywarning&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(earlywarning)
 &lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
 &lt;span class=&quot;kw&quot;&gt;data&lt;/span&gt;(ibms)
 &lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(ibm_critical)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/figure/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-1-1.png&quot; alt=&quot;plot of chunk unnamed-chunk-1&quot; /&gt;&lt;figcaption&gt;plot of chunk unnamed-chunk-1&lt;/figcaption&gt;
+&lt;img src=&quot;///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-1-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(ibm_critical)
 &lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(data) &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;quot;x&amp;quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
@@ -68,47 +53,29 @@
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; lsn, 
                       &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, 
                       &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, 
-                      &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in modelDefClass$new: could not find function &amp;quot;loadMethod&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in compileNimble(Rmodel): object &amp;#39;Rmodel&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;2e2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in .Object$initialize: could not find function &amp;quot;loadMethod&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in inherits(mcmcspec, &amp;quot;modelBaseClass&amp;quot;): object &amp;#39;mcmcspec&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in compileNimble(Rmcmc, project = Cmodel): object &amp;#39;Rmcmc&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+                      &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)
+Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;2e2&lt;/span&gt;)
+Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
+Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e6&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in eval(expr, envir, enclos): object &amp;#39;Cmcmc&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and examine results&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in as.matrix(Cmcmc$mvSamples): object &amp;#39;Cmcmc&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in eval(expr, envir, enclos): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in eval(expr, envir, enclos): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$theta)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in mean(samples$theta): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$m)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in mean(samples$m): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$sigma_x)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in mean(samples$sigma_x): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in plot(samples[, &amp;quot;m&amp;quot;], type = &amp;quot;l&amp;quot;, xlab = &amp;quot;iteration&amp;quot;, ylab = &amp;quot;m&amp;quot;, : object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_x&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[x]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in plot(samples[, &amp;quot;sigma_x&amp;quot;], type = &amp;quot;l&amp;quot;, xlab = &amp;quot;iteration&amp;quot;, ylab = expression(sigma[x]), : object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_y&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[y]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in plot(samples[, &amp;quot;sigma_y&amp;quot;], type = &amp;quot;l&amp;quot;, xlab = &amp;quot;iteration&amp;quot;, ylab = expression(sigma[y]), : object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;theta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(theta), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in plot(samples[, &amp;quot;theta&amp;quot;], type = &amp;quot;l&amp;quot;, xlab = &amp;quot;iteration&amp;quot;, ylab = expression(theta), : object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in hist(samples[, &amp;quot;m&amp;quot;], xlab = &amp;quot;m&amp;quot;, main = &amp;quot;&amp;quot;): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_x&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[x]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in hist(samples[, &amp;quot;sigma_x&amp;quot;], xlab = expression(sigma[x]), main = &amp;quot;&amp;quot;): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_y&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[y]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in hist(samples[, &amp;quot;sigma_y&amp;quot;], xlab = expression(sigma[y]), main = &amp;quot;&amp;quot;): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;theta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(theta), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Error in hist(samples[, &amp;quot;theta&amp;quot;], xlab = expression(theta), main = &amp;quot;&amp;quot;): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
+&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)
+samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$theta)
+&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$m)
+&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$sigma_x)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_x&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[x]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_y&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[y]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;theta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(theta), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&quot;///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-1.png&quot; /&gt; &lt;img src=&quot;///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-2.png&quot; /&gt; &lt;img src=&quot;///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-3.png&quot; /&gt; &lt;img src=&quot;///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-4.png&quot; /&gt;&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_x&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[x]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_y&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[y]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;theta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(theta), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&quot;///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-1.png&quot; /&gt; &lt;img src=&quot;///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-2.png&quot; /&gt; &lt;img src=&quot;///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-3.png&quot; /&gt; &lt;img src=&quot;///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-4.png&quot; /&gt;&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>

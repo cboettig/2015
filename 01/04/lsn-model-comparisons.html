@@ -108,29 +108,14 @@
   <div class="col-md-7 col-md-offset-1">
     <article>
     <p>some sample data from earlywarning:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nimble)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;nimble&#39;
-## 
-## The following object is masked from &#39;package:stats&#39;:
-## 
-##     simulate</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;cboettig/earlywarning&quot;</span>)</code></pre>
-<pre><code>## Downloading github repo cboettig/earlywarning@master
-## Installing earlywarning
-## Installing dependencies for earlywarning:
-## deSolve, psych
-## Installing packages into &#39;/usr/local/lib/R/site-library&#39;
-## (as &#39;lib&#39; is unspecified)
-## &#39;/usr/lib/R/bin/R&#39; --vanilla CMD INSTALL  \
-##   &#39;/tmp/Rtmpk5AftJ/devtools38672a53d4/cboettig-earlywarning-4a8c173&#39;  \
-##   --library=&#39;/usr/local/lib/R/site-library&#39; --install-tests</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(earlywarning)
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nimble)
+devtools::<span class="kw">install_github</span>(<span class="st">&quot;cboettig/earlywarning&quot;</span>)
+<span class="kw">library</span>(earlywarning)
 <span class="kw">set.seed</span>(<span class="dv">123</span>)
 <span class="kw">data</span>(ibms)
 <span class="kw">plot</span>(ibm_critical)</code></pre>
 <figure>
-<img src="/figure/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-1-1.png" alt="plot of chunk unnamed-chunk-1" /><figcaption>plot of chunk unnamed-chunk-1</figcaption>
+<img src="///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-1-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
 <span class="kw">names</span>(data) &lt;-<span class="st"> &quot;x&quot;</span></code></pre>
@@ -158,47 +143,29 @@
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> lsn, 
                       <span class="dt">constants =</span> constants, 
                       <span class="dt">data =</span> data, 
-                      <span class="dt">inits =</span> inits)</code></pre>
-<pre><code>## Error in modelDefClass$new: could not find function &quot;loadMethod&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
-<pre><code>## Error in compileNimble(Rmodel): object &#39;Rmodel&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">2e2</span>)</code></pre>
-<pre><code>## Error in .Object$initialize: could not find function &quot;loadMethod&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)</code></pre>
-<pre><code>## Error in inherits(mcmcspec, &quot;modelBaseClass&quot;): object &#39;mcmcspec&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
-<pre><code>## Error in compileNimble(Rmcmc, project = Cmodel): object &#39;Rmcmc&#39; not found</code></pre>
+                      <span class="dt">inits =</span> inits)
+Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">2e2</span>)
+Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
+Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
-<pre><code>## Error in eval(expr, envir, enclos): object &#39;Cmcmc&#39; not found</code></pre>
 <p>and examine results</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))</code></pre>
-<pre><code>## Error in as.matrix(Cmcmc$mvSamples): object &#39;Cmcmc&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(samples)</code></pre>
-<pre><code>## Error in eval(expr, envir, enclos): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]</code></pre>
-<pre><code>## Error in eval(expr, envir, enclos): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(samples$theta)</code></pre>
-<pre><code>## Error in mean(samples$theta): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(samples$m)</code></pre>
-<pre><code>## Error in mean(samples$m): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(samples$sigma_x)</code></pre>
-<pre><code>## Error in mean(samples$sigma_x): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;m&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="st">&#39;m&#39;</span>, <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<pre><code>## Error in plot(samples[, &quot;m&quot;], type = &quot;l&quot;, xlab = &quot;iteration&quot;, ylab = &quot;m&quot;, : object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;sigma_x&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(sigma[x]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<pre><code>## Error in plot(samples[, &quot;sigma_x&quot;], type = &quot;l&quot;, xlab = &quot;iteration&quot;, ylab = expression(sigma[x]), : object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;sigma_y&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(sigma[y]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<pre><code>## Error in plot(samples[, &quot;sigma_y&quot;], type = &quot;l&quot;, xlab = &quot;iteration&quot;, ylab = expression(sigma[y]), : object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;theta&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(theta), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<pre><code>## Error in plot(samples[, &quot;theta&quot;], type = &quot;l&quot;, xlab = &quot;iteration&quot;, ylab = expression(theta), : object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;m&#39;</span>], <span class="dt">xlab =</span> <span class="st">&#39;m&#39;</span>, <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<pre><code>## Error in hist(samples[, &quot;m&quot;], xlab = &quot;m&quot;, main = &quot;&quot;): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;sigma_x&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(sigma[x]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<pre><code>## Error in hist(samples[, &quot;sigma_x&quot;], xlab = expression(sigma[x]), main = &quot;&quot;): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;sigma_y&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(sigma[y]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<pre><code>## Error in hist(samples[, &quot;sigma_y&quot;], xlab = expression(sigma[y]), main = &quot;&quot;): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;theta&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(theta), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<pre><code>## Error in hist(samples[, &quot;theta&quot;], xlab = expression(theta), main = &quot;&quot;): object &#39;samples&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
+<span class="kw">dim</span>(samples)
+samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(samples$theta)
+<span class="kw">mean</span>(samples$m)
+<span class="kw">mean</span>(samples$sigma_x)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;m&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="st">&#39;m&#39;</span>, <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
+<span class="kw">plot</span>(samples[ , <span class="st">&#39;sigma_x&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(sigma[x]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
+<span class="kw">plot</span>(samples[ , <span class="st">&#39;sigma_y&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(sigma[y]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
+<span class="kw">plot</span>(samples[ , <span class="st">&#39;theta&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(theta), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
+<p><img src="///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-1.png" /> <img src="///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-2.png" /> <img src="///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-3.png" /> <img src="///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-4.png" /></p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;m&#39;</span>], <span class="dt">xlab =</span> <span class="st">&#39;m&#39;</span>, <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
+<span class="kw">hist</span>(samples[, <span class="st">&#39;sigma_x&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(sigma[x]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
+<span class="kw">hist</span>(samples[, <span class="st">&#39;sigma_y&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(sigma[y]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
+<span class="kw">hist</span>(samples[, <span class="st">&#39;theta&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(theta), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
+<p><img src="///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-1.png" /> <img src="///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-2.png" /> <img src="///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-3.png" /> <img src="///2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-4.png" /></p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
 
     </article>
