@@ -8,4 +8,4 @@ deploy:
       - ./_deploy.sh
      
 cache:
-  - /tmp/drone-cache
+  - _cache/
