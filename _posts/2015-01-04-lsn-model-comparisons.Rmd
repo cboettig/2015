@@ -17,7 +17,6 @@ some sample data from earlywarning:
 
 ```{r}
 library(nimble)
-devtools::install_github("cboettig/earlywarning")
 library(earlywarning)
 set.seed(123)
 data(ibms)
