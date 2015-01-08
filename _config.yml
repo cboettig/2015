@@ -42,3 +42,5 @@ exclude:
   - _deploy.sh
   - _build.sh
   - .drone.yml
+  - tmp/
+  - tmp/cache
