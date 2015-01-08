@@ -21,7 +21,7 @@ local({
 	## figures in a usable path, though excluded in _config.yml since we embed as data_uris
   knitr::opts_chunk$set(
     fig.path   = sprintf('assets/figures/%s/', d),
-    cache.path = sprintf('_cache/%s/', d),
+    cache.path = sprintf('tmp/cache/%s/', d),
 		comment = NA,
 	  message = FALSE,
     warning = FALSE,
