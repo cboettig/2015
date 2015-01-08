@@ -7,6 +7,8 @@ if [ "$DRONE_BRANCH" ]
   then 
     if [ "$DRONE_BRANCH" = "master" ]
       then
+	mkdir -p /tmp/cache
+	sudo chown -R rstudio:rstudio /tmp/cache
         rsync -a --delete /tmp/cache/ _cache/  
 	Rscript -e 'servr::jekyll(serve=FALSE, script="_build.R")'
         rsync -a --delete _cache/ /tmp/cache/  
