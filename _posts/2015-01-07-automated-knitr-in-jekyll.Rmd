@@ -7,8 +7,17 @@ published: false
 
 Yihui Xie, author & maintainer of `knitr`, has a nice little package out called [servr](http://github.com/yihui/servr) for serving websites from R.  It includes a handy `jekyll` function which streamlines the process of first running `knitr` on any `.Rmd` posts before running jekyll.  
 
-### Configuring `knitr` with the `_build.sh` script ###
+### Configuring `knitr` with the `_build.R` script ###
 
+- Caching:
+- Figures:  I'm still not completely decided how to handle figures.  Embed into the html with data uris or link external files?  
+
+## A docker image for the labnotebook ## 
+
+
+The labnotebook images could be versioned with tags matching the year, such that `cboettig/labnotebook:2015` corresponded to a Dockerfile with software environment specific to building the repository. 
+
+Running jekyll or servr from within docker requires changing the default host from `127.0.0.1` to `0.0.0.0`.
 
 ## Automated deploy with Drone
 
