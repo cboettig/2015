@@ -7,9 +7,9 @@ if [ "$DRONE_BRANCH" ]
   then 
     if [ "$DRONE_BRANCH" = "master" ]
       then
-        rsync -a --delete ../cache/ _cache/  
+        rsync -a --delete /tmp/cache/ _cache/  
 	Rscript -e 'servr::jekyll(serve=FALSE, script="_build.R")'
-        rsync -a --delete _cache/ ../cache/  
+        rsync -a --delete _cache/ /tmp/cache/  
 
     fi
 fi
