@@ -1,7 +1,11 @@
 image: cboettig/labnotebook
 
 script:
-    - ./_build.sh
+  - sudo mkdir -p /tmp/cache
+  - sudo chown -R rstudio:rstudio /tmp/cache
+  - rsync -a --delete /tmp/cache/ _cache/
+  - Rscript -e 'servr::jekyll(serve=FALSE, script="_build.R")'
+  - rsync -a --delete _cache/ /tmp/cache/
 deploy:
   bash:
     script:
