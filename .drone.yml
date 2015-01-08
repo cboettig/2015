@@ -5,7 +5,7 @@ script:
   - sudo mkdir -p /tmp/cache
   - sudo chown -R rstudio:rstudio /tmp/cache
   - rsync -a --delete /tmp/cache/ _cache/
-  - rsync -a --delete /tmp/figures/ /assets/figures/posts/
+  - rsync -a --delete /tmp/figures/ assets/figures/posts/
 ## Build site with knitr and jekyll
   - Rscript -e 'servr::jekyll(serve=FALSE, script="_build.R")'
 ## update cache
