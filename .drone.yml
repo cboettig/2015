@@ -1,11 +1,18 @@
 image: cboettig/labnotebook
 
 script:
+## Configure and import cached files
   - sudo mkdir -p /tmp/cache
   - sudo chown -R rstudio:rstudio /tmp/cache
   - rsync -a --delete /tmp/cache/ _cache/
+  - rsync -a --delete /tmp/figures/ /assets/figures/posts/
+## Build site with knitr and jekyll
   - Rscript -e 'servr::jekyll(serve=FALSE, script="_build.R")'
+## update cache
   - rsync -a --delete _cache/ /tmp/cache/
+  - rsync -a --delete assets/figures/posts/ /tmp/figures/
+
+## if successful, deploy to Github pages branch
 deploy:
   bash:
     script:
@@ -13,3 +20,4 @@ deploy:
      
 cache:
   - /tmp/cache
+  - /tmp/figures
