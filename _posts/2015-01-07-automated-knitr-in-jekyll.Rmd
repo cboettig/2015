@@ -2,3 +2,33 @@
 layout: post
 published: false
 ---
+
+## Combining knitr & jeykll using `servr`
+
+Yihui Xie, author & maintainer of `knitr`, has a nice little package out called [servr](http://github.com/yihui/servr) for serving websites from R.  It includes a handy `jekyll` function which streamlines the process of first running `knitr` on any `.Rmd` posts before running jekyll.  
+
+### Configuring `knitr` with the `_build.sh` script ###
+
+
+## Automated deploy with Drone
+
+A nice feature of jekyll has always been the ability for Github to build the pages automatically whenever changes to the source files are pushed to the repository.  Since Github's jekyll doesn't support plugins such as the one needed to use pandoc as a markdown parser, I have long worked around this using travis CI to run jekyll with pandoc installed.  Unfortunately, adding knitr to the mix is too much for travis:
+
+
+- The R commands of any or all posts may exceed the 50 minute max build time 
+
+A few managable difficulties also arise for travis:
+
+- we would need to install the complete R environment, pandoc, and the complete jekyll+ruby gems environment necessary to build the site (also within the 50 minute time, unless these could be cached externally too).
+- we couldn't easily store the knitr cache (would have to push and pull this from some remote)
+- we have to encrypt the credentials to push to Github, use the twitter API, etc (on a per-repository basis).
+
+The simplest alternative is simply to build the site locally.  While this is always a viable option and often preferable (one will usually want to run the script interactively before committing anyway), it precludes the ability to make changes from the online interface or a tablet where the resources to run the code are not immediately available.  Having automated build is much nicer.
+
+Running a Drone instance on a personal server is much more appealing. I already have a small DigitalOcean instance at the moment which runs a variety of services, including Drone.  
+
+- Drone on a personal server permits the use custom docker images. Hence I can provide an image with all or most of the software I need already installed; see the Dockerfile for [cboettig/labnotebook](http://hub.docker.com/u/cboettig/labnotebook)
+- Logging into the Drone instance securely using my Github credentials, I can add private environmental variables for credentials and keys without the need to go through the encryption dance
+- Running on my own server, Drone keeps a library of docker images (no need to pull each time) and can be configured to cache selected files such that the knitr cache and generated figures are available to future builds.  This dramatically decreases the knit build time for subsequent posts.  
+
+See my [.drone.yml](http://github.com/cboettig/2015/tree/master/.drone.yml) for an overview of my configuration.  Most of the script is concerned with setting up the caching appropriately, which isn't yet as streamlined as it might be (see [drone/147](http://github.com/drone/drone/issues/147)).  The deploy script must also do a bit of a dance to build the site on the `master` branch but push the contents of `_site` to the `gh-pages` branch.  Perhaps these can be improved upon.  
