@@ -1,43 +1,178 @@
 ---
 layout: post
-published: false
+category: open-science
+
 ---
+
 
 ## Combining knitr & jeykll using `servr`
 
-Yihui Xie, author & maintainer of `knitr`, has a nice little package out called [servr](http://github.com/yihui/servr) for serving websites from R.  It includes a handy `jekyll` function which streamlines the process of first running `knitr` on any `.Rmd` posts before running jekyll.  
-
-### Configuring `knitr` with the `_build.R` script ###
-
-- Caching:
-- Figures:  I'm still not completely decided how to handle figures.  Embed into the html with data uris or link external files?  
-
-## A docker image for the labnotebook ## 
-
-
-The labnotebook images could be versioned with tags matching the year, such that `cboettig/labnotebook:2015` corresponded to a Dockerfile with software environment specific to building the repository. 
-
-Running jekyll or servr from within docker requires changing the default host from `127.0.0.1` to `0.0.0.0`.
-
-## Automated deploy with Drone
-
-A nice feature of jekyll has always been the ability for Github to build the pages automatically whenever changes to the source files are pushed to the repository.  Since Github's jekyll doesn't support plugins such as the one needed to use pandoc as a markdown parser, I have long worked around this using travis CI to run jekyll with pandoc installed.  Unfortunately, adding knitr to the mix is too much for travis:
+Yihui Xie, author & maintainer of `knitr`, has a nice little
+package out called [servr](http://github.com/yihui/servr) for
+serving websites from R.  It includes a handy `jekyll` function
+which streamlines the process of first running `knitr` on any
+`.Rmd` posts before running Jekyll. Having broken my [notebook into
+volumes](http://www.carlboettiger.info/2015/01/01/notebook-maintenance-and-scaling.html),
+my setup is now ready to take advantage of this approach.
 
 
-- The R commands of any or all posts may exceed the 50 minute max build time 
+### Configuring `knitr` with the `build.R` script ###
 
-A few managable difficulties also arise for travis:
+The R build process can be tuned using a custom
+`build.R` script.  In particular, it can be useful to
+set up some default knitr package and chunk options such
+as how to handle caching, figures, and messages. See [my build.R
+script](https://github.com/cboettig/2015/blob/4ce767965a0015ca2890023aa6adfb1109b6f94c/_build.R)
+at the time of writing.
 
-- we would need to install the complete R environment, pandoc, and the complete jekyll+ruby gems environment necessary to build the site (also within the 50 minute time, unless these could be cached externally too).
-- we couldn't easily store the knitr cache (would have to push and pull this from some remote)
-- we have to encrypt the credentials to push to Github, use the twitter API, etc (on a per-repository basis).
+- Caching: By turning caching on I avoid having to make the server re-run
+all the unchanged R code from scratch each time.  I simply point the
+cache to a directory, `_cache` in the repository root that is ignored
+both by git and jekyll.
 
-The simplest alternative is simply to build the site locally.  While this is always a viable option and often preferable (one will usually want to run the script interactively before committing anyway), it precludes the ability to make changes from the online interface or a tablet where the resources to run the code are not immediately available.  Having automated build is much nicer.
+- Figures:  I'm still not completely decided how to best to handle
+figures.  Two questions in particular.
 
-Running a Drone instance on a personal server is much more appealing. I already have a small DigitalOcean instance at the moment which runs a variety of services, including Drone.  
+I'm undecided if it is better to embed them in the html (as data uris
+or embedded svg) or link as external files? Embedding avoids the risk of
+broken paths to the images, and means we can view the history of the file
+by rendering the committed html with sites like `http://rawgit.com/`.
+Perhaps for the reasons it seems to be the default setting in RStudio's
+`rmarkdown::render`. On the other hand it makes it harder to diff the
+images themselves when they aren't committed as stand-alone files.
+Note that never need to commit the figures to the source branch, or
+commit the intermediate `.md` file produced by `knitr`, thus embedding
+data URI's isn't so cumbersome (i.e. doesn't create cumbersome markdown,
+though it makes the HTML even less readable).  I've currently configured
+this to handle both cases, though some care must be taken in setting
+the paths correctly (e.g. `baseurl`) if images are only linked.
 
-- Drone on a personal server permits the use custom docker images. Hence I can provide an image with all or most of the software I need already installed; see the Dockerfile for [cboettig/labnotebook](http://hub.docker.com/u/cboettig/labnotebook)
-- Logging into the Drone instance securely using my Github credentials, I can add private environmental variables for credentials and keys without the need to go through the encryption dance
-- Running on my own server, Drone keeps a library of docker images (no need to pull each time) and can be configured to cache selected files such that the knitr cache and generated figures are available to future builds.  This dramatically decreases the knit build time for subsequent posts.  
+My other question is whether to rely on png or svg images. svg images
+tend to look better and can result in very small file sizes for certain
+plots, but can also get much too large on others.  svg files are text
+based and so play nicely with git, whether they are embedded in the
+HTML or linked externally.  Meanwhile, pngs can be diff'd by Github now,
+and provide more reliable file sizes even on plots with tons of points,
+so I am using them as the default setting.
 
-See my [.drone.yml](http://github.com/cboettig/2015/tree/master/.drone.yml) for an overview of my configuration.  Most of the script is concerned with setting up the caching appropriately, which isn't yet as streamlined as it might be (see [drone/147](http://github.com/drone/drone/issues/147)).  The deploy script must also do a bit of a dance to build the site on the `master` branch but push the contents of `_site` to the `gh-pages` branch.  Perhaps these can be improved upon.  
+## Automated deploy with Drone ##
+
+A nice feature of jekyll has always been the ability for Github to
+build the pages automatically whenever changes to the source files are
+pushed to the repository.  Since Github's jekyll doesn't support plugins
+such as the one needed to use pandoc as a markdown parser, I have long
+worked around this using travis CI to run jekyll with pandoc installed.
+Unfortunately, adding knitr to the mix is too much for travis:
+
+
+- The R commands of any or all posts may exceed the 50 minute max
+build time
+
+A few other difficulties also arise for travis:
+
+- we would need to install the complete R environment, pandoc, and the
+complete jekyll+ruby gems environment necessary to build the site (also
+within the 50 minute time, unless these could be cached externally too).
+
+- we couldn't easily store the knitr cache (would have to push and pull
+this from some remote)
+
+- we have to encrypt the credentials to push to Github, use the twitter
+API, etc (on a per-repository basis).
+
+The simplest alternative is simply to build the site locally.  While this
+is always a viable option and often preferable (one will usually want to
+run the script interactively before committing anyway), it precludes
+the ability to make changes from the online interface or a tablet
+where the resources to run the code are not immediately available.
+Having automated build is much nicer.
+
+Running a Drone instance on a personal server is much more appealing. I
+already have a small DigitalOcean instance at the moment which runs a
+variety of services, including Drone. Advantages include:
+
+- Having drone on a personal server means I can use _custom docker
+images_. In thiw way, I can provide an image with all or most of
+the software I need already installed. Here's the [Dockerfile for
+cboettig/labnotebook](http://hub.docker.com/u/cboettig/labnotebook).
+
+- Logging into the Drone instance (secured with a Github application
+handshake), I can add private environmental variables for credentials
+and keys without the need to go through the encryption dance on travis.
+
+- Running on my own server, Drone keeps a library of docker images (no
+need to pull each time).  Because this image is not automatically pulled
+a-fresh on each commit, the build is faster and I have more control
+over when the software environment is updated (which always carries the
+potential of breaking things).
+
+- For the R scripts, the build time can be further speed up by configuring
+to cache selected files such that the knitr cache and generated figures
+are available to future builds.
+
+### Caching knitr files ###
+
+
+See my
+[.drone.yml](http://github.com/cboettig/2015/tree/master/.drone.yml) for
+an overview of my configuration.  Most of the script is concerned with
+setting up the caching appropriately, which isn't yet as streamlined as
+it might be (see [drone/147](http://github.com/drone/drone/issues/147)).
+The deploy script must also do a bit of a dance to build the site on the
+`master` branch but push the contents of `_site` to the `gh-pages` branch.
+Perhaps these can be improved upon.
+
+
+## A docker image for the labnotebook ##
+
+Having a docker image with all the software needed to build the
+notebook also goes a long way to making the notebook more portable.
+The labnotebook docker images could further be versioned with tags
+matching the year, such that `cboettig/labnotebook:2015` corresponded
+to a Dockerfile with software environment specific to building the
+repository. Because such an image contains most of the software I use
+regularly, it also provides something of a swiss-army knife for common
+tasks (on any machine where docker is available):
+
+
+
+An R shell:
+
+```
+docker run --rm -i -v $(pwd):/data R 
+```
+
+Pandoc: 
+
+```
+docker run --rm -i -v $(pwd):/data pandoc
+```
+
+jekyll server: (Note that running jekyll or servr from within docker
+requires changing the default host from `127.0.0.1` to `0.0.0.0`)
+
+```
+docker run -d -p 4000:4000 -v $(pwd):/data jekyll serve -H 0.0.0.0
+```
+
+
+bash: 
+
+```
+docker run --rm -i -v $(pwd):/data bash 
+```
+
+latex: 
+
+```
+docker run --rm -i -v $(pwd):/data pdflatex file.tex 
+```
+
+
+RStudio server (note the `-u 0` to launch server as root): 
+
+```
+docker run -d -p 8787:8787 -u 0 -v $(pwd):/data supervisord
+```
+
+
