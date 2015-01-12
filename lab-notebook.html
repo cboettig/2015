@@ -114,6 +114,114 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/01/07/automated-knitr-in-jekyll.html">Automated Knitr In Jekyll</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 07 Jan 2015</p>
+
+<article>
+<div class="excerpt">
+<h2 id="combining-knitr-jeykll-using-servr">Combining knitr &amp; jeykll using <code>servr</code></h2>
+<p>Yihui Xie, author &amp; maintainer of <code>knitr</code>, has a nice little package out called <a href="http://github.com/yihui/servr">servr</a> for serving websites from R. It includes a handy <code>jekyll</code> function which streamlines the process of first running <code>knitr</code> on any <code>.Rmd</code> posts before running Jekyll. Having broken my <a href="http://www.carlboettiger.info/2015/01/01/notebook-maintenance-and-scaling.html">notebook into volumes</a>, my setup is now ready to take advantage of this approach.</p>
+<h3 id="configuring-knitr-with-the-build.r-script">Configuring <code>knitr</code> with the <code>build.R</code> script</h3>
+<p>The R build process can be tuned using a custom <code>build.R</code> script. In particular, it can be useful to set up some default knitr package and chunk options such as how to handle caching, figures, and messages. See <a href="https://github.com/cboettig/2015/blob/4ce767965a0015ca2890023aa6adfb1109b6f94c/_build.R">my build.R script</a> at the time of writing.</p>
+<ul>
+<li><p>Caching: By turning caching on I avoid having to make the server re-run all the unchanged R code from scratch each time. I simply point the cache to a directory, <code>_cache</code> in the repository root that is ignored both by git and jekyll.</p></li>
+<li><p>Figures: I’m still not completely decided how to best to handle figures. Two questions in particular.</p></li>
+</ul>
+<p>I’m undecided if it is better to embed them in the html (as data uris or embedded svg) or link as external files? Embedding avoids the risk of broken paths to the images, and means we can view the history of the file by rendering the committed html with sites like <code>http://rawgit.com/</code>. Perhaps for the reasons it seems to be the default setting in RStudio’s <code>rmarkdown::render</code>. On the other hand it makes it harder to diff the images themselves when they aren’t committed as stand-alone files. Note that never need to commit the figures to the source branch, or commit the intermediate <code>.md</code> file produced by <code>knitr</code>, thus embedding data URI’s isn’t so cumbersome (i.e. doesn’t create cumbersome markdown, though it makes the HTML even less readable). I’ve currently configured this to handle both cases, though some care must be taken in setting the paths correctly (e.g. <code>baseurl</code>) if images are only linked.</p>
+<p>My other question is whether to rely on png or svg images. svg images tend to look better and can result in very small file sizes for certain plots, but can also get much too large on others. svg files are text based and so play nicely with git, whether they are embedded in the HTML or linked externally. Meanwhile, pngs can be diff’d by Github now, and provide more reliable file sizes even on plots with tons of points, so I am using them as the default setting.</p>
+<h2 id="automated-deploy-with-drone">Automated deploy with Drone</h2>
+<p>A nice feature of jekyll has always been the ability for Github to build the pages automatically whenever changes to the source files are pushed to the repository. Since Github’s jekyll doesn’t support plugins such as the one needed to use pandoc as a markdown parser, I have long worked around this using travis CI to run jekyll with pandoc installed. Unfortunately, adding knitr to the mix is too much for travis:</p>
+<ul>
+<li>The R commands of any or all posts may exceed the 50 minute max build time</li>
+</ul>
+<p>A few other difficulties also arise for travis:</p>
+<ul>
+<li><p>we would need to install the complete R environment, pandoc, and the complete jekyll+ruby gems environment necessary to build the site (also within the 50 minute time, unless these could be cached externally too).</p></li>
+<li><p>we couldn’t easily store the knitr cache (would have to push and pull this from some remote)</p></li>
+<li><p>we have to encrypt the credentials to push to Github, use the twitter API, etc (on a per-repository basis).</p></li>
+</ul>
+<p>The simplest alternative is simply to build the site locally. While this is always a viable option and often preferable (one will usually want to run the script interactively before committing anyway), it precludes the ability to make changes from the online interface or a tablet where the resources to run the code are not immediately available. Having automated build is much nicer.</p>
+<p>Running a Drone instance on a personal server is much more appealing. I already have a small DigitalOcean instance at the moment which runs a variety of services, including Drone. Advantages include:</p>
+<ul>
+<li><p>Having drone on a personal server means I can use <em>custom docker images</em>. In thiw way, I can provide an image with all or most of the software I need already installed. Here’s the <a href="http://hub.docker.com/u/cboettig/labnotebook">Dockerfile for cboettig/labnotebook</a>.</p></li>
+<li><p>Logging into the Drone instance (secured with a Github application handshake), I can add private environmental variables for credentials and keys without the need to go through the encryption dance on travis.</p></li>
+<li><p>Running on my own server, Drone keeps a library of docker images (no need to pull each time). Because this image is not automatically pulled a-fresh on each commit, the build is faster and I have more control over when the software environment is updated (which always carries the potential of breaking things).</p></li>
+<li><p>For the R scripts, the build time can be further speed up by configuring to cache selected files such that the knitr cache and generated figures are available to future builds.</p></li>
+</ul>
+<h3 id="caching-knitr-files">Caching knitr files</h3>
+<p>See my <a href="http://github.com/cboettig/2015/tree/master/.drone.yml">.drone.yml</a> for an overview of my configuration. Most of the script is concerned with setting up the caching appropriately, which isn’t yet as streamlined as it might be (see <a href="http://github.com/drone/drone/issues/147">drone/147</a>). The deploy script must also do a bit of a dance to build the site on the <code>master</code> branch but push the contents of <code>_site</code> to the <code>gh-pages</code> branch. Perhaps these can be improved upon.</p>
+<h2 id="a-docker-image-for-the-labnotebook">A docker image for the labnotebook</h2>
+<p>Having a docker image with all the software needed to build the notebook also goes a long way to making the notebook more portable. The labnotebook docker images could further be versioned with tags matching the year, such that <code>cboettig/labnotebook:2015</code> corresponded to a Dockerfile with software environment specific to building the repository. Because such an image contains most of the software I use regularly, it also provides something of a swiss-army knife for common tasks (on any machine where docker is available):</p>
+<p>An R shell:</p>
+<pre><code>docker run --rm -i -v $(pwd):/data R </code></pre>
+<p>Pandoc:</p>
+<pre><code>docker run --rm -i -v $(pwd):/data pandoc</code></pre>
+<p>jekyll server: (Note that running jekyll or servr from within docker requires changing the default host from <code>127.0.0.1</code> to <code>0.0.0.0</code>)</p>
+<pre><code>docker run -d -p 4000:4000 -v $(pwd):/data jekyll serve -H 0.0.0.0</code></pre>
+<p>bash:</p>
+<pre><code>docker run --rm -i -v $(pwd):/data bash </code></pre>
+<p>latex:</p>
+<pre><code>docker run --rm -i -v $(pwd):/data pdflatex file.tex </code></pre>
+<p>RStudio server (note the <code>-u 0</code> to launch server as root):</p>
+<pre><code>docker run -d -p 8787:8787 -u 0 -v $(pwd):/data supervisord</code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/01/07/automated-knitr-in-jekyll.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
+          <header><h4><a href="/2015/01/05/notes.html">Notes</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 05 Jan 2015</p>
+
+<article>
+<div class="excerpt">
+<h2 id="more-user-craziness-with-docker">more user craziness with docker</h2>
+<p>Should do something about rstudio script when running as a non-root user…. Fixed! Requires changing user more carefully; we cannot simply delete the existing user.</p>
+<p>When using a docker image with a non-root default user, we can launch a container as root by giving root’s UID instead with the <code>--user 0</code> flag. (Note that we can do this with other UIDs as well, though it produces a troublesome unnamed user when the userid hasn’t been assigned to a user name).</p>
+<ul>
+<li>RStudio image now completely configures default user in the Dockerfile, such that userconf.sh need only configure custom users. See <a href="https://github.com/rocker-org/rocker/blob/cec3912d3bc40352fc4ca7d7d281db9e25b3dd86/rstudio/userconf.sh">userconf.sh</a>. We now do:</li>
+</ul>
+<pre><code>usermod -l rstudio docker \
+    &amp;&amp; usermod -m -d /home/rstudio rstudio \
+    &amp;&amp; groupmod -n rstudio docker </code></pre>
+<p>instead of <code>userdel</code> which causes issues if we launch as that user. Note, this means containers built on <code>rstudio</code> have only the user <code>rstudio</code> available and not the <code>docker</code> user, unless explicitly added/renamed. Avoids issues like multiple home directories/unpredictable home directory name as well (Since RStudio-server wants to open in home dir and not in a user-owned root directory like <code>/data</code> like most other apps would use.) - RStudio must still be launched as root (see <a href="https://support.rstudio.com/hc/communities/public/questions/200661923-Does-Rstudio-have-to-run-as-root-">RStudio issue</a>), so a Dockerfile with non-root user must use the <code>--user 0</code> flag or run <code>rserver</code> or the default <code>supervisord</code> using <code>sudo</code>.<br />- Configure <a href="https://github.com/rocker-org/rocker/blob/cec3912d3bc40352fc4ca7d7d281db9e25b3dd86/rstudio/supervisord.conf">supervisord.conf</a> configuration not to throw erroneous error messages (e.g. <code>userconf.sh</code> is expected to exit with 0, users explicitly declared, config file explicitly declared to avoid security vulnerability of custom conf in working dir, etc).</p>
+<h2 id="reading-list-notes">Reading list notes</h2>
+<p>Sebastian has a very nice reading list for his upcoming seminar on evolution in stochastic environments that I wanted to make note of for my own reference as well.</p>
+<p>Reading: Ruel, Jonathan J., and Matthew P. Ayres. “Jensen’s inequality predicts effects of environmental variation.” Trends in Ecology &amp; Evolution 14.9 (1999): 361-366. Optional Reading: Frank, Steven A., and Montgomery Slatkin. “Evolution in a variable environment.” American Naturalist (1990): 244-260.</p>
+<p>BETWEEN-GENERATION BET-HEDGING</p>
+<p>Week 2: Historical perspective and overview</p>
+<p>Readings: Stearns, Stephen C. “Daniel Bernoulli (1738): evolution and economics under risk.” Journal of biosciences 25.3 (2000): 221-228. Childs, Dylan Z., C. J. E. Metcalf, and Mark Rees. “Evolutionary bet-hedging in the real world: empirical evidence and challenges revealed by plants.” Proceedings of the Royal Society B: Biological Sciences (2010): rspb20100707. Optional Reading: Simons, Andrew M. “Modes of response to environmental change and the elusive empirical evidence for bet hedging.” Proceedings of the Royal Society B: Biological Sciences (2011): rspb20110176.</p>
+<p>Week 3: Seedbanks in annual plants Readings: Venable, D. Lawrence. “Bet hedging in a guild of desert annuals.” Ecology 88.5 (2007): 1086-1090; Gremer, Jennifer R., and D. Lawrence Venable. “Bet hedging in desert winter annual plants: optimal germination strategies in a variable environment.” Ecology letters 17.3 (2014): 380-387.</p>
+<p>Week 4: Stochastic switches, epigenetics, and bacteria</p>
+<p>Readings: Beaumont, Hubertus JE, et al. “Experimental evolution of bet hedging.” Nature 462.7269 (2009): 90-93; Veening, J. et al. “Bistability, Epigenetics, and Bet-Hedging in Bacteria.” Annual Reviews of Microbiology (2008)</p>
+<p>Week 5: Bet-hedging in structured populations</p>
+<p>Potential readings: Carja, Oana, Uri Liberman, and Marcus W. Feldman. “The evolution of phenotypic switching in subdivided populations.” Genetics 196.4 (2014): 1185-1197; Pfister, Catherine A. “Patterns of variance in stage-structured populations: evolutionary predictions and ecological implications.” Proceedings of the National Academy of Sciences 95.1 (1998): 213-218.; Schreiber, Sebastian J. “The evolution of patch selection in stochastic environments.” The American Naturalist 180.1 (2012): 17-34.</p>
+<p>WITHIN-GENERATION BET-HEDGING</p>
+<p>Week 6: The idea and a perspective Readings: Gillespie, John H. “Natural selection for within-generation variance in offspring number.” Genetics 76.3 (1974): 601-606; Hopper, Keith R., et al. “Within-generation bet hedging: a seductive explanation?.” Oikos 101.1 (2003): 219-222.</p>
+<p>Week 7: Multiple matings in wasps and cooperative breeding in birds Readings: Sarhan, Alia, and Hanna Kokko. “Multiple mating in the glanville fritillary butterfly: A case of within-generation bethedging?” Evolution 61.3 (2007): 606-616; Rubenstein, Dustin R “Spatiotemporal environmental variation, risk aversion, and the evolution of cooperative breeding as a bet-hedging strategy.” Proceedings of the National Academy of Sciences 108.Supplement 2 (2011): 10816-10822.</p>
+<p>Week 8: Synthesis of between- and within-generation bet-hedging Readings: Starrfelt, Jostein, and Hanna Kokko. “Bet-hedging: a triple trade-off between means, variances and correlations.” Biological Reviews 87.3 (2012): 742-755; Frank, Steven A. “Natural selection. I. Variable environments and uncertain returns on investment*.&quot; Journal of evolutionary biology 24.11 (2011): 2299-2309.</p>
+<p>RESOURCE VARIATION AND RISK AVERSION</p>
+<p>Week 9: Multiple limiting factors and ovule packaging in angiosperms Readings: Rosenheim, Jay A., Uri Alon, and Guy Shinar. “Evolutionary Balancing of Fitness-Limiting Factors.” The American Naturalist 175.6 (2010): 662-674. Burd, Martin, et al. “Ovule number per flower in a world of unpredictable pollination.” American Journal of Botany 96.6 (2009): 1159-1167.</p>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/01/05/notes.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/01/04/lsn-model-comparisons.html">Lsn Model Comparisons</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 04 Jan 2015</p>
@@ -213,6 +321,10 @@ loaded via a namespace (and not attached):
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/01/01/notebook-maintenance-and-scaling.html">Notebook Maintenance And Scaling</a></h4></header>
 <p><span></span></p>
@@ -279,10 +391,6 @@ git gc --prune=now</code></pre>
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
     </div>
 

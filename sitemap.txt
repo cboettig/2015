@@ -10,5 +10,7 @@ http://www.carlboettiger.info//sitemap.txt
 http://www.carlboettiger.info//tags.html 
 
  
+http://www.carlboettiger.info//01/07/automated-knitr-in-jekyll.html  
+http://www.carlboettiger.info//01/05/notes.html  
 http://www.carlboettiger.info//01/04/lsn-model-comparisons.html  
 http://www.carlboettiger.info//01/01/notebook-maintenance-and-scaling.html 
