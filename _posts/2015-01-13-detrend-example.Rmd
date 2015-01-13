@@ -34,7 +34,7 @@ N <- length(raw$x)
 raw$t <- 1:N
 detrend <- loess(x ~ t, raw)
 data <- data.frame(x = detrend$residuals)
-qplot(raw$t, data$x, type='line')
+qplot(raw$t, data$x, geom='line')
 ```
 
 ## LSN version ##
