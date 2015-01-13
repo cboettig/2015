@@ -1,7 +1,7 @@
 image: cboettig/labnotebook
 
 script:
-## Configure and import cached files
+## Configure and import cached files.
   - sudo mkdir -p /tmp/cache
   - sudo chown -R rstudio:rstudio /tmp/cache
   - rsync -a --delete /tmp/cache/ _cache/
@@ -17,7 +17,9 @@ deploy:
   bash:
     script:
       - ./_deploy.sh
-     
+        
+## Tell drone to cache these dirs. 
+## (Cache must not be a subdirectory of repository, see https://github.com/drone/drone/issues/147)
 cache:
   - /tmp/cache
   - /tmp/figures

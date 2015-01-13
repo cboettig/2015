@@ -10,22 +10,31 @@ code: true
 ```{r settings}
 library(knitr)
 library(nimble)
-library(sde)
+library(earlywarning)
 library(ggplot2)
 library(tidyr)
 opts_chunk$set(dev='png', fig.width=5, fig.height=5, cache=1,results='hide')
 ```
 
 
-Stick with SDE example as a reference point:
+some sample data from earlywarning:
 
 ```{r data}
 set.seed(123)
-d <- expression(0.5 * (10-x))
-s <- expression(1) 
-data <- as.data.frame(sde.sim(X0=6,drift=d, sigma=s, T=20, N=100))
-ggplot(data) + geom_line(aes(seq_along(x),x))
-N <- length(data$x)
+data(ibms)
+plot(ibm_critical)
+raw <- as.data.frame(ibm_critical)
+names(raw) <- "x"
+```
+
+Rather than explicitly modeling the trend element predicted by the linearization, let us simply remove it:
+
+```{r detrend, depends='data'}
+N <- length(raw$x)
+raw$t <- 1:N
+detrend <- loess(x ~ t, raw)
+data <- data.frame(x = detrend$residuals)
+qplot(raw$t, data$x, type='line')
 ```
 
 ## LSN version ##
@@ -34,12 +43,12 @@ Modify the LSN model to explicitly model the changing parameter as a hidden, sto
 
 ```{r model, depends='detrend'}
 lsn <- nimbleCode({
-		theta ~ dunif(1e-10, 100.0)
-		sigma_x ~ dunif(1e-10, 100.0)
-		sigma_y ~ dunif(1e-10, 100.0)
-					m ~ dunif(-1e2, 1e2)
-			 x[1] ~ dunif(0, 100)
-			 y[1] ~ dunif(0, 100) 
+   theta ~ dunif(1e-10, 100.0)
+   sigma_x ~ dunif(1e-10, 100.0)
+   sigma_y ~ dunif(1e-10, 100.0)
+       m ~ dunif(-1e2, 1e2)
+    x[1] ~ dunif(0, 100)
+    y[1] ~ dunif(0, 100) 
 
   for(i in 1:(N-1)){
     mu_x[i] <- x[i] + y[i] * (theta - x[i]) 
@@ -53,7 +62,7 @@ lsn <- nimbleCode({
 Constants in the model definition are the length of the dataset, $N$ and the time points of the sample. Note we've made time explicit, we'll assume uniform spacing here. 
 
 ```{r constants, depends='data'}
-constants <- list(N = N, t = 1:N)
+constants <- list(N = N, t = raw$t)
 ```
 
 Initial values for the parameters
@@ -102,7 +111,7 @@ apply(samples, 2, mean)
 
 ```{r trace, depends='samples', fig.show='hold'}
 ggplot(long) + 
-	geom_line(aes(seq_along(value), value)) + 
+  geom_line(aes(seq_along(value), value)) + 
 	facet_wrap(~key, scale='free')
 ```
 
