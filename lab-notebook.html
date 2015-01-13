@@ -114,6 +114,127 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/01/13/detrend-example.html">Detrend Example</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 13 Jan 2015</p>
+
+<article>
+<div class="excerpt">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
+<span class="kw">library</span>(nimble)
+<span class="kw">library</span>(earlywarning)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(tidyr)
+opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">5</span>, <span class="dt">fig.height=</span><span class="dv">5</span>, <span class="dt">cache=</span><span class="dv">1</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>)</code></pre>
+<p>some sample data from earlywarning:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
+<span class="kw">data</span>(ibms)
+<span class="kw">plot</span>(ibm_critical)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/data-1.png" />
+</figure>
+<pre class="sourceCode r"><code class="sourceCode r">raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
+<span class="kw">names</span>(raw) &lt;-<span class="st"> &quot;x&quot;</span></code></pre>
+<p>Rather than explicitly modeling the trend element predicted by the linearization, let us simply remove it:</p>
+<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
+raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
+detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals)
+<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">type=</span><span class="st">&#39;line&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png" />
+</figure>
+<h2 id="lsn-version">LSN version</h2>
+<p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
+<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+   sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+   sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
+    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
+
+  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
+    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
+    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x) 
+    mu_y[i] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i]
+    y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_y[i], <span class="dt">sd =</span> sigma_y) 
+  }
+})</code></pre>
+<p>Constants in the model definition are the length of the dataset, <span class="math">\(N\)</span> and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.</p>
+<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)</code></pre>
+<p>Initial values for the parameters</p>
+<pre class="sourceCode r"><code class="sourceCode r">inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">6</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
+<p>and here we go:</p>
+<pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> lsn, 
+                      <span class="dt">constants =</span> constants, 
+                      <span class="dt">data =</span> data, 
+                      <span class="dt">inits =</span> inits)
+Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">2e2</span>)
+Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
+Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
+<p>and examine results</p>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
+<span class="kw">dim</span>(samples)
+samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
+<pre><code>          m     sigma_x     sigma_y       theta 
+ 0.00028628 29.70868668  0.18206002  4.42949275 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/trace-1.png" />
+</figure>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/histogram-1.png" />
+</figure>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
+<pre><code>R version 3.1.2 (2014-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] methods   stats     graphics  grDevices utils     datasets 
+[7] base     
+
+other attached packages:
+[1] tidyr_0.2.0        ggplot2_1.0.0      earlywarning_0.0-1
+[4] nimble_0.3         yaml_2.1.13        knitr_1.8         
+
+loaded via a namespace (and not attached):
+ [1] codetools_0.2-9  colorspace_1.2-4 deSolve_1.11    
+ [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+ [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
+[10] labeling_0.3     MASS_7.3-35      munsell_0.4.2   
+[13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
+[16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
+[19] stringr_0.6.2    tools_3.1.2     </code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/01/13/detrend-example.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/01/07/automated-knitr-in-jekyll.html">Automated Knitr In Jekyll</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 07 Jan 2015</p>
@@ -221,6 +342,10 @@
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/01/04/lsn-model-comparisons.html">Lsn Model Comparisons</a></h4></header>
 <p><span></span></p>
@@ -228,25 +353,31 @@
 
 <article>
 <div class="excerpt">
-<p>some sample data from earlywarning:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nimble)
-<span class="kw">library</span>(earlywarning)
-<span class="kw">set.seed</span>(<span class="dv">123</span>)
-<span class="kw">data</span>(ibms)
-<span class="kw">plot</span>(ibm_critical)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
+<span class="kw">library</span>(nimble)
+<span class="kw">library</span>(sde)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(tidyr)
+opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">5</span>, <span class="dt">fig.height=</span><span class="dv">5</span>, <span class="dt">cache=</span><span class="dv">1</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>)</code></pre>
+<p>Stick with SDE example as a reference point:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
+d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
+s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
+data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))
+<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-1-1.png" />
+<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png" />
 </figure>
-<pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
-<span class="kw">names</span>(data) &lt;-<span class="st"> &quot;x&quot;</span></code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
 <h2 id="lsn-version">LSN version</h2>
+<p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
 <pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-   sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-   sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
-    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
+        theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+        sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+        sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+                    m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+             x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
+             y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
 
   for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
     mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
@@ -256,9 +387,9 @@
   }
 })</code></pre>
 <p>Constants in the model definition are the length of the dataset, <span class="math">\(N\)</span> and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.</p>
-<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> <span class="kw">length</span>(data[[<span class="dv">1</span>]]), <span class="dt">t =</span> <span class="dv">1</span>:<span class="kw">length</span>(data[[<span class="dv">1</span>]]))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> <span class="dv">1</span>:N)</code></pre>
 <p>Initial values for the parameters</p>
-<pre class="sourceCode r"><code class="sourceCode r">inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">6</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,constants$N))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">6</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
 <p>and here we go:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> lsn, 
                       <span class="dt">constants =</span> constants, 
@@ -272,20 +403,23 @@ Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc,
 <p>and examine results</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
 <span class="kw">dim</span>(samples)
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(samples$theta)
-<span class="kw">mean</span>(samples$m)
-<span class="kw">mean</span>(samples$sigma_x)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(samples[ , <span class="st">&#39;m&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="st">&#39;m&#39;</span>, <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
-<span class="kw">plot</span>(samples[ , <span class="st">&#39;sigma_x&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(sigma[x]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
-<span class="kw">plot</span>(samples[ , <span class="st">&#39;sigma_y&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(sigma[y]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
-<span class="kw">plot</span>(samples[ , <span class="st">&#39;theta&#39;</span>], <span class="dt">type =</span> <span class="st">&#39;l&#39;</span>, <span class="dt">xlab =</span> <span class="st">&#39;iteration&#39;</span>, <span class="dt">ylab =</span> <span class="kw">expression</span>(theta), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-1.png" /> <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-2.png" /> <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-3.png" /> <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-4.png" /></p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(samples[, <span class="st">&#39;m&#39;</span>], <span class="dt">xlab =</span> <span class="st">&#39;m&#39;</span>, <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
-<span class="kw">hist</span>(samples[, <span class="st">&#39;sigma_x&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(sigma[x]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
-<span class="kw">hist</span>(samples[, <span class="st">&#39;sigma_y&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(sigma[y]), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)
-<span class="kw">hist</span>(samples[, <span class="st">&#39;theta&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(theta), <span class="dt">main=</span><span class="st">&#39;&#39;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-1.png" /> <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-2.png" /> <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-3.png" /> <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-4.png" /></p>
+samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
+<pre><code>            m       sigma_x       sigma_y         theta 
+-1.675333e-05  3.875174e-01  4.066872e-02  1.022867e+01 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/trace-1.png" />
+</figure>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png" />
+</figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
 <pre><code>R version 3.1.2 (2014-10-31)
 Platform: x86_64-pc-linux-gnu (64-bit)
@@ -299,17 +433,23 @@ locale:
 [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
-[1] methods   stats     graphics  grDevices utils     datasets 
-[7] base     
+[1] splines   stats4    methods   stats     graphics  grDevices
+[7] utils     datasets  base     
 
 other attached packages:
-[1] earlywarning_0.0-1 nimble_0.3         yaml_2.1.13       
-[4] knitr_1.8         
+ [1] earlywarning_0.0-1 tidyr_0.2.0        ggplot2_1.0.0     
+ [4] sde_2.0.13         zoo_1.7-11         fda_2.4.4         
+ [7] Matrix_1.1-4       MASS_7.3-35        nimble_0.3        
+[10] yaml_2.1.13        knitr_1.8         
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-9 deSolve_1.11    digest_0.6.8    evaluate_0.5.5 
- [5] formatR_1.0     igraph_0.7.1    plyr_1.8.1      psych_1.4.8.11 
- [9] Rcpp_0.11.3     reshape2_1.4.1  stringr_0.6.2   tools_3.1.2    </code></pre>
+ [1] codetools_0.2-9  colorspace_1.2-4 deSolve_1.11    
+ [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+ [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
+[10] labeling_0.3     lattice_0.20-29  munsell_0.4.2   
+[13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
+[16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
+[19] stringr_0.6.2    tools_3.1.2     </code></pre>
  
 <!-- not that raw_content depends on custom generator, 
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
@@ -320,10 +460,6 @@ loaded via a namespace (and not attached):
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/01/01/notebook-maintenance-and-scaling.html">Notebook Maintenance And Scaling</a></h4></header>

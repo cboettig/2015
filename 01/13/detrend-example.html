@@ -2,37 +2,37 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head prefix="dc: http://purl.org/dc/terms/ og: http://ogp.me/ns#"> <!-- namespaces used in metadata.html -->
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
-  <title>Lsn Model Comparisons</title>
+  <title>Detrend Example</title>
   <meta name="author" content="Carl Boettiger" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- HTML5 metadata -->
 <meta name="keywords" content="earlywarning" />
 <meta name="description" content="" />
 <!-- RDFa Metadata (in DublinCore) -->
-<meta property="dc:title" content="Lsn Model Comparisons" />
+<meta property="dc:title" content="Detrend Example" />
 <meta property="dc:creator" content="Carl Boettiger" />
-<meta property="dc:date" content="2015-01-04 00:00:00 +0000" />
+<meta property="dc:date" content="2015-01-13 00:00:00 +0000" />
 <meta property="dc:format" content="text/html" />
 <meta property="dc:language" content="en" />
-<meta property="dc:identifier" content="/01/04/lsn-model-comparisons.html" />
+<meta property="dc:identifier" content="/01/13/detrend-example.html" />
 <meta property="dc:rights" content="CC0" />
 <meta property="dc:source" content="Lab Notebook" />
 <meta property="dc:subject" content="Ecology" /> 
 <meta property="dc:type" content="website" /> 
 <!-- RDFa Metadata (in OpenGraph) -->
-<meta property="og:title" content="Lsn Model Comparisons" />
+<meta property="og:title" content="Detrend Example" />
 <meta property="og:author" content="http://www.carlboettiger.info/index.html#me" />  <!-- Should be Liquid? URI? -->
 <meta property="http://ogp.me/ns/profile#first_name" content="Carl"/>
 <meta property="http://ogp.me/ns/profile#last_name" content="Boettiger"/>
-<meta property="http://ogp.me/ns/article#published_time" content="2015-01-04 00:00:00 +0000" />
+<meta property="http://ogp.me/ns/article#published_time" content="2015-01-13 00:00:00 +0000" />
 <meta property="og:site_name" content="Lab Notebook" /> <!-- Same as dc:source? -->
-<meta property="og:url" content="http://www.carlboettiger.info/01/04/lsn-model-comparisons.html" />
+<meta property="og:url" content="http://www.carlboettiger.info/01/13/detrend-example.html" />
 <meta property="og:type" content="website" /> 
 <!-- Google Scholar Metadata -->
 <!--
 <meta name="citation_author" content="Carl Boettiger"/>
-<meta name="citation_date" content="2015-01-04 00:00:00 +0000"/>
-<meta name="citation_title" content="Lsn Model Comparisons"/>
+<meta name="citation_date" content="2015-01-13 00:00:00 +0000"/>
+<meta name="citation_title" content="Detrend Example"/>
 <meta name="citation_journal_title" content="Lab Notebook"/>
 -->
 <!--NOTE: see also the COinS Metadata in span element in footer -->
@@ -100,7 +100,7 @@
 
     <div class="container"> <!-- Responsive grid layout, doesn't jump to full-width --> 
       <header>
-        <h1 class="entry-title">Lsn Model Comparisons</h1>
+        <h1 class="entry-title">Detrend Example</h1>
         <h2></h2>
       </header>
 
@@ -109,29 +109,37 @@
     <article>
     <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
 <span class="kw">library</span>(nimble)
-<span class="kw">library</span>(sde)
+<span class="kw">library</span>(earlywarning)
 <span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(tidyr)
 opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">5</span>, <span class="dt">fig.height=</span><span class="dv">5</span>, <span class="dt">cache=</span><span class="dv">1</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>)</code></pre>
-<p>Stick with SDE example as a reference point:</p>
+<p>some sample data from earlywarning:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
-d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
-s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
-data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))
-<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))</code></pre>
+<span class="kw">data</span>(ibms)
+<span class="kw">plot</span>(ibm_critical)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png" />
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/data-1.png" />
 </figure>
-<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
+<span class="kw">names</span>(raw) &lt;-<span class="st"> &quot;x&quot;</span></code></pre>
+<p>Rather than explicitly modeling the trend element predicted by the linearization, let us simply remove it:</p>
+<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
+raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
+detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals)
+<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">type=</span><span class="st">&#39;line&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png" />
+</figure>
 <h2 id="lsn-version">LSN version</h2>
 <p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
 <pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-        theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-        sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-        sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-                    m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-             x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
-             y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+   sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+   sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
+    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
 
   for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
     mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
@@ -141,7 +149,7 @@ data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span c
   }
 })</code></pre>
 <p>Constants in the model definition are the length of the dataset, <span class="math">\(N\)</span> and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.</p>
-<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> <span class="dv">1</span>:N)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)</code></pre>
 <p>Initial values for the parameters</p>
 <pre class="sourceCode r"><code class="sourceCode r">inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">6</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
 <p>and here we go:</p>
@@ -160,19 +168,19 @@ Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc,
 samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
 long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
-<pre><code>            m       sigma_x       sigma_y         theta 
--1.675333e-05  3.875174e-01  4.066872e-02  1.022867e+01 </code></pre>
+<pre><code>          m     sigma_x     sigma_y       theta 
+ 0.00028628 29.70868668  0.18206002  4.42949275 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/trace-1.png" />
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/trace-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png" />
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/histogram-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
 <pre><code>R version 3.1.2 (2014-10-31)
@@ -187,20 +195,18 @@ locale:
 [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
-[1] splines   stats4    methods   stats     graphics  grDevices
-[7] utils     datasets  base     
+[1] methods   stats     graphics  grDevices utils     datasets 
+[7] base     
 
 other attached packages:
- [1] earlywarning_0.0-1 tidyr_0.2.0        ggplot2_1.0.0     
- [4] sde_2.0.13         zoo_1.7-11         fda_2.4.4         
- [7] Matrix_1.1-4       MASS_7.3-35        nimble_0.3        
-[10] yaml_2.1.13        knitr_1.8         
+[1] tidyr_0.2.0        ggplot2_1.0.0      earlywarning_0.0-1
+[4] nimble_0.3         yaml_2.1.13        knitr_1.8         
 
 loaded via a namespace (and not attached):
  [1] codetools_0.2-9  colorspace_1.2-4 deSolve_1.11    
  [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
  [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
-[10] labeling_0.3     lattice_0.20-29  munsell_0.4.2   
+[10] labeling_0.3     MASS_7.3-35      munsell_0.4.2   
 [13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
 [16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
 [19] stringr_0.6.2    tools_3.1.2     </code></pre>
@@ -212,25 +218,25 @@ loaded via a namespace (and not attached):
       
 <aside prefix="og:http://ogp.me/ns/article#">
   <p> <i class="icon-calendar"></i>
-    <time datetime="2015-01-04 00:00:00 +0000" 
-    property="dc:created">04 Jan 2015</time></p>
+    <time datetime="2015-01-13 00:00:00 +0000" 
+    property="dc:created">13 Jan 2015</time></p>
    
 
  <br />
 
   
-	<p><a class="btn btn-default" rel="prev" href='/2015/01/01/notebook-maintenance-and-scaling.html'><i class="icon-chevron-left"></i> prev</a>
+	<p><a class="btn btn-default" rel="prev" href='/2015/01/07/automated-knitr-in-jekyll.html'><i class="icon-chevron-left"></i> prev</a>
   
   
-  <a class="btn btn-default" rel="next" href='/2015/01/05/notes.html'>next <i class="icon-chevron-right"></i></a></p>
-  
+    </p>
+    
 
   <br />
 
   <p> <a  onclick="recordOutboundLink(this, 'Outbound Links', 'history'); 
             return false;" 
           class="btn btn-default" 
-          href="https://github.com/cboettig/2015/commits/master/_posts/2015-01-04-lsn-model-comparisons.Rmd"><i class="icon-time"></i> history</a></p>
+          href="https://github.com/cboettig/2015/commits/master/_posts/2015-01-13-detrend-example.Rmd"><i class="icon-time"></i> history</a></p>
 
   <br />
 
@@ -253,7 +259,7 @@ loaded via a namespace (and not attached):
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/8e6010663d876c81263b49c8017e1889454b37f1/_posts/2015-01-04-lsn-model-comparisons.Rmd"> 8e6010663d876c81263b49c8017e1889454b37f1</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/8e6010663d876c81263b49c8017e1889454b37f1/_posts/2015-01-13-detrend-example.Rmd"> 8e6010663d876c81263b49c8017e1889454b37f1</a></small></p>
     
   <br/>
   
@@ -348,12 +354,12 @@ loaded via a namespace (and not attached):
       title="ctx_ver=Z39.88-2004
       &amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc
       &amp;rfr_id=info%3Asid%2Focoins.info%3Agenerator
-      &amp;rft.title=Lsn Model Comparisons
+      &amp;rft.title=Detrend Example
       &amp;rft.creator=Carl Boettiger
-      &amp;rft.date=2015-01-04
+      &amp;rft.date=2015-01-13
       &amp;rft.language=EN
       &amp;rft.rights=CC0
-      &amp;rft_id=http://www.carlboettiger.info/01/04/lsn-model-comparisons.html">
+      &amp;rft_id=http://www.carlboettiger.info/01/13/detrend-example.html">
   </span>
 
 

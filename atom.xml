@@ -4,13 +4,124 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-01-12T21:42:23+00:00</updated>
+ <updated>2015-01-13T22:44:10+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
    <email>cboettig@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Detrend Example</title>
+	 <link href="//01/13/detrend-example.html"/>
+   <updated>2015-01-13T00:00:00+00:00</updated>
+   <id>/01/13/detrend-example</id>
+   <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(knitr)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(earlywarning)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(ggplot2)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(tidyr)
+opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dev=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;png&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fig.width=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fig.height=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;cache=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;results=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;hide&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;some sample data from earlywarning:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;data&lt;/span&gt;(ibms)
+&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(ibm_critical)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-13-detrend-example/data-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;raw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(ibm_critical)
+&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(raw) &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;quot;x&amp;quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Rather than explicitly modeling the trend element predicted by the linearization, let us simply remove it:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(raw$x)
+raw$t &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N
+detrend &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;loess&lt;/span&gt;(x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t, raw)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; detrend$residuals)
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(raw$t, data$x, &lt;span class=&quot;dt&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;line&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;lsn-version&quot;&gt;LSN version&lt;/h2&gt;
+&lt;p&gt;Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+   sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+   sigma_y ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+       m ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+    y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;) 
+
+  for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+    mu_x[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i]) 
+    x[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_x[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_x) 
+    mu_y[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;m *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[i]
+    y[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_y[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_y) 
+  }
+})&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Constants in the model definition are the length of the dataset, &lt;span class=&quot;math&quot;&gt;\(N\)&lt;/span&gt; and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; raw$t)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Initial values for the parameters&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;m =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_x =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_y =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and here we go:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; lsn, 
+                      &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, 
+                      &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, 
+                      &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)
+Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;2e2&lt;/span&gt;)
+Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
+Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e6&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and examine results&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
+&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)
+samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]
+long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(samples, &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, mean)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;          m     sigma_x     sigma_y       theta 
+ 0.00028628 29.70868668  0.18206002  4.42949275 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(long) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-13-detrend-example/trace-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(long) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-13-detrend-example/histogram-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] methods   stats     graphics  grDevices utils     datasets 
+[7] base     
+
+other attached packages:
+[1] tidyr_0.2.0        ggplot2_1.0.0      earlywarning_0.0-1
+[4] nimble_0.3         yaml_2.1.13        knitr_1.8         
+
+loaded via a namespace (and not attached):
+ [1] codetools_0.2-9  colorspace_1.2-4 deSolve_1.11    
+ [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+ [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
+[10] labeling_0.3     MASS_7.3-35      munsell_0.4.2   
+[13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
+[16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
+[19] stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
  
  <entry>
    <title>Automated Knitr In Jekyll</title>
@@ -105,25 +216,31 @@
 	 <link href="//01/04/lsn-model-comparisons.html"/>
    <updated>2015-01-04T00:00:00+00:00</updated>
    <id>/01/04/lsn-model-comparisons</id>
-   <content type="html">&lt;p&gt;some sample data from earlywarning:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
-&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(earlywarning)
-&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;data&lt;/span&gt;(ibms)
-&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(ibm_critical)&lt;/code&gt;&lt;/pre&gt;
+   <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(knitr)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(sde)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(ggplot2)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(tidyr)
+opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dev=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;png&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fig.width=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fig.height=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;cache=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;results=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;hide&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Stick with SDE example as a reference point:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
+d &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;-x))
+s &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) 
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sde.sim&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;X0=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;drift=&lt;/span&gt;d, &lt;span class=&quot;dt&quot;&gt;sigma=&lt;/span&gt;s, &lt;span class=&quot;dt&quot;&gt;T=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;20&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;N=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;))
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(data) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(x),x))&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-1-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png&quot; /&gt;
 &lt;/figure&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(ibm_critical)
-&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(data) &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;quot;x&amp;quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(data$x)&lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&quot;lsn-version&quot;&gt;LSN version&lt;/h2&gt;
+&lt;p&gt;Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
-   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
-   sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
-   sigma_y ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
-       m ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
-    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
-    y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;) 
+        theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+        sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+        sigma_y ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+                    m ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+             x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+             y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;) 
 
   for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
     mu_x[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i]) 
@@ -133,9 +250,9 @@
   }
 })&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Constants in the model definition are the length of the dataset, &lt;span class=&quot;math&quot;&gt;\(N\)&lt;/span&gt; and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(data[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]]), &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(data[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]]))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Initial values for the parameters&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;m =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_x =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_y =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,constants$N))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;m =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_x =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_y =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and here we go:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; lsn, 
                       &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, 
@@ -149,20 +266,23 @@ Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&qu
 &lt;p&gt;and examine results&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
 &lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)
-samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$theta)
-&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$m)
-&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(samples$sigma_x)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_x&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[x]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_y&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[y]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;theta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;l&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;iteration&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(theta), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-1.png&quot; /&gt; &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-2.png&quot; /&gt; &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-3.png&quot; /&gt; &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-10-4.png&quot; /&gt;&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;m&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_x&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[x]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;sigma_y&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(sigma[y]), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(samples[, &lt;span class=&quot;st&quot;&gt;&amp;#39;theta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(theta), &lt;span class=&quot;dt&quot;&gt;main=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-1.png&quot; /&gt; &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-2.png&quot; /&gt; &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-3.png&quot; /&gt; &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/unnamed-chunk-11-4.png&quot; /&gt;&lt;/p&gt;
+samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]
+long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(samples, &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, mean)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;            m       sigma_x       sigma_y         theta 
+-1.675333e-05  3.875174e-01  4.066872e-02  1.022867e+01 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(long) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/trace-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(long) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
 Platform: x86_64-pc-linux-gnu (64-bit)
@@ -176,17 +296,23 @@ locale:
 [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
-[1] methods   stats     graphics  grDevices utils     datasets 
-[7] base     
+[1] splines   stats4    methods   stats     graphics  grDevices
+[7] utils     datasets  base     
 
 other attached packages:
-[1] earlywarning_0.0-1 nimble_0.3         yaml_2.1.13       
-[4] knitr_1.8         
+ [1] earlywarning_0.0-1 tidyr_0.2.0        ggplot2_1.0.0     
+ [4] sde_2.0.13         zoo_1.7-11         fda_2.4.4         
+ [7] Matrix_1.1-4       MASS_7.3-35        nimble_0.3        
+[10] yaml_2.1.13        knitr_1.8         
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-9 deSolve_1.11    digest_0.6.8    evaluate_0.5.5 
- [5] formatR_1.0     igraph_0.7.1    plyr_1.8.1      psych_1.4.8.11 
- [9] Rcpp_0.11.3     reshape2_1.4.1  stringr_0.6.2   tools_3.1.2    &lt;/code&gt;&lt;/pre&gt;
+ [1] codetools_0.2-9  colorspace_1.2-4 deSolve_1.11    
+ [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+ [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
+[10] labeling_0.3     lattice_0.20-29  munsell_0.4.2   
+[13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
+[16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
+[19] stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
