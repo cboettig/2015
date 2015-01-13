@@ -127,7 +127,7 @@ opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="
 raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
 detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
 data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals)
-<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">type=</span><span class="st">&#39;line&#39;</span>)</code></pre>
+<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png" />
 </figure>
@@ -259,7 +259,7 @@ loaded via a namespace (and not attached):
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/8e6010663d876c81263b49c8017e1889454b37f1/_posts/2015-01-13-detrend-example.Rmd"> 8e6010663d876c81263b49c8017e1889454b37f1</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/7fc7cd41e0951a04613ef59c5b4171647d6a4bbb/_posts/2015-01-13-detrend-example.Rmd"> 7fc7cd41e0951a04613ef59c5b4171647d6a4bbb</a></small></p>
     
   <br/>
   

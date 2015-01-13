@@ -140,7 +140,7 @@ opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="
 raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
 detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
 data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals)
-<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">type=</span><span class="st">&#39;line&#39;</span>)</code></pre>
+<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png" />
 </figure>

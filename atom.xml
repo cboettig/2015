@@ -4,7 +4,7 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-01-13T22:44:10+00:00</updated>
+ <updated>2015-01-13T22:51:00+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
@@ -37,7 +37,7 @@ opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quo
 raw$t &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N
 detrend &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;loess&lt;/span&gt;(x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t, raw)
 data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; detrend$residuals)
-&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(raw$t, data$x, &lt;span class=&quot;dt&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;line&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(raw$t, data$x, &lt;span class=&quot;dt&quot;&gt;geom=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;line&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png&quot; /&gt;
 &lt;/figure&gt;
