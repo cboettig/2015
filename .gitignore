@@ -5,3 +5,4 @@ google_analytics.json
 _cache
 assets/figures/posts
 _posts/*.md
+*.swp
