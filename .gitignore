@@ -4,3 +4,4 @@ google_analytics.json
 .Rhistory
 _cache
 assets/figures/posts
+_posts/*.md

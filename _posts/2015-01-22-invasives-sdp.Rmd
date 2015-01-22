@@ -20,22 +20,18 @@ devtools::install_github("cboettig/pdg_control")
 ```{r libs, cache=FALSE}
 library(pdgControl)
 library(ggplot2)
-
 ```
-
-
-
-## Reed solution; harvest control
 
 ```{r params}
 f <- function(x, h, p){ 
-  x <- sapply(x, function(x) max(x-h,0))
-  p[[1]] * x / {1 + p[[2]] * x} 
+  x <- (1 - h) * x  
+  p[[1]] * x / {1 + p[[2]] * x}  
 }
 p <- c(a = 6, b = 0.05)
-profit <- function(x, h) sapply(x, min, h) # vectorized for x
+damage <- -1
+profit <- function(x, h) sapply(x, function(x) damage * x - h / x) # vectorized for x
 x_grid <- seq(0, 150, length = 100)
-h_grid <- seq(0,150,length = 100)
+h_grid <- seq(0,1,length = 100)
 delta <- 0.05
 OptTime <- 1000
 xT <- 0
@@ -56,32 +52,5 @@ opt <- value_iteration(SDP_Mat, x_grid, h_grid, OptTime, xT, profit, delta)
 
 ```{r}
 qplot(x_grid, h_grid[opt$D]) + xlab("Stock size") + ylab("Harvest")
-qplot(x_grid, x_grid - h_grid[opt$D]) + xlab("Stock size") + ylab("Escapement")
 ```
-
-## Reed solution with effort-based control
-
-```{r }
-f <- function(x, h, p){
-  x <- (1 - h) * x
-  p[[1]] * x / {1 + p[[2]] * x}
-  }
-p <- c(a = 6, b = 0.05)
-h_grid <- seq(0, 1, length = 100)
-profit <- function(x, h) sapply(x, function(x) x * h) # vectorized for x
-```
-
-```{r}
-SDP_Mat <- determine_SDP_matrix(f, p, x_grid, h_grid, sigma_g, pdfn)
-```
-
-```{r}
-opt <- value_iteration(SDP_Mat, x_grid, h_grid, OptTime, xT, profit, delta)
-```
-
-```{r}
-qplot(x_grid, h_grid[opt$D]) + xlab("Stock size") + ylab("Fishing Effort")
-qplot(x_grid, x_grid - x_grid * h_grid[opt$D]) + xlab("Stock size") + ylab("Escapement")
-```
-
 
