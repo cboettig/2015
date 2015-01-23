@@ -116,12 +116,12 @@ opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="
 <p>some sample data from earlywarning:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
 <span class="kw">data</span>(ibms)
-<span class="kw">plot</span>(ibm_critical)</code></pre>
+<span class="kw">plot</span>(ibm_critical)
+raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
+<span class="kw">names</span>(raw) &lt;-<span class="st"> &quot;x&quot;</span></code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-13-detrend-example/data-1.png" />
 </figure>
-<pre class="sourceCode r"><code class="sourceCode r">raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
-<span class="kw">names</span>(raw) &lt;-<span class="st"> &quot;x&quot;</span></code></pre>
 <p>Rather than explicitly modeling the trend element predicted by the linearization, let us simply remove it:</p>
 <pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
 raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
@@ -228,8 +228,8 @@ loaded via a namespace (and not attached):
 	<p><a class="btn btn-default" rel="prev" href='/2015/01/07/automated-knitr-in-jekyll.html'><i class="icon-chevron-left"></i> prev</a>
   
   
-    </p>
-    
+  <a class="btn btn-default" rel="next" href='/2015/01/22/invasives-sdp.html'>next <i class="icon-chevron-right"></i></a></p>
+  
 
   <br />
 

@@ -118,11 +118,11 @@ opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="
 d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
 s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
 data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))
-<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))</code></pre>
+<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
+N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png" />
 </figure>
-<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
 <h2 id="lsn-version">LSN version</h2>
 <p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
 <pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
