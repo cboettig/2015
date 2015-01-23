@@ -14,7 +14,7 @@ opts_chunk$set(dev='svg', fig.width=4, fig.height=4, cache=FALSE,results='hide',
 ```
 
 ```{r cache=TRUE}
-devtools::install_github("cboettig/pdg_control")
+devtools::install_github(c("cboettig/pdg_control", "cboettig/knitcitations"))
 ```
 
 ```{r libs, cache=FALSE}
