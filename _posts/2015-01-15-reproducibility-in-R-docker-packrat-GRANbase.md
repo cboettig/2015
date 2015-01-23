@@ -5,7 +5,7 @@ layout: post
 ---
 
 
-Docker, Packrat, and [Becker et al's]() `GRANbase`+`switchr` all provide ways for installing and executing older and potentially deprecated software and code, they all take somewhat different approaches and solve somewhat different challenges.  This means it can be very effective to actually combine these tools rather than consider them as strict alternatives, as we shall see in a moment.
+Docker, Packrat, and [Becker et al's](http://arxiv.org/abs/1501.02284) `GRANbase`+`switchr` all provide ways for installing and executing older and potentially deprecated software and code, they all take somewhat different approaches and solve somewhat different challenges.  This means it can be very effective to actually combine these tools rather than consider them as strict alternatives, as we shall see in a moment.
 
 - Docker packages a virtual machine.
 - GRANbase explicitly supports installing older versions of R packages, such as those that have been archived by CRAN. 
