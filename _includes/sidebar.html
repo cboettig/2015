@@ -1,4 +1,4 @@
-{% capture true_path %}{% if page.code %}{{ page.path | replace:'.md','.Rmd' }}{% else %}{{ page.path }}{% endif %}{% endcapture %}
+{% capture true_path %}{{ page.path | replace:'.md','.Rmd' }}{% endcapture %}
 <aside prefix="og:http://ogp.me/ns/article#">
   <p> <i class="icon-calendar"></i>
     <time datetime="{{ page.date }}" 

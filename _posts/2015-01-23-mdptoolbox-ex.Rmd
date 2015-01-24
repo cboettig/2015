@@ -1,0 +1,92 @@
+---
+layout: post
+category: ecology
+tags:
+- pdg-control
+published: false
+---
+
+
+```{r settings}
+library(knitr)
+opts_chunk$set(dev='svg', fig.width=4, fig.height=4, cache=FALSE,results='hide', fig.show='hold', error=TRUE)
+```
+
+```{r cache=TRUE}
+install.packages("MDPtoolbox")
+```
+
+```{r libs, cache=FALSE}
+library(MDPtoolbox)
+library(ggplot2)
+```
+
+
+
+
+```{r}
+f <- function(x, h, p){ 
+  x <- (1 - h) * x  
+  p[[1]] * x / {1 + p[[2]] * x}  
+}
+p <- c(a = 6, b = 0.05)
+damage <- .01
+profit <- function(x, h) - damage * x - 1 / (1 - h)  # vectorized for x
+x_grid <- seq(1, 150, length = 50)
+h_grid <- seq(0,1,length = 50)
+delta <- 0.05
+sigma_g <- 0.1
+z_g <- function() 1 + rlnorm(1, 0, sigma_g)
+pdfn <- function(P, s) dlnorm(P, 0, s)
+```
+
+
+Building the transition probability matrix: 
+
+```{r}
+determine_SDP_matrix <- function(f, p, x_grid, h_grid, sigma_g,
+                                 pdfn=function(P, s) dlnorm(P, 0, s)){
+  gridsize <- length(x_grid)
+  SDP_Mat <- lapply(h_grid, function(h){
+    SDP_matrix <- matrix(0, nrow=gridsize, ncol=gridsize)
+    # Cycle over x values
+    for(i in 1:gridsize){ 
+      ## Calculate the expected transition  
+      x1 <- x_grid[i]
+      x2_expected <- f(x1, h, p)
+      ## If expected 0, go to 0 with probabilty 1
+      if( x2_expected == 0) 
+        SDP_matrix[i,1] <- 1  
+      else {
+        # relative probability of a transition to that state
+        ProportionalChance <- x_grid / x2_expected
+        Prob <- pdfn(ProportionalChance, sigma_g)
+        # Store normalized probabilities in row
+        SDP_matrix[i,] <- Prob/sum(Prob)
+      }
+    }
+    SDP_matrix
+  })
+  SDP_Mat
+}
+
+
+```
+Building the reward matrix: 
+
+```{r}
+R <- sapply(x_grid, function(x)
+  sapply(h_grid, function(h)
+  profit(x,h)
+))
+```
+
+Note that in $f$ we must define the harvesting take place before the population recruits.
+
+```{r}
+P <- determine_SDP_matrix(f, p, x_grid, h_grid, sigma_g, pdfn)
+```
+
+```{r}
+out <- mdp_value_iteration(P, R, delta)
+```
