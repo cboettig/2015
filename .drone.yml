@@ -1,4 +1,4 @@
-image: cboettig/labnotebook
+image: cboettig/2015
 
 script:
 ## Configure and import cached files.
