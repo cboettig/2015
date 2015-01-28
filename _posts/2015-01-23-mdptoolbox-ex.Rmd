@@ -3,8 +3,9 @@ layout: post
 category: ecology
 tags:
 - pdg-control
-published: false
 ---
+
+Testing this out using `MDPtoolbox`, but not working yet...
 
 
 ```{r settings}
@@ -12,9 +13,7 @@ library(knitr)
 opts_chunk$set(dev='svg', fig.width=4, fig.height=4, cache=FALSE,results='hide', fig.show='hold', error=TRUE)
 ```
 
-```{r cache=TRUE}
-install.packages("MDPtoolbox")
-```
+
 
 ```{r libs, cache=FALSE}
 library(MDPtoolbox)
@@ -26,14 +25,14 @@ library(ggplot2)
 
 ```{r}
 f <- function(x, h, p){ 
-  x <- (1 - h) * x  
+  x <- x - h
   p[[1]] * x / {1 + p[[2]] * x}  
 }
 p <- c(a = 6, b = 0.05)
-damage <- .01
-profit <- function(x, h) - damage * x - 1 / (1 - h)  # vectorized for x
+
+profit <- function(x, h) min(x,h)  # vectorized for x
 x_grid <- seq(1, 150, length = 50)
-h_grid <- seq(0,1,length = 50)
+h_grid <- seq(1, 150,length = 50)
 delta <- 0.05
 sigma_g <- 0.1
 z_g <- function() 1 + rlnorm(1, 0, sigma_g)
