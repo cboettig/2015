@@ -1,0 +1,70 @@
+---
+layout: post
+published: false
+
+---
+
+
+
+
+`MDPToolbox` testing
+------------------
+
+- Debugging [RPub record](http://rpubs.com/cboettig/55260)
+- Fails even if we restrict R to be finite (`h < 1`)
+- Different error if we try the optimal harvest
+
+
+
+
+Reading 
+-------
+
+- Operating Systems Review reproducibility special issue now out; (includes my article on Docker). [Table of contents](http://dl.acm.org/citation.cfm?id=2723872&picked=prox&cfid=475356683&cftoken=29119830)
+
+
+Reviewing
+----------
+
+- PNAS review: done (2015-01-26).
+- Bioinformatics review. 
+- JSS review: done. 
+
+
+Docker
+------
+
+
+### Continuous Integration ###
+
+Finally a way to run generic docker images on free CI: [circle-ci](https://circleci.com/docs/docker)
+
+Adding private keys to Travis requires too much of a dance (encrypting credentials into `.travis.yml`; on Circle-CI, like Drone, these can just be configured through the Circle-CI web interface.  Travis has no way to restart a stochastically failed build without another commit, doesn't display the logs in  a convenient summary, and doesn't support deploying as first-class configuration step (though easy enough to hack it of course)
+
+
+
+
+Sample configuration:
+
+```yaml
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker info
+    - docker build -t circleci/elasticsearch .
+
+test:
+  override:
+    - docker run -d -p 9200:9200 circleci/elasticsearch; sleep 10
+    - curl --retry 10 --retry-delay 5 -v http://localhost:9200
+
+deployment:
+  hub:
+    branch: master
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker push circleci/elasticsearch
+```
