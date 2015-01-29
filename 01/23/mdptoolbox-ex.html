@@ -2,37 +2,37 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head prefix="dc: http://purl.org/dc/terms/ og: http://ogp.me/ns#"> <!-- namespaces used in metadata.html -->
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
-  <title>Detrend Example</title>
+  <title>Mdptoolbox Ex</title>
   <meta name="author" content="Carl Boettiger" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- HTML5 metadata -->
-<meta name="keywords" content="earlywarning" />
+<meta name="keywords" content="pdg-control" />
 <meta name="description" content="" />
 <!-- RDFa Metadata (in DublinCore) -->
-<meta property="dc:title" content="Detrend Example" />
+<meta property="dc:title" content="Mdptoolbox Ex" />
 <meta property="dc:creator" content="Carl Boettiger" />
-<meta property="dc:date" content="2015-01-13 00:00:00 +0000" />
+<meta property="dc:date" content="2015-01-23 00:00:00 +0000" />
 <meta property="dc:format" content="text/html" />
 <meta property="dc:language" content="en" />
-<meta property="dc:identifier" content="/01/13/detrend-example.html" />
+<meta property="dc:identifier" content="/01/23/mdptoolbox-ex.html" />
 <meta property="dc:rights" content="CC0" />
 <meta property="dc:source" content="Lab Notebook" />
 <meta property="dc:subject" content="Ecology" /> 
 <meta property="dc:type" content="website" /> 
 <!-- RDFa Metadata (in OpenGraph) -->
-<meta property="og:title" content="Detrend Example" />
+<meta property="og:title" content="Mdptoolbox Ex" />
 <meta property="og:author" content="http://www.carlboettiger.info/index.html#me" />  <!-- Should be Liquid? URI? -->
 <meta property="http://ogp.me/ns/profile#first_name" content="Carl"/>
 <meta property="http://ogp.me/ns/profile#last_name" content="Boettiger"/>
-<meta property="http://ogp.me/ns/article#published_time" content="2015-01-13 00:00:00 +0000" />
+<meta property="http://ogp.me/ns/article#published_time" content="2015-01-23 00:00:00 +0000" />
 <meta property="og:site_name" content="Lab Notebook" /> <!-- Same as dc:source? -->
-<meta property="og:url" content="http://www.carlboettiger.info/01/13/detrend-example.html" />
+<meta property="og:url" content="http://www.carlboettiger.info/01/23/mdptoolbox-ex.html" />
 <meta property="og:type" content="website" /> 
 <!-- Google Scholar Metadata -->
 <!--
 <meta name="citation_author" content="Carl Boettiger"/>
-<meta name="citation_date" content="2015-01-13 00:00:00 +0000"/>
-<meta name="citation_title" content="Detrend Example"/>
+<meta name="citation_date" content="2015-01-23 00:00:00 +0000"/>
+<meta name="citation_title" content="Mdptoolbox Ex"/>
 <meta name="citation_journal_title" content="Lab Notebook"/>
 -->
 <!--NOTE: see also the COinS Metadata in span element in footer -->
@@ -100,116 +100,66 @@
 
     <div class="container"> <!-- Responsive grid layout, doesn't jump to full-width --> 
       <header>
-        <h1 class="entry-title">Detrend Example</h1>
+        <h1 class="entry-title">Mdptoolbox Ex</h1>
         <h2></h2>
       </header>
 
       <div class="row">
   <div class="col-md-7 col-md-offset-1">
     <article>
-    <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
-<span class="kw">library</span>(nimble)
-<span class="kw">library</span>(earlywarning)
-<span class="kw">library</span>(ggplot2)
-<span class="kw">library</span>(tidyr)
-opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">5</span>, <span class="dt">fig.height=</span><span class="dv">5</span>, <span class="dt">cache=</span><span class="dv">1</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>)</code></pre>
-<p>some sample data from earlywarning:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
-<span class="kw">data</span>(ibms)
-<span class="kw">plot</span>(ibm_critical)
-raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
-<span class="kw">names</span>(raw) &lt;-<span class="st"> &quot;x&quot;</span></code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/data-1.png" />
-</figure>
-<p>Rather than explicitly modeling the trend element predicted by the linearization, let us simply remove it:</p>
-<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
-raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
-detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals)
-<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png" />
-</figure>
-<h2 id="lsn-version">LSN version</h2>
-<p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
-<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-   sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-   sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
-    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
+    <p>Testing this out using <code>MDPtoolbox</code>, but not working yet…</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
+opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;svg&#39;</span>, <span class="dt">fig.width=</span><span class="dv">4</span>, <span class="dt">fig.height=</span><span class="dv">4</span>, <span class="dt">cache=</span><span class="ot">FALSE</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>, <span class="dt">fig.show=</span><span class="st">&#39;hold&#39;</span>, <span class="dt">error=</span><span class="ot">TRUE</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MDPtoolbox)
+<span class="kw">library</span>(ggplot2)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x, h, p){ 
+  x &lt;-<span class="st"> </span>x -<span class="st"> </span>h
+  p[[<span class="dv">1</span>]] *<span class="st"> </span>x /<span class="st"> </span>{<span class="dv">1</span> +<span class="st"> </span>p[[<span class="dv">2</span>]] *<span class="st"> </span>x}  
+}
+p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">a =</span> <span class="dv">6</span>, <span class="dt">b =</span> <span class="fl">0.05</span>)
 
-  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
-    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
-    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x) 
-    mu_y[i] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i]
-    y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_y[i], <span class="dt">sd =</span> sigma_y) 
-  }
-})</code></pre>
-<p>Constants in the model definition are the length of the dataset, <span class="math">\(N\)</span> and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.</p>
-<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)</code></pre>
-<p>Initial values for the parameters</p>
-<pre class="sourceCode r"><code class="sourceCode r">inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">6</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
-<p>and here we go:</p>
-<pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> lsn, 
-                      <span class="dt">constants =</span> constants, 
-                      <span class="dt">data =</span> data, 
-                      <span class="dt">inits =</span> inits)
-Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">2e2</span>)
-Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
-Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
-<p>and examine results</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
-long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
-<pre><code>          m     sigma_x     sigma_y       theta 
- 0.00028628 29.70868668  0.18206002  4.42949275 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/trace-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/histogram-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.2 (2014-10-31)
-Platform: x86_64-pc-linux-gnu (64-bit)
-
-locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
- [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] methods   stats     graphics  grDevices utils     datasets 
-[7] base     
-
-other attached packages:
-[1] tidyr_0.2.0        ggplot2_1.0.0      earlywarning_0.0-1
-[4] nimble_0.3         yaml_2.1.13        knitr_1.8         
-
-loaded via a namespace (and not attached):
- [1] codetools_0.2-10 colorspace_1.2-4 deSolve_1.11    
- [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
- [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
-[10] labeling_0.3     MASS_7.3-37      munsell_0.4.2   
-[13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
-[16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
-[19] stringr_0.6.2    tools_3.1.2     </code></pre>
+profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">min</span>(x,h)  <span class="co"># vectorized for x</span>
+x_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">150</span>, <span class="dt">length =</span> <span class="dv">50</span>)
+h_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">150</span>,<span class="dt">length =</span> <span class="dv">50</span>)
+delta &lt;-<span class="st"> </span><span class="fl">0.05</span>
+sigma_g &lt;-<span class="st"> </span><span class="fl">0.1</span>
+z_g &lt;-<span class="st"> </span>function() <span class="dv">1</span> +<span class="st"> </span><span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_g)
+pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>(P, <span class="dv">0</span>, s)</code></pre>
+<p>Building the transition probability matrix:</p>
+<pre class="sourceCode r"><code class="sourceCode r">determine_SDP_matrix &lt;-<span class="st"> </span>function(f, p, x_grid, h_grid, sigma_g,
+                                 <span class="dt">pdfn=</span>function(P, s) <span class="kw">dlnorm</span>(P, <span class="dv">0</span>, s)){
+  gridsize &lt;-<span class="st"> </span><span class="kw">length</span>(x_grid)
+  SDP_Mat &lt;-<span class="st"> </span><span class="kw">lapply</span>(h_grid, function(h){
+    SDP_matrix &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">0</span>, <span class="dt">nrow=</span>gridsize, <span class="dt">ncol=</span>gridsize)
+    <span class="co"># Cycle over x values</span>
+    for(i in <span class="dv">1</span>:gridsize){ 
+      ## Calculate the expected transition  
+      x1 &lt;-<span class="st"> </span>x_grid[i]
+      x2_expected &lt;-<span class="st"> </span><span class="kw">f</span>(x1, h, p)
+      ## If expected 0, go to 0 with probabilty 1
+      if( x2_expected ==<span class="st"> </span><span class="dv">0</span>) 
+        SDP_matrix[i,<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1</span>  
+      else {
+        <span class="co"># relative probability of a transition to that state</span>
+        ProportionalChance &lt;-<span class="st"> </span>x_grid /<span class="st"> </span>x2_expected
+        Prob &lt;-<span class="st"> </span><span class="kw">pdfn</span>(ProportionalChance, sigma_g)
+        <span class="co"># Store normalized probabilities in row</span>
+        SDP_matrix[i,] &lt;-<span class="st"> </span>Prob/<span class="kw">sum</span>(Prob)
+      }
+    }
+    SDP_matrix
+  })
+  SDP_Mat
+}</code></pre>
+<p>Building the reward matrix:</p>
+<pre class="sourceCode r"><code class="sourceCode r">R &lt;-<span class="st"> </span><span class="kw">sapply</span>(x_grid, function(x)
+  <span class="kw">sapply</span>(h_grid, function(h)
+  <span class="kw">profit</span>(x,h)
+))</code></pre>
+<p>Note that in <span class="math">\(f\)</span> we must define the harvesting take place before the population recruits.</p>
+<pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">determine_SDP_matrix</span>(f, p, x_grid, h_grid, sigma_g, pdfn)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, delta)</code></pre>
+<pre><code>Error in if (variation &lt; thresh) {: missing value where TRUE/FALSE needed</code></pre>
 
     </article>
   </div>
@@ -218,25 +168,25 @@ loaded via a namespace (and not attached):
       
 <aside prefix="og:http://ogp.me/ns/article#">
   <p> <i class="icon-calendar"></i>
-    <time datetime="2015-01-13 00:00:00 +0000" 
-    property="dc:created">13 Jan 2015</time></p>
+    <time datetime="2015-01-23 00:00:00 +0000" 
+    property="dc:created">23 Jan 2015</time></p>
    
 
  <br />
 
   
-	<p><a class="btn btn-default" rel="prev" href='/2015/01/07/automated-knitr-in-jekyll.html'><i class="icon-chevron-left"></i> prev</a>
+	<p><a class="btn btn-default" rel="prev" href='/2015/01/22/sdp-Reed-controls-comparisons.html'><i class="icon-chevron-left"></i> prev</a>
   
   
-  <a class="btn btn-default" rel="next" href='/2015/01/22/invasives-sdp.html'>next <i class="icon-chevron-right"></i></a></p>
-  
+    </p>
+    
 
   <br />
 
   <p> <a  onclick="recordOutboundLink(this, 'Outbound Links', 'history'); 
             return false;" 
           class="btn btn-default" 
-          href="https://github.com/cboettig/2015/commits/master/_posts/2015-01-13-detrend-example.Rmd"><i class="icon-time"></i> history</a></p>
+          href="https://github.com/cboettig/2015/commits/master/_posts/2015-01-23-mdptoolbox-ex.Rmd"><i class="icon-time"></i> history</a></p>
 
   <br />
 
@@ -251,7 +201,7 @@ loaded via a namespace (and not attached):
     
     <!-- http://schema.org/BlogPosting/keywords -->
     <a rel="og:tag" class="tag" 
-			href="/2015/tags.html#earlywarning">#earlywarning</a>
+			href="/2015/tags.html#pdg-control">#pdg-control</a>
     </p>
 
   <br/>
@@ -259,12 +209,9 @@ loaded via a namespace (and not attached):
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/7fc7cd41e0951a04613ef59c5b4171647d6a4bbb/_posts/2015-01-13-detrend-example.Rmd"> 7fc7cd41e0951a04613ef59c5b4171647d6a4bbb</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/1a3de26ed8276e8fb272e5d868b378a332611b31/_posts/2015-01-23-mdptoolbox-ex.Rmd"> 1a3de26ed8276e8fb272e5d868b378a332611b31</a></small></p>
     
   <br/>
-  
-     <script src="/assets/js/toggleR.js"></script>
-     <button class="btn btn-default" type="button" onclick="toggle_R();">Hide/Show Source</button>
   
 
 </aside>
@@ -354,12 +301,12 @@ loaded via a namespace (and not attached):
       title="ctx_ver=Z39.88-2004
       &amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc
       &amp;rfr_id=info%3Asid%2Focoins.info%3Agenerator
-      &amp;rft.title=Detrend Example
+      &amp;rft.title=Mdptoolbox Ex
       &amp;rft.creator=Carl Boettiger
-      &amp;rft.date=2015-01-13
+      &amp;rft.date=2015-01-23
       &amp;rft.language=EN
       &amp;rft.rights=CC0
-      &amp;rft_id=http://www.carlboettiger.info/01/13/detrend-example.html">
+      &amp;rft_id=http://www.carlboettiger.info/01/23/mdptoolbox-ex.html">
   </span>
 
 

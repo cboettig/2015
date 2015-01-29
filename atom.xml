@@ -4,13 +4,74 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-01-28T05:06:32+00:00</updated>
+ <updated>2015-01-29T00:21:36+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
    <email>cboettig@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Mdptoolbox Ex</title>
+	 <link href="//01/23/mdptoolbox-ex.html"/>
+   <updated>2015-01-23T00:00:00+00:00</updated>
+   <id>/01/23/mdptoolbox-ex</id>
+   <content type="html">&lt;p&gt;Testing this out using &lt;code&gt;MDPtoolbox&lt;/code&gt;, but not working yet…&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(knitr)
+opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dev=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;svg&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fig.width=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fig.height=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;cache=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;results=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;hide&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fig.show=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;hold&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;error=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(MDPtoolbox)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(ggplot2)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;f &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x, h, p){ 
+  x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;h
+  p[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;{&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;p[[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x}  
+}
+p &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;a =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;b =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;)
+
+profit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x, h) &lt;span class=&quot;kw&quot;&gt;min&lt;/span&gt;(x,h)  &lt;span class=&quot;co&quot;&gt;# vectorized for x&lt;/span&gt;
+x_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;)
+h_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;)
+delta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;
+sigma_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt;
+z_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function() &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rlnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, sigma_g)
+pdfn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(P, s) &lt;span class=&quot;kw&quot;&gt;dlnorm&lt;/span&gt;(P, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, s)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Building the transition probability matrix:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;determine_SDP_matrix &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(f, p, x_grid, h_grid, sigma_g,
+                                 &lt;span class=&quot;dt&quot;&gt;pdfn=&lt;/span&gt;function(P, s) &lt;span class=&quot;kw&quot;&gt;dlnorm&lt;/span&gt;(P, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, s)){
+  gridsize &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(x_grid)
+  SDP_Mat &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(h_grid, function(h){
+    SDP_matrix &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;nrow=&lt;/span&gt;gridsize, &lt;span class=&quot;dt&quot;&gt;ncol=&lt;/span&gt;gridsize)
+    &lt;span class=&quot;co&quot;&gt;# Cycle over x values&lt;/span&gt;
+    for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:gridsize){ 
+      ## Calculate the expected transition  
+      x1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x_grid[i]
+      x2_expected &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(x1, h, p)
+      ## If expected 0, go to 0 with probabilty 1
+      if( x2_expected ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) 
+        SDP_matrix[i,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;  
+      else {
+        &lt;span class=&quot;co&quot;&gt;# relative probability of a transition to that state&lt;/span&gt;
+        ProportionalChance &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x_grid /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x2_expected
+        Prob &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;pdfn&lt;/span&gt;(ProportionalChance, sigma_g)
+        &lt;span class=&quot;co&quot;&gt;# Store normalized probabilities in row&lt;/span&gt;
+        SDP_matrix[i,] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Prob/&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(Prob)
+      }
+    }
+    SDP_matrix
+  })
+  SDP_Mat
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Building the reward matrix:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;R &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(x_grid, function(x)
+  &lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(h_grid, function(h)
+  &lt;span class=&quot;kw&quot;&gt;profit&lt;/span&gt;(x,h)
+))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that in &lt;span class=&quot;math&quot;&gt;\(f\)&lt;/span&gt; we must define the harvesting take place before the population recruits.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;P &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;determine_SDP_matrix&lt;/span&gt;(f, p, x_grid, h_grid, sigma_g, pdfn)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P, R, delta)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in if (variation &amp;lt; thresh) {: missing value where TRUE/FALSE needed&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
  
  <entry>
    <title>Sdp Reed Controls Comparisons</title>
@@ -200,10 +261,10 @@ other attached packages:
 [4] nimble_0.3         yaml_2.1.13        knitr_1.8         
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-9  colorspace_1.2-4 deSolve_1.11    
+ [1] codetools_0.2-10 colorspace_1.2-4 deSolve_1.11    
  [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
  [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
-[10] labeling_0.3     MASS_7.3-35      munsell_0.4.2   
+[10] labeling_0.3     MASS_7.3-37      munsell_0.4.2   
 [13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
 [16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
 [19] stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
@@ -387,19 +448,17 @@ attached base packages:
 [7] utils     datasets  base     
 
 other attached packages:
- [1] earlywarning_0.0-1 tidyr_0.2.0        ggplot2_1.0.0     
- [4] sde_2.0.13         zoo_1.7-11         fda_2.4.4         
- [7] Matrix_1.1-4       MASS_7.3-35        nimble_0.3        
-[10] yaml_2.1.13        knitr_1.8         
+ [1] tidyr_0.2.0   ggplot2_1.0.0 sde_2.0.13    zoo_1.7-11   
+ [5] fda_2.4.4     Matrix_1.1-4  MASS_7.3-37   nimble_0.3   
+ [9] yaml_2.1.13   knitr_1.8    
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-9  colorspace_1.2-4 deSolve_1.11    
- [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
- [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
-[10] labeling_0.3     lattice_0.20-29  munsell_0.4.2   
-[13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
-[16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
-[19] stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
+ [1] codetools_0.2-10 colorspace_1.2-4 digest_0.6.8    
+ [4] evaluate_0.5.5   formatR_1.0      grid_3.1.2      
+ [7] gtable_0.1.2     igraph_0.7.1     labeling_0.3    
+[10] lattice_0.20-29  munsell_0.4.2    plyr_1.8.1      
+[13] proto_0.3-10     Rcpp_0.11.3      reshape2_1.4.1  
+[16] scales_0.2.4     stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  

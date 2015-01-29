@@ -114,6 +114,77 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/01/23/mdptoolbox-ex.html">Mdptoolbox Ex</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 23 Jan 2015</p>
+
+<article>
+<div class="excerpt">
+<p>Testing this out using <code>MDPtoolbox</code>, but not working yet…</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
+opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;svg&#39;</span>, <span class="dt">fig.width=</span><span class="dv">4</span>, <span class="dt">fig.height=</span><span class="dv">4</span>, <span class="dt">cache=</span><span class="ot">FALSE</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>, <span class="dt">fig.show=</span><span class="st">&#39;hold&#39;</span>, <span class="dt">error=</span><span class="ot">TRUE</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MDPtoolbox)
+<span class="kw">library</span>(ggplot2)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x, h, p){ 
+  x &lt;-<span class="st"> </span>x -<span class="st"> </span>h
+  p[[<span class="dv">1</span>]] *<span class="st"> </span>x /<span class="st"> </span>{<span class="dv">1</span> +<span class="st"> </span>p[[<span class="dv">2</span>]] *<span class="st"> </span>x}  
+}
+p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">a =</span> <span class="dv">6</span>, <span class="dt">b =</span> <span class="fl">0.05</span>)
+
+profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">min</span>(x,h)  <span class="co"># vectorized for x</span>
+x_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">150</span>, <span class="dt">length =</span> <span class="dv">50</span>)
+h_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">150</span>,<span class="dt">length =</span> <span class="dv">50</span>)
+delta &lt;-<span class="st"> </span><span class="fl">0.05</span>
+sigma_g &lt;-<span class="st"> </span><span class="fl">0.1</span>
+z_g &lt;-<span class="st"> </span>function() <span class="dv">1</span> +<span class="st"> </span><span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_g)
+pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>(P, <span class="dv">0</span>, s)</code></pre>
+<p>Building the transition probability matrix:</p>
+<pre class="sourceCode r"><code class="sourceCode r">determine_SDP_matrix &lt;-<span class="st"> </span>function(f, p, x_grid, h_grid, sigma_g,
+                                 <span class="dt">pdfn=</span>function(P, s) <span class="kw">dlnorm</span>(P, <span class="dv">0</span>, s)){
+  gridsize &lt;-<span class="st"> </span><span class="kw">length</span>(x_grid)
+  SDP_Mat &lt;-<span class="st"> </span><span class="kw">lapply</span>(h_grid, function(h){
+    SDP_matrix &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">0</span>, <span class="dt">nrow=</span>gridsize, <span class="dt">ncol=</span>gridsize)
+    <span class="co"># Cycle over x values</span>
+    for(i in <span class="dv">1</span>:gridsize){ 
+      ## Calculate the expected transition  
+      x1 &lt;-<span class="st"> </span>x_grid[i]
+      x2_expected &lt;-<span class="st"> </span><span class="kw">f</span>(x1, h, p)
+      ## If expected 0, go to 0 with probabilty 1
+      if( x2_expected ==<span class="st"> </span><span class="dv">0</span>) 
+        SDP_matrix[i,<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1</span>  
+      else {
+        <span class="co"># relative probability of a transition to that state</span>
+        ProportionalChance &lt;-<span class="st"> </span>x_grid /<span class="st"> </span>x2_expected
+        Prob &lt;-<span class="st"> </span><span class="kw">pdfn</span>(ProportionalChance, sigma_g)
+        <span class="co"># Store normalized probabilities in row</span>
+        SDP_matrix[i,] &lt;-<span class="st"> </span>Prob/<span class="kw">sum</span>(Prob)
+      }
+    }
+    SDP_matrix
+  })
+  SDP_Mat
+}</code></pre>
+<p>Building the reward matrix:</p>
+<pre class="sourceCode r"><code class="sourceCode r">R &lt;-<span class="st"> </span><span class="kw">sapply</span>(x_grid, function(x)
+  <span class="kw">sapply</span>(h_grid, function(h)
+  <span class="kw">profit</span>(x,h)
+))</code></pre>
+<p>Note that in <span class="math">\(f\)</span> we must define the harvesting take place before the population recruits.</p>
+<pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">determine_SDP_matrix</span>(f, p, x_grid, h_grid, sigma_g, pdfn)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, delta)</code></pre>
+<pre><code>Error in if (variation &lt; thresh) {: missing value where TRUE/FALSE needed</code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/01/23/mdptoolbox-ex.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/01/22/sdp-Reed-controls-comparisons.html">Sdp Reed Controls Comparisons</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 22 Jan 2015</p>
@@ -220,6 +291,10 @@ pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/01/13/detrend-example.html">Detrend Example</a></h4></header>
 <p><span></span></p>
@@ -323,10 +398,10 @@ other attached packages:
 [4] nimble_0.3         yaml_2.1.13        knitr_1.8         
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-9  colorspace_1.2-4 deSolve_1.11    
+ [1] codetools_0.2-10 colorspace_1.2-4 deSolve_1.11    
  [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
  [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
-[10] labeling_0.3     MASS_7.3-35      munsell_0.4.2   
+[10] labeling_0.3     MASS_7.3-37      munsell_0.4.2   
 [13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
 [16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
 [19] stringr_0.6.2    tools_3.1.2     </code></pre>
@@ -340,10 +415,6 @@ loaded via a namespace (and not attached):
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/01/07/automated-knitr-in-jekyll.html">Automated Knitr In Jekyll</a></h4></header>
@@ -453,6 +524,10 @@ loaded via a namespace (and not attached):
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/01/04/lsn-model-comparisons.html">Lsn Model Comparisons</a></h4></header>
 <p><span></span></p>
@@ -544,19 +619,17 @@ attached base packages:
 [7] utils     datasets  base     
 
 other attached packages:
- [1] earlywarning_0.0-1 tidyr_0.2.0        ggplot2_1.0.0     
- [4] sde_2.0.13         zoo_1.7-11         fda_2.4.4         
- [7] Matrix_1.1-4       MASS_7.3-35        nimble_0.3        
-[10] yaml_2.1.13        knitr_1.8         
+ [1] tidyr_0.2.0   ggplot2_1.0.0 sde_2.0.13    zoo_1.7-11   
+ [5] fda_2.4.4     Matrix_1.1-4  MASS_7.3-37   nimble_0.3   
+ [9] yaml_2.1.13   knitr_1.8    
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-9  colorspace_1.2-4 deSolve_1.11    
- [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
- [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
-[10] labeling_0.3     lattice_0.20-29  munsell_0.4.2   
-[13] plyr_1.8.1       proto_0.3-10     psych_1.4.8.11  
-[16] Rcpp_0.11.3      reshape2_1.4.1   scales_0.2.4    
-[19] stringr_0.6.2    tools_3.1.2     </code></pre>
+ [1] codetools_0.2-10 colorspace_1.2-4 digest_0.6.8    
+ [4] evaluate_0.5.5   formatR_1.0      grid_3.1.2      
+ [7] gtable_0.1.2     igraph_0.7.1     labeling_0.3    
+[10] lattice_0.20-29  munsell_0.4.2    plyr_1.8.1      
+[13] proto_0.3-10     Rcpp_0.11.3      reshape2_1.4.1  
+[16] scales_0.2.4     stringr_0.6.2    tools_3.1.2     </code></pre>
  
 <!-- not that raw_content depends on custom generator, 
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
@@ -567,10 +640,6 @@ loaded via a namespace (and not attached):
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/01/01/notebook-maintenance-and-scaling.html">Notebook Maintenance And Scaling</a></h4></header>
