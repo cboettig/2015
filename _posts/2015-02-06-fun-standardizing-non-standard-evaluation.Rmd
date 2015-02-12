@@ -5,15 +5,21 @@ tags:
 - rfishbase
 - ropensci
 - R
-published: false
 ---
+
+```{r include=FALSE}
+library(knitr)
+opts_chunk$set(results='hide')
+```
+
 
 Using `dplyr` calls on the back-end of the `rfishbase` re-write means working around the non-standard evaluation (NSE), as described in the [`dplyr` vignette]().
 
-Grab the data I was using for this
+Grab the data I was using for this:
 
 ```{r}
 library("dplyr")
+downloader::download("https://github.com/cboettig/2015/raw/fc0d9185659e7976927d0ec91981912537ac6018/assets/data/2015-02-06-taxa.csv", "taxa.csv")
 all_taxa <- read.csv("taxa.csv")
 ```
 
@@ -57,11 +63,12 @@ identical(x, x3)
 At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:
 
 ```{r}
-  dots <- lapply(names(query), function(level){
+query(Family = 'Scaridae', SpecCode = 5537)
+dots <- lapply(names(query), function(level){
     value <- query[[level]]
     interp(~y == x, 
                 .values = list(y = as.name(level), x = value))
   })
   
-  filter_(all_taxa, .dots = dots) 
+x3 <-  filter_(all_taxa, .dots = dots) 
 ```
