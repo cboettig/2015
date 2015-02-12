@@ -1,0 +1,67 @@
+---
+layout: post
+category: computation
+tags:
+- rfishbase
+- ropensci
+- R
+published: false
+---
+
+Using `dplyr` calls on the back-end of the `rfishbase` re-write means working around the non-standard evaluation (NSE), as described in the [`dplyr` vignette]().
+
+Grab the data I was using for this
+
+```{r}
+library("dplyr")
+all_taxa <- read.csv("taxa.csv")
+```
+
+Consider a simple NSE `dplyr` call:
+
+```{r}
+x <- filter(all_taxa, Family == 'Scaridae')
+```
+
+The best SE version of this just needs to use the formula expression, `~`, the `_` SE version of the function and it's `.dots` argument:
+
+```{r}
+.dots <- list(~Family == 'Scaridae')
+x1 <- filter_(all_taxa, .dots=.dots)
+
+identical(x, x1)
+```
+
+This lets us treat the arguments (e.g. values of the factor on which we filter) as variables:
+
+
+```{r}
+family <- 'Scaridae'
+.dots <- list(~Family == family)
+x2 <- filter_(all_taxa, .dots=.dots)
+identical(x, x2)
+```  
+
+If we want both the key and value to vary, we need to get pretty fancy to subvert the non-standard evaluation:
+
+```{r}
+library(lazyeval)
+family <- 'Scaridae'
+field <- 'Family'
+.dots <- list(interp(~y == x, 
+                     .values = list(y = as.name(field), x = family)))
+x3 <- filter_(all_taxa, .dots=.dots)
+identical(x, x3)
+```
+
+At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:
+
+```{r}
+  dots <- lapply(names(query), function(level){
+    value <- query[[level]]
+    interp(~y == x, 
+                .values = list(y = as.name(level), x = value))
+  })
+  
+  filter_(all_taxa, .dots = dots) 
+```
