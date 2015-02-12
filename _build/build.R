@@ -22,6 +22,7 @@ local({
   knitr::opts_chunk$set(
     fig.path   = sprintf('assets/figures/%s/', d),
     cache.path = sprintf('_cache/%s/', d),
+    cache = TRUE,
 		comment = NA,
 	  message = FALSE,
     warning = FALSE,
