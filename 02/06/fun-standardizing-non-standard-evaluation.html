@@ -141,9 +141,8 @@ x3 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(x, x3)</code></pre>
 <pre><code>Error in identical(x, x3): object &#39;x&#39; not found</code></pre>
 <p>At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(<span class="dt">Family =</span> <span class="st">&#39;Scaridae&#39;</span>, <span class="dt">SpecCode =</span> <span class="dv">5537</span>)</code></pre>
-<pre><code>Error in query(Family = &quot;Scaridae&quot;, SpecCode = 5537): unused arguments (Family = &quot;Scaridae&quot;, SpecCode = 5537)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">dots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(query), function(level){
+<pre class="sourceCode r"><code class="sourceCode r">query &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">Family =</span> <span class="st">&#39;Scaridae&#39;</span>, <span class="dt">SpecCode =</span> <span class="dv">5537</span>)
+dots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(query), function(level){
     value &lt;-<span class="st"> </span>query[[level]]
     <span class="kw">interp</span>(~y ==<span class="st"> </span>x, 
                 <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> <span class="kw">as.name</span>(level), <span class="dt">x =</span> value))
@@ -208,7 +207,7 @@ x3 &lt;-<span class="st">  </span><span class="kw">filter_</span>(all_taxa, <spa
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/3c829c5f94057feb7aee12c4c53b903385e51ebd/_posts/2015-02-06-fun-standardizing-non-standard-evaluation.Rmd"> 3c829c5f94057feb7aee12c4c53b903385e51ebd</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/4314cba4817b9521d20f3ad299af3ce0f35e36f3/_posts/2015-02-06-fun-standardizing-non-standard-evaluation.Rmd"> 4314cba4817b9521d20f3ad299af3ce0f35e36f3</a></small></p>
     
   <br/>
   

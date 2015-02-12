@@ -4,7 +4,7 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-02-12T23:39:46+00:00</updated>
+ <updated>2015-02-12T23:40:11+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
@@ -246,9 +246,8 @@ x3 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x3)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in identical(x, x3): object &amp;#39;x&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;query&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;Family =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;Scaridae&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;SpecCode =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5537&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in query(Family = &amp;quot;Scaridae&amp;quot;, SpecCode = 5537): unused arguments (Family = &amp;quot;Scaridae&amp;quot;, SpecCode = 5537)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(query), function(level){
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;query &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;Family =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;Scaridae&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;SpecCode =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5537&lt;/span&gt;)
+dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(query), function(level){
     value &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;query[[level]]
     &lt;span class=&quot;kw&quot;&gt;interp&lt;/span&gt;(~y ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x, 
                 &lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;as.name&lt;/span&gt;(level), &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; value))
