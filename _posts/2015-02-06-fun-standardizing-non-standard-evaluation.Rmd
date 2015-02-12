@@ -63,7 +63,7 @@ identical(x, x3)
 At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:
 
 ```{r}
-query(Family = 'Scaridae', SpecCode = 5537)
+query <- list(Family = 'Scaridae', SpecCode = 5537)
 dots <- lapply(names(query), function(level){
     value <- query[[level]]
     interp(~y == x, 
