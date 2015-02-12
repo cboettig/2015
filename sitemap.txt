@@ -10,6 +10,8 @@ http://www.carlboettiger.info//sitemap.txt
 http://www.carlboettiger.info//tags.html 
 
  
+http://www.carlboettiger.info//02/12/dai-model.html  
+http://www.carlboettiger.info//02/06/fun-standardizing-non-standard-evaluation.html  
 http://www.carlboettiger.info//02/03/dockerizing-fishbase-api.html  
 http://www.carlboettiger.info//01/23/mdptoolbox-ex.html  
 http://www.carlboettiger.info//01/22/sdp-Reed-controls-comparisons.html  

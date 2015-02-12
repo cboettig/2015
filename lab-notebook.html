@@ -114,6 +114,273 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/02/12/dai-model.html">Dai Model</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 12 Feb 2015</p>
+
+<article>
+<div class="excerpt">
+<h2 id="a-first-go-at-implementing-the-dai-et-al-model">A first go at implementing the Dai et al model</h2>
+<p>From the supplement to Dai, Vorselen, Korolev, and Gore (2012), we have:</p>
+<p><span class="math">\[n_{t+1} = n_t g(n_t + \epsilon n_t, \theta)\]</span> <span class="math">\[g(n_t) = \frac{n_{t+1}}{n_t}\]</span></p>
+<blockquote>
+<p>This model is based on two phases of daily growth: a slow exponential growth phase at low cell densities, followed by a logistic growth phase with a higher per capita growth rate at intermediate cell densities. This model has 5 parameters: T lag is the lag time before yeast cells start to grow after being transferred into new media (the total time for daily growth is 23 hours). In the slow exponential phase, the population grows with a constant per capita growth rate γ low . After the population reaches a threshold density N c , the subsequent logistic growth is determined by γ high (γ high &gt;γ low ) and the carrying capacity K</p>
+</blockquote>
+<p><span class="math">\[\frac{1}{N}\frac{dN}{dt} = 
+    \left\{
+      \begin{array}{ll}
+        \gamma_{\textrm{low}} &amp; N &lt; N_c \\
+        \gamma_{\textrm{high}} \left(1 - \frac{N}{K}\right) &amp;  N_c &lt;= N &lt; K 
+      \end{array}
+    \right.\]</span></p>
+<hr />
+<p>A bit surprised by the model formulation here, particularly that a threshold response is built in at a critical density <span class="math">\(N_c\)</span>. Seems like this could emerge by explicitly modeling the positive density dependence due to the cooperative break-down of sugar, which should result in a smoother dependence between growth and density. A discontinuous growth model isn’t particularly satisfying as and cannot arise very directly from an individual-based description. Anyway, onwards.</p>
+<hr />
+<p>Okay, a bit of work is needed before we can simulate this from the description. Integrating this over time gives us exponential growth below <span class="math">\(N_c\)</span> and something Beverton-Holt-esque above <span class="math">\(N_c\)</span>,</p>
+<p>The ODE we can integrate analytically, <span class="math">\[x_t = K \exp(r t + K c_1) / (\exp(r t + K c_1) - 1)\]</span></p>
+<p>And solve for the constant if integration using the initial condition,</p>
+<p><span class="math">\[\begin{align*} 
+&amp; N_0 =  K \exp( K c_1) / (\exp( K c_1) - 1) \\
+&amp; N_0 (\exp( K c_1) - 1) =  K \exp( K c_1) \\
+&amp; K \exp( K c_1) - N_0 \exp( K c_1) + N_0 = 0 \\
+&amp; \exp( K c_1)( K  - N_0) + N_0 = 0 \\
+&amp; \exp(K c_1) = N_0 / (K - N_0) \\
+&amp; \exp(K c_1) = 1/(K/N_0 - 1) =: B
+\end{align*}\]</span></p>
+<p>So substituting for the IC we have,</p>
+<p><span class="math">\[\begin{align*} 
+x_t &amp; = K B \exp(r t )  / (B \exp(r t) - 1) \\
+    &amp; = K \exp(r t )  / (\exp(r t) - 1/B)  \\
+    &amp;  = K \exp(r t )  / (\exp(r t) - 1 + K/N_0) \\
+    &amp;  = K / (1 +   (K/N_0 - 1) \exp( - r t) ) 
+\end{align*}\]</span></p>
+<p>From here we define the function as described, using parameters from Table S1</p>
+<pre class="sourceCode r"><code class="sourceCode r">g &lt;-<span class="st"> </span>function(n_t, 
+              <span class="dt">t =</span> <span class="dv">23</span>, <span class="co"># Hours between serial dilutions</span>
+              <span class="dt">epsilon =</span> <span class="kw">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="fl">0.15</span>), 
+              <span class="dt">theta =</span> <span class="kw">c</span>(<span class="dt">gamma_high =</span> <span class="fl">0.439</span>, <span class="co"># hr^-1</span>
+                        <span class="dt">gamma_low =</span> <span class="fl">0.309</span>, <span class="co"># hr^-1</span>
+                        <span class="dt">T_lag =</span> <span class="fl">2.97</span>, <span class="co"># hr</span>
+                        <span class="dt">N_c =</span> <span class="fl">2.76e2</span>, <span class="co"># cells/μl</span>
+                        <span class="dt">K =</span> <span class="fl">1.76e5</span>),  <span class="co"># cells/μl</span>
+              <span class="dt">DF =</span> <span class="dv">600</span>)  <span class="co"># dilution factor</span>
+{
+  ## avoid referencing these repeatedly for readability and speed
+  gamma_high &lt;-<span class="st"> </span>theta[[<span class="st">&quot;gamma_high&quot;</span>]]
+  gamma_low &lt;-<span class="st"> </span>theta[[<span class="st">&quot;gamma_low&quot;</span>]]
+  T_lag &lt;-<span class="st"> </span>theta[[<span class="st">&quot;T_lag&quot;</span>]]
+  N_c &lt;-<span class="st"> </span>theta[[<span class="st">&quot;N_c&quot;</span>]]
+  K &lt;-<span class="st"> </span>theta[[<span class="st">&quot;K&quot;</span>]]
+  
+  
+  ## Dilute and start growing. (Stochasticity enters only via the dilution process)
+  n_t &lt;-<span class="st"> </span>n_t  *<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span>epsilon) /<span class="st"> </span>DF
+  
+  <span class="co"># Lag phase, could have been scaled out of the model</span>
+  if(t &lt;<span class="st"> </span>T_lag)
+    n_t1 &lt;-<span class="st"> </span>n_t
+  
+  ## Numerical happiness
+  if(n_t &lt;<span class="st"> </span><span class="fl">1e-20</span>)
+    n_t1 &lt;-<span class="st"> </span><span class="dv">0</span>
+  
+  ## Actual model
+  else {
+    
+    if(n_t &lt;<span class="st"> </span>N_c){ <span class="co"># Needs to switch once n &gt; N_c</span>
+      
+      ## Analytically find out how long before we leave the low-growth regime
+      t_c &lt;-<span class="st"> </span><span class="kw">log</span>(N_c /<span class="st"> </span>n_t) /<span class="st"> </span>gamma_low +<span class="st"> </span>T_lag
+      
+      ## Um, now this should just be equal to N_c
+      n_low &lt;-<span class="st"> </span>n_t *<span class="st"> </span><span class="kw">exp</span>((t_c -<span class="st"> </span>T_lag) *<span class="st"> </span>gamma_low) 
+      
+      ## Spend remaining time in &gt; N_c growth regime:      
+      tau &lt;-<span class="st"> </span>t -<span class="st"> </span>t_c        
+      n_t &lt;-<span class="st"> </span>n_low
+      n_t1 &lt;-<span class="st"> </span>K  /<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span>(K /<span class="st"> </span>n_t -<span class="st"> </span><span class="dv">1</span>) *<span class="st"> </span><span class="kw">exp</span>(-<span class="st"> </span>gamma_high *<span class="st"> </span>tau))
+    
+      
+    } else if(n_t &gt;=<span class="st"> </span>N_c){
+      ## simpler if we&#39;re always in the high-growth regime:
+      tau &lt;-<span class="st"> </span>t -<span class="st"> </span>T_lag
+      n_t1 &lt;-<span class="st"> </span>K /<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span>(K /<span class="st"> </span>n_t -<span class="st"> </span><span class="dv">1</span>) *<span class="st"> </span><span class="kw">exp</span>(-<span class="st"> </span>gamma_high *<span class="st"> </span>tau))
+      
+    }
+  }
+  <span class="co"># And now we can return n_{t+1}</span>
+  n_t1
+}</code></pre>
+<hr />
+<p>Aside from whether or not I’ve gotten the math right, there’s a bit of guesswork here as to whether this matches the author’s implementation of the model. Numerical issues worth thinking about include what form gives best floating-point stability, not just most consise, way to represent these; e.g. are these numerically identical:</p>
+<pre class="sourceCode r"><code class="sourceCode r">n_t1 &lt;-<span class="st"> </span>K /(<span class="dv">1</span> +<span class="st"> </span>(K /<span class="st"> </span>n_low -<span class="st"> </span><span class="dv">1</span>) *<span class="st"> </span><span class="kw">exp</span>(-<span class="st"> </span>gamma_high *<span class="st"> </span>tau))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">n_t1 &lt;-<span class="st"> </span>n_t *<span class="st"> </span>K *<span class="st"> </span><span class="kw">exp</span>(gamma_high *<span class="st"> </span>tau )  /<span class="st"> </span>(n_t *<span class="st"> </span><span class="kw">exp</span>(gamma_high *<span class="st"> </span>tau) -<span class="st"> </span>n_t +<span class="st"> </span>K)</code></pre>
+<hr />
+<h2 id="model-simulations">Model simulations</h2>
+<p>We can demonstrate alternative stable states from this configuration, starting from similar initial densities:</p>
+<pre class="sourceCode r"><code class="sourceCode r">max_days &lt;-<span class="st"> </span><span class="dv">30</span>
+n &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
+x &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
+n[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1e3</span>
+x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">5e2</span>
+<span class="kw">set.seed</span>(<span class="dv">123</span>)
+for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
+  n[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(n[day])
+  x[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(x[day])
+}
+
+df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">t =</span> <span class="dv">1</span>:max_days, <span class="dt">n =</span> n, <span class="dt">x =</span> x)
+
+<span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(t, n), <span class="dt">col =</span> <span class="dv">1</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(t, x), <span class="dt">col =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">scale_y_log10</span>()</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-3-1.png" />
+</figure>
+<h2 id="regime-shift">Regime Shift</h2>
+<p>We simulate the experiment presented in the orginal paper by gradually increasing the dilution factor over time:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Stepwise changes</span>
+DF &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">2000</span>, <span class="dt">length=</span><span class="dv">9</span>), rep, <span class="dv">40</span>))
+
+<span class="co"># continuous linear increase</span>
+DF &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">2000</span>, <span class="dt">length=</span><span class="fl">1e3</span>)
+
+max_days &lt;-<span class="st"> </span><span class="kw">length</span>(DF)
+y &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
+
+y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1.76e5</span>
+for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
+  y[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(y[day], <span class="dt">DF =</span> DF[day])
+}
+
+<span class="kw">qplot</span>(<span class="kw">seq_along</span>(y), y)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-4-1.png" />
+</figure>
+<p>Decreasing K should model decreasing sucrose I think?</p>
+<pre class="sourceCode r"><code class="sourceCode r">K_0 =<span class="st"> </span><span class="fl">1.76e5</span>
+<span class="co"># continuous linear increase</span>
+sucrose &lt;-<span class="st"> </span><span class="kw">seq</span>(K_0, <span class="dv">0</span>, <span class="dt">length=</span><span class="fl">1e3</span>)
+
+max_days &lt;-<span class="st"> </span><span class="kw">length</span>(sucrose)
+y &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
+
+y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1e5</span>
+for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
+  theta =<span class="st"> </span><span class="kw">c</span>(<span class="dt">gamma_high =</span> <span class="fl">0.4</span>, <span class="co"># hr^-1</span>
+            <span class="dt">gamma_low =</span> <span class="fl">0.3</span>, <span class="co"># hr^-1</span>
+            <span class="dt">T_lag =</span> <span class="fl">2.97</span>, <span class="co"># hr</span>
+            <span class="dt">N_c =</span> <span class="fl">2.76e2</span>, <span class="co"># cells/μl</span>
+            <span class="dt">K =</span> sucrose[day])
+  y[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(y[day], <span class="dt">theta=</span>theta)
+}
+
+<span class="kw">qplot</span>(<span class="kw">seq_along</span>(y), y) +<span class="st"> </span><span class="kw">geom_hline</span>(<span class="dt">yintercept=</span><span class="fl">2.76e2</span>, <span class="dt">lty=</span><span class="dv">3</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-5-1.png" />
+</figure>
+<p>Turn down the noise and increase <span class="math">\(N_c\)</span> for a slightly more visible critical transition:</p>
+<pre class="sourceCode r"><code class="sourceCode r">N_c &lt;-<span class="st"> </span><span class="fl">2e3</span>
+K_0 =<span class="st"> </span><span class="fl">1.76e5</span>
+<span class="co"># continuous linear increase</span>
+sucrose &lt;-<span class="st"> </span><span class="kw">seq</span>(K_0, .<span class="dv">8</span> *<span class="st"> </span>N_c, <span class="dt">length=</span><span class="fl">1e3</span>)
+
+max_days &lt;-<span class="st"> </span><span class="kw">length</span>(sucrose)
+y &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
+
+y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1e5</span>
+for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
+  theta =<span class="st"> </span><span class="kw">c</span>(<span class="dt">gamma_high =</span> <span class="fl">0.4</span>, <span class="co"># hr^-1</span>
+            <span class="dt">gamma_low =</span> <span class="fl">0.3</span>, <span class="co"># hr^-1</span>
+            <span class="dt">T_lag =</span> <span class="fl">2.97</span>, <span class="co"># hr</span>
+            <span class="dt">N_c =</span> N_c, <span class="co"># cells/μl</span>
+            <span class="dt">K =</span> sucrose[day])
+  y[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(y[day], <span class="dt">theta=</span>theta, <span class="dt">epsilon=</span><span class="kw">rnorm</span>(<span class="dv">1</span>,<span class="dv">0</span>,.<span class="dv">01</span>))
+}
+
+<span class="kw">qplot</span>(<span class="kw">seq_along</span>(y), y) +<span class="st"> </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> N_c, <span class="dt">lty=</span><span class="dv">3</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-6-1.png" />
+</figure>
+<p>Much more to do: Would be nice to add simulations of the computation of the bifucation using replicates run a different fixed dilution regimes.</p>
+<h1 id="references">References</h1>
+<p>[1] L. Dai, D. Vorselen, K. S. Korolev, et al. “Generic Indicators for Loss of Resilience Before a Tipping Point Leading to Population Collapse”. In: <em>Science</em> 336.6085 (May. 2012), pp. 1175-1177. DOI: 10.1126/science.1219805. <URL:
+http://dx.doi.org/10.1126/science.1219805>.</p>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/02/12/dai-model.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
+          <header><h4><a href="/2015/02/06/fun-standardizing-non-standard-evaluation.html">Fun Standardizing Non Standard Evaluation</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 06 Feb 2015</p>
+
+<article>
+<div class="excerpt">
+<p>Using <code>dplyr</code> calls on the back-end of the <code>rfishbase</code> re-write means working around the non-standard evaluation (NSE), as described in the <a href=""><code>dplyr</code> vignette</a>.</p>
+<p>Grab the data I was using for this:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
+downloader::<span class="kw">download</span>(<span class="st">&quot;https://github.com/cboettig/2015/raw/fc0d9185659e7976927d0ec91981912537ac6018/assets/data/2015-02-06-taxa.csv&quot;</span>, <span class="st">&quot;taxa.csv&quot;</span>)</code></pre>
+<pre><code>Error in loadNamespace(name): there is no package called &#39;downloader&#39;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">all_taxa &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;taxa.csv&quot;</span>)</code></pre>
+<pre><code>Error in file(file, &quot;rt&quot;): cannot open the connection</code></pre>
+<p>Consider a simple NSE <code>dplyr</code> call:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">filter</span>(all_taxa, Family ==<span class="st"> &#39;Scaridae&#39;</span>)</code></pre>
+<pre><code>Error in filter_(.data, .dots = lazyeval::lazy_dots(...)): object &#39;all_taxa&#39; not found</code></pre>
+<p>The best SE version of this just needs to use the formula expression, <code>~</code>, the <code>_</code> SE version of the function and it’s <code>.dots</code> argument:</p>
+<pre class="sourceCode r"><code class="sourceCode r">.dots &lt;-<span class="st"> </span><span class="kw">list</span>(~Family ==<span class="st"> &#39;Scaridae&#39;</span>)
+x1 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots=</span>.dots)</code></pre>
+<pre><code>Error in filter_(all_taxa, .dots = .dots): object &#39;all_taxa&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(x, x1)</code></pre>
+<pre><code>Error in identical(x, x1): object &#39;x&#39; not found</code></pre>
+<p>This lets us treat the arguments (e.g. values of the factor on which we filter) as variables:</p>
+<pre class="sourceCode r"><code class="sourceCode r">family &lt;-<span class="st"> &#39;Scaridae&#39;</span>
+.dots &lt;-<span class="st"> </span><span class="kw">list</span>(~Family ==<span class="st"> </span>family)
+x2 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots=</span>.dots)</code></pre>
+<pre><code>Error in filter_(all_taxa, .dots = .dots): object &#39;all_taxa&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(x, x2)</code></pre>
+<pre><code>Error in identical(x, x2): object &#39;x&#39; not found</code></pre>
+<p>If we want both the key and value to vary, we need to get pretty fancy to subvert the non-standard evaluation:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lazyeval)
+family &lt;-<span class="st"> &#39;Scaridae&#39;</span>
+field &lt;-<span class="st"> &#39;Family&#39;</span>
+.dots &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="kw">interp</span>(~y ==<span class="st"> </span>x, 
+                     <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> <span class="kw">as.name</span>(field), <span class="dt">x =</span> family)))
+x3 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots=</span>.dots)</code></pre>
+<pre><code>Error in filter_(all_taxa, .dots = .dots): object &#39;all_taxa&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(x, x3)</code></pre>
+<pre><code>Error in identical(x, x3): object &#39;x&#39; not found</code></pre>
+<p>At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">query</span>(<span class="dt">Family =</span> <span class="st">&#39;Scaridae&#39;</span>, <span class="dt">SpecCode =</span> <span class="dv">5537</span>)</code></pre>
+<pre><code>Error in query(Family = &quot;Scaridae&quot;, SpecCode = 5537): unused arguments (Family = &quot;Scaridae&quot;, SpecCode = 5537)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">dots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(query), function(level){
+    value &lt;-<span class="st"> </span>query[[level]]
+    <span class="kw">interp</span>(~y ==<span class="st"> </span>x, 
+                <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> <span class="kw">as.name</span>(level), <span class="dt">x =</span> value))
+  })
+  
+x3 &lt;-<span class="st">  </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots =</span> dots) </code></pre>
+<pre><code>Error in filter_(all_taxa, .dots = dots): object &#39;all_taxa&#39; not found</code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/02/06/fun-standardizing-non-standard-evaluation.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/02/03/dockerizing-fishbase-api.html">Dockerizing Fishbase Api</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 03 Feb 2015</p>
@@ -205,6 +472,10 @@ chown -R mysql:mysql /var/lib/mysql</code></pre>
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/01/23/mdptoolbox-ex.html">Mdptoolbox Ex</a></h4></header>
@@ -334,10 +605,6 @@ profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</spa
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/01/22/invasives-sdp.html">Invasives Sdp</a></h4></header>
 <p><span></span></p>
@@ -387,6 +654,10 @@ pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/01/13/detrend-example.html">Detrend Example</a></h4></header>
@@ -572,10 +843,6 @@ loaded via a namespace (and not attached):
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/01/05/notes.html">Notes</a></h4></header>
 <p><span></span></p>
@@ -615,186 +882,6 @@ loaded via a namespace (and not attached):
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/01/05/notes.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/01/04/lsn-model-comparisons.html">Lsn Model Comparisons</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 04 Jan 2015</p>
-
-<article>
-<div class="excerpt">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
-<span class="kw">library</span>(nimble)
-<span class="kw">library</span>(sde)
-<span class="kw">library</span>(ggplot2)
-<span class="kw">library</span>(tidyr)
-opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">5</span>, <span class="dt">fig.height=</span><span class="dv">5</span>, <span class="dt">cache=</span><span class="dv">1</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>)</code></pre>
-<p>Stick with SDE example as a reference point:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
-d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
-s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
-data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))
-<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
-N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png" />
-</figure>
-<h2 id="lsn-version">LSN version</h2>
-<p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
-<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-        theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-        sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-        sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-                    m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-             x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
-             y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
-
-  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
-    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
-    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x) 
-    mu_y[i] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i]
-    y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_y[i], <span class="dt">sd =</span> sigma_y) 
-  }
-})</code></pre>
-<p>Constants in the model definition are the length of the dataset, <span class="math">\(N\)</span> and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.</p>
-<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> <span class="dv">1</span>:N)</code></pre>
-<p>Initial values for the parameters</p>
-<pre class="sourceCode r"><code class="sourceCode r">inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">6</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
-<p>and here we go:</p>
-<pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> lsn, 
-                      <span class="dt">constants =</span> constants, 
-                      <span class="dt">data =</span> data, 
-                      <span class="dt">inits =</span> inits)
-Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">2e2</span>)
-Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
-Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
-<p>and examine results</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
-long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
-<pre><code>            m       sigma_x       sigma_y         theta 
--1.675333e-05  3.875174e-01  4.066872e-02  1.022867e+01 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/trace-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.2 (2014-10-31)
-Platform: x86_64-pc-linux-gnu (64-bit)
-
-locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
- [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] splines   stats4    methods   stats     graphics  grDevices
-[7] utils     datasets  base     
-
-other attached packages:
- [1] tidyr_0.2.0   ggplot2_1.0.0 sde_2.0.13    zoo_1.7-11   
- [5] fda_2.4.4     Matrix_1.1-4  MASS_7.3-37   nimble_0.3   
- [9] yaml_2.1.13   knitr_1.8    
-
-loaded via a namespace (and not attached):
- [1] codetools_0.2-10 colorspace_1.2-4 digest_0.6.8    
- [4] evaluate_0.5.5   formatR_1.0      grid_3.1.2      
- [7] gtable_0.1.2     igraph_0.7.1     labeling_0.3    
-[10] lattice_0.20-29  munsell_0.4.2    plyr_1.8.1      
-[13] proto_0.3-10     Rcpp_0.11.3      reshape2_1.4.1  
-[16] scales_0.2.4     stringr_0.6.2    tools_3.1.2     </code></pre>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/01/04/lsn-model-comparisons.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/01/01/notebook-maintenance-and-scaling.html">Notebook Maintenance And Scaling</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 01 Jan 2015</p>
-
-<article>
-<div class="excerpt">
-<p>Electronic notebooks may not run out of pages like a paper notebook, but with five years of entries (963 posts, with a repository size approaching half a gigabyte), together with various files, layouts, experimentation and version history, some thought must be given to scale. Two closely related considerations add to this further: dynamic builds with <code>knitr</code> from <code>.Rmd</code> versions and hosting image files directly in the notebook repository rather than uploading to an external site (previously flickr or on the gh-pages of other project repositories). This has several advantages (more on that later) but in the immediate term it makes building the repository potentially slower (though knitr’s caching helps) and increases the repository size more rapidly (even with text-based <code>svg</code> images).</p>
-<p>The current Jekyll system keeps all posts in a single repository and rebuilds the HTML files for each every time. This is already showing some strains: for instance, for some reason the git hashes when generating the site automatically on Travis cease updating for older posts, though this problem doesn’t occur when building locally. Overall, the Jekyll platform is rather snappy so this isn’t an unmanageable size, but is sufficient to demonstrate that the approach isn’t able to scale indefinitely either.</p>
-<p>So, as with the paper notebook whose pages are filled, it’s time to crack open a new binding and shelve the old notebooks – somewhere handy to be sure, but no longer one voluminous tome on the desk.</p>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-01/notebooks-shelf.jpg" />
-</figure>
-<h2 id="a-multi-repository-approach">A multi-repository approach</h2>
-<p>To address this, I’m am trying out breaking the notebook over multiple repositories: using a new repository for each year’s worth of entries, and an additional repository to provide the basic pages (<code>home</code>, <code>teaching</code>, <code>vita</code>, etc. from the navbar) along with the assets used by all the other sites (css, fonts, javascript, etc). This avoids rebuilding the posts of notebooks from all previous years every time the Jekyll site is compiled, keeping the repositories smaller, the site more modular and more easy to scale.</p>
-<p>This raises some challenges such as keeping the layout and appearance consistent without maintaining copies of layout files across multiple repositories; managing URLs and paths across different repositories, and aggregating metadata (posts, tags, categories).</p>
-<h2 id="repos-paths-and-urls-for-the-multi-notebook">Repos, Paths, and URLs for the multi-notebook</h2>
-<p>Even with the source files (such as <code>.md</code> entries, templates, etc.) in different repositories it would be simple enough to combine the generated HTML files from each repository into a single output directory serving the site (on Github or elsewhere). However, GitHub’s <code>gh-pages</code> provide an elegantly more modular way to do this already. GitHub uses the URL of the user’s repository (the repo named <code>username.github.io</code>, which also serves as the site URL unless a different domain is specified using a CNAME file) as the root domain for all other <code>gh-pages</code> branches on the Github repo.</p>
-<p>Thus, I have created repositories named <code>2015</code>, <code>2014</code>, etc, which will serve the notebooks for the corresponding year from their own <code>gh-pages</code> branch. Moving my <code>www.carlboettiger.info</code> (the use of a subdomain such as <code>www</code> is required in order to benefit from Github’s CDN, though if it is omitted the domain provider will add it) from my <code>labnotebook</code> repo to my <code>cboettig.github.io</code> repository means that the annual repositories now have base URLs such as <code>www.carlboettiger.info/2015</code>, <code>www.carlboettiger.info/2014</code>. Adjusting the <code>_config.yml</code> to omit <code>/year:</code> from the permalink, since it is already in the base URL, is all that is needed to ensure that the posts of all my old URLs will still resolve to the same pages. Excellent.</p>
-<p>Dealing with the site pages is more tricky than dealing with the posts. Pages come in two variates: some, like <code>index.html</code>, <code>research.html</code>, <code>vita.html</code>, contain only content that is independent of whatever is in the notebook pages and thus can live quite happily in the <code>cboettig.github.io</code> repository. Others, like <code>tags.html</code>, <code>categories.html</code>, <code>archive.html</code>, <code>lab-notebook.html</code>, <code>atom.xml</code> and other tag-specific RSS feeds are dynamically generated by Jekyll using the metadata of the posts, and thus need to live in the individual notebook repositories instead.</p>
-<p>This instead of just having the page: <a href="http://carlboettiger.info/tags">carlboettiger.info/tags</a>, each year begins a new notebook with it’s own tags, categories, etc: <a href="http://carlboettiger.info/2014/tags">carlboettiger.info/2014/tags</a>, <a href="http://carlboettiger.info/2013/tags">carlboettiger.info/2013/tags</a>. For tags, categories,it makes some sense to have this information aggregated by year, avoiding the clutter of too many or too stale tags or categories (though perhaps something is lost by not being able to see this in aggregate across all years, at least not without some effort). Likewise for the list of posts by date (previously at <code>archive.html</code>, now just turned into <code>index.html</code>) is produced for each annual notebook, such that <a href="http://carlboettiger.info/2014">carlboettiger.info/2014</a> resolves a reverse-chronological list of posts for that year alone.</p>
-<p>I must then address what to do about the original URLs such as <a href="http://carlboettiger.info/tags">carlboettiger.info/tags</a>. Using a Jekyll liquid filter it is easy to define automatic redirects for <code>/tags.html</code> and <code>/categories.html</code> that will forward to the current year’s tag’s and categories, though perhaps an aggregated view would be preferable. For <a href="http://carlboettiger.info/archive">carlboettiger.info/archive</a> I have provided manual links to the index of each annual notebook rather than a redirect to the index of only the most current notebook. Likewise for one of my most popular pages, <a href="http://carlboettiger.info/lab-notebook">carlboettiger.info/lab-notebook</a>, I have retained the automated feeds from Github, Twitter, and Mendeley, but replaced the previews of the most recent posts with the less aesthetic link to the notebook by year. Meanwhile, I have provided each notebook with it’s own nine-panel preview page such as <a href="http://carlboettiger.info/2014/lab-notebook">carlboettiger.info/2014/lab-notebook</a>, which has the preview but not the network feeds (Perhaps it would be better to move this to the index page). In this way, the social feeds can be updated merely by updating the <code>cboettig.github.io</code> repo (since these are rendered as static text rather than javascript, written using the relevant API at the time the site is built.)</p>
-<p>A more tricky case is that of the atom feeds. It doesn’t really make sense to subscribe to a <code>carlboettiger.info/2015/blog.xml</code> feed that will be inactive in a year. Using HTML redirects in a <code>.xml</code> file doesn’t make too much sense, so I will try the RSS-flavor redirect:</p>
-<pre class="sourceCode xml"><code class="sourceCode xml"><span class="kw">&lt;newLocation&gt;</span>
-http://www.carlboettiger.info/2015/blog.xml
-<span class="kw">&lt;/newLocation&gt;</span></code></pre>
-<p>though this seems less than ideal.</p>
-<h2 id="automated-deploy">Automated deploy</h2>
-<p>As I use the <code>jeykll-pandoc</code> gem to have pandoc render the markdown, along with a few other custom plugins, I cannot take advantage of Github’s automated build for Jekyll and have instead relied on the trick of having Travis-CI build and deploy the site. Adding automated knitr building to the mix will make this too heavy for travis, even for more modular notebooks. Instead, I am relying on local building, together with automated builds from my own server running a Drone CI instance. More on this in a separate post.</p>
-<h2 id="site-assets-templates">Site assets, templates</h2>
-<p>Individual notebook repositories are thus much more light-weight. All css assets are in the root <code>cboettig.github.io</code> repository or already provided by external CDNs (such as the FontAwesome icons or MathJax, and Bootstrap javascript). However, it is necessary that both all annual notebook repositories and the base repo have the Jekyll <code>_layouts</code> and <code>_includes</code> files required to template and build the pages. This is unfortunate, since it means maintaining multiple copies of the same file, but I haven’t figured out an easy way around it.</p>
-<h2 id="pruning-history">Pruning history</h2>
-<p>In breaking <code>labnotebook</code> into component repos by year, I only want to preserve the history of that year, thus keeping the repositories small. This is particularly important for the root repo, <code>cboettig.github.io</code>, since it will remain active.</p>
-<ul>
-<li>edit <code>_config.yml</code> to remove <code>/:year</code> from <code>_config.yml</code> (the repository name will automatically be used as part of the URL)</li>
-<li>delete all posts from different years (preferable to just wait until deleting their history, which will remove the files as well), e.g. for 2014:</li>
-</ul>
-<pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">files=</span><span class="kw">`echo</span> <span class="dt">{_posts/2008-*,_posts/2009-*,_posts/2010-*,_posts/2011-*,_posts/2012-*,_posts/2013-*}</span><span class="kw">`</span>
-<span class="kw">git</span> filter-branch --index-filter <span class="st">&quot;git rm -rf --cached --ignore-unmatch </span><span class="ot">$files</span><span class="st">&quot;</span> HEAD</code></pre>
-<p>and remove the temporary backups immediately so that repository actually shrinks in size:</p>
-<pre><code>git update-ref -d refs/original/refs/heads/master
-git reflog expire --expire=now --all
-git gc --prune=now</code></pre>
-<p>This is more important in the root repository, since this will remain active. If the annual notebook entry repositories have some extra stuff in their <code>.git</code> history it isn’t such an issue since they no longer need to grow or be moved around as much. (See this <a href="http://stackoverflow.com/questions/2100907">SO on rewriting git history</a>.)</p>
-<h2 id="my-progress-notes-during-the-remapping">My progress notes during the remapping:</h2>
-<ul>
-<li><p>[x] delete the CNAME file.</p></li>
-<li><p>[x] delete all the relatively static pages files that will be hosted directly from <code>cboettig.github.io</code> (<code>index.html</code>, <code>research.md</code>, etc., but not dynamically created <code>tags.html</code> etc).</p></li>
-<li><p>[x] adjust <code>repo:</code> in <code>_config.yml</code> to match the repository year. This will automatically fix the sha and history links in the sidebar.</p></li>
-<li><p>[x] Other tweaks to the sidebar: <code>site.repo</code> liquid must be added to categories, tags, next, and previous links.</p></li>
-<li><p>[x] Automated deploy for active and root repositories.</p></li>
-<li><p>[x] Plan for <code>labnotebook</code> repo. History is preserved, but issues, github stars, etc. Use as template for the new years?</p></li>
-<li><p>[x] Activate! Remove CNAME from <code>labnotebook</code> repo, add <code>www</code> CNAME to <code>cboettig.github.io</code>. Consider removing <code>gh-pages</code> branch of lab-notebook?</p></li>
-<li><p>[x] Fix / workaround for the root atom feeds.</p></li>
-<li><p>[x] Syncing assets, layout, and deploy scripts? Perhaps it is best to allow these to diverge and newer notebooks to look different than older ones?</p></li>
-</ul>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/01/01/notebook-maintenance-and-scaling.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 

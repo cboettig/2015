@@ -4,13 +4,260 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-02-12T23:06:34+00:00</updated>
+ <updated>2015-02-12T23:39:46+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
    <email>cboettig@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Dai Model</title>
+	 <link href="//02/12/dai-model.html"/>
+   <updated>2015-02-12T00:00:00+00:00</updated>
+   <id>/02/12/dai-model</id>
+   <content type="html">&lt;h2 id=&quot;a-first-go-at-implementing-the-dai-et-al-model&quot;&gt;A first go at implementing the Dai et al model&lt;/h2&gt;
+&lt;p&gt;From the supplement to Dai, Vorselen, Korolev, and Gore (2012), we have:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[n_{t+1} = n_t g(n_t + \epsilon n_t, \theta)\]&lt;/span&gt; &lt;span class=&quot;math&quot;&gt;\[g(n_t) = \frac{n_{t+1}}{n_t}\]&lt;/span&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;This model is based on two phases of daily growth: a slow exponential growth phase at low cell densities, followed by a logistic growth phase with a higher per capita growth rate at intermediate cell densities. This model has 5 parameters: T lag is the lag time before yeast cells start to grow after being transferred into new media (the total time for daily growth is 23 hours). In the slow exponential phase, the population grows with a constant per capita growth rate γ low . After the population reaches a threshold density N c , the subsequent logistic growth is determined by γ high (γ high &amp;gt;γ low ) and the carrying capacity K&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[\frac{1}{N}\frac{dN}{dt} = 
+    \left\{
+      \begin{array}{ll}
+        \gamma_{\textrm{low}} &amp;amp; N &amp;lt; N_c \\
+        \gamma_{\textrm{high}} \left(1 - \frac{N}{K}\right) &amp;amp;  N_c &amp;lt;= N &amp;lt; K 
+      \end{array}
+    \right.\]&lt;/span&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;A bit surprised by the model formulation here, particularly that a threshold response is built in at a critical density &lt;span class=&quot;math&quot;&gt;\(N_c\)&lt;/span&gt;. Seems like this could emerge by explicitly modeling the positive density dependence due to the cooperative break-down of sugar, which should result in a smoother dependence between growth and density. A discontinuous growth model isn’t particularly satisfying as and cannot arise very directly from an individual-based description. Anyway, onwards.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;Okay, a bit of work is needed before we can simulate this from the description. Integrating this over time gives us exponential growth below &lt;span class=&quot;math&quot;&gt;\(N_c\)&lt;/span&gt; and something Beverton-Holt-esque above &lt;span class=&quot;math&quot;&gt;\(N_c\)&lt;/span&gt;,&lt;/p&gt;
+&lt;p&gt;The ODE we can integrate analytically, &lt;span class=&quot;math&quot;&gt;\[x_t = K \exp(r t + K c_1) / (\exp(r t + K c_1) - 1)\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;And solve for the constant if integration using the initial condition,&lt;/p&gt;
+&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[\begin{align*} 
+&amp;amp; N_0 =  K \exp( K c_1) / (\exp( K c_1) - 1) \\
+&amp;amp; N_0 (\exp( K c_1) - 1) =  K \exp( K c_1) \\
+&amp;amp; K \exp( K c_1) - N_0 \exp( K c_1) + N_0 = 0 \\
+&amp;amp; \exp( K c_1)( K  - N_0) + N_0 = 0 \\
+&amp;amp; \exp(K c_1) = N_0 / (K - N_0) \\
+&amp;amp; \exp(K c_1) = 1/(K/N_0 - 1) =: B
+\end{align*}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;So substituting for the IC we have,&lt;/p&gt;
+&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[\begin{align*} 
+x_t &amp;amp; = K B \exp(r t )  / (B \exp(r t) - 1) \\
+    &amp;amp; = K \exp(r t )  / (\exp(r t) - 1/B)  \\
+    &amp;amp;  = K \exp(r t )  / (\exp(r t) - 1 + K/N_0) \\
+    &amp;amp;  = K / (1 +   (K/N_0 - 1) \exp( - r t) ) 
+\end{align*}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;From here we define the function as described, using parameters from Table S1&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(n_t, 
+              &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;23&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# Hours between serial dilutions&lt;/span&gt;
+              &lt;span class=&quot;dt&quot;&gt;epsilon =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;0.15&lt;/span&gt;), 
+              &lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;gamma_high =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.439&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# hr^-1&lt;/span&gt;
+                        &lt;span class=&quot;dt&quot;&gt;gamma_low =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.309&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# hr^-1&lt;/span&gt;
+                        &lt;span class=&quot;dt&quot;&gt;T_lag =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;2.97&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# hr&lt;/span&gt;
+                        &lt;span class=&quot;dt&quot;&gt;N_c =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;2.76e2&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# cells/μl&lt;/span&gt;
+                        &lt;span class=&quot;dt&quot;&gt;K =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1.76e5&lt;/span&gt;),  &lt;span class=&quot;co&quot;&gt;# cells/μl&lt;/span&gt;
+              &lt;span class=&quot;dt&quot;&gt;DF =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;600&lt;/span&gt;)  &lt;span class=&quot;co&quot;&gt;# dilution factor&lt;/span&gt;
+{
+  ## avoid referencing these repeatedly for readability and speed
+  gamma_high &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;theta[[&lt;span class=&quot;st&quot;&gt;&amp;quot;gamma_high&amp;quot;&lt;/span&gt;]]
+  gamma_low &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;theta[[&lt;span class=&quot;st&quot;&gt;&amp;quot;gamma_low&amp;quot;&lt;/span&gt;]]
+  T_lag &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;theta[[&lt;span class=&quot;st&quot;&gt;&amp;quot;T_lag&amp;quot;&lt;/span&gt;]]
+  N_c &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;theta[[&lt;span class=&quot;st&quot;&gt;&amp;quot;N_c&amp;quot;&lt;/span&gt;]]
+  K &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;theta[[&lt;span class=&quot;st&quot;&gt;&amp;quot;K&amp;quot;&lt;/span&gt;]]
+  
+  
+  ## Dilute and start growing. (Stochasticity enters only via the dilution process)
+  n_t &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_t  *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;epsilon) /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;DF
+  
+  &lt;span class=&quot;co&quot;&gt;# Lag phase, could have been scaled out of the model&lt;/span&gt;
+  if(t &amp;lt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;T_lag)
+    n_t1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_t
+  
+  ## Numerical happiness
+  if(n_t &amp;lt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e-20&lt;/span&gt;)
+    n_t1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;
+  
+  ## Actual model
+  else {
+    
+    if(n_t &amp;lt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;N_c){ &lt;span class=&quot;co&quot;&gt;# Needs to switch once n &amp;gt; N_c&lt;/span&gt;
+      
+      ## Analytically find out how long before we leave the low-growth regime
+      t_c &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;log&lt;/span&gt;(N_c /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_t) /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;gamma_low +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;T_lag
+      
+      ## Um, now this should just be equal to N_c
+      n_low &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_t *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;((t_c -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;T_lag) *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;gamma_low) 
+      
+      ## Spend remaining time in &amp;gt; N_c growth regime:      
+      tau &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t_c        
+      n_t &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_low
+      n_t1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;K  /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(K /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_t -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;gamma_high *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tau))
+    
+      
+    } else if(n_t &amp;gt;=&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;N_c){
+      ## simpler if we&amp;#39;re always in the high-growth regime:
+      tau &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;T_lag
+      n_t1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;K /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(K /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_t -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;gamma_high *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tau))
+      
+    }
+  }
+  &lt;span class=&quot;co&quot;&gt;# And now we can return n_{t+1}&lt;/span&gt;
+  n_t1
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;p&gt;Aside from whether or not I’ve gotten the math right, there’s a bit of guesswork here as to whether this matches the author’s implementation of the model. Numerical issues worth thinking about include what form gives best floating-point stability, not just most consise, way to represent these; e.g. are these numerically identical:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;n_t1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;K /(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(K /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_low -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;gamma_high *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tau))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;n_t1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_t *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;K *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(gamma_high *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tau )  /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(n_t *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(gamma_high *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tau) -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;n_t +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;K)&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;model-simulations&quot;&gt;Model simulations&lt;/h2&gt;
+&lt;p&gt;We can demonstrate alternative stable states from this configuration, starting from similar initial densities:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;max_days &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;30&lt;/span&gt;
+n &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(max_days)
+x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(max_days)
+n[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;
+x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;5e2&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
+for(day in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(max_days&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+  n[day&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;g&lt;/span&gt;(n[day])
+  x[day&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;g&lt;/span&gt;(x[day])
+}
+
+df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:max_days, &lt;span class=&quot;dt&quot;&gt;n =&lt;/span&gt; n, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; x)
+
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(t, n), &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(t, x), &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;scale_y_log10&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-3-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;regime-shift&quot;&gt;Regime Shift&lt;/h2&gt;
+&lt;p&gt;We simulate the experiment presented in the orginal paper by gradually increasing the dilution factor over time:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Stepwise changes&lt;/span&gt;
+DF &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;2000&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;9&lt;/span&gt;), rep, &lt;span class=&quot;dv&quot;&gt;40&lt;/span&gt;))
+
+&lt;span class=&quot;co&quot;&gt;# continuous linear increase&lt;/span&gt;
+DF &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;2000&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;)
+
+max_days &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(DF)
+y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(max_days)
+
+y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1.76e5&lt;/span&gt;
+for(day in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(max_days&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+  y[day&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;g&lt;/span&gt;(y[day], &lt;span class=&quot;dt&quot;&gt;DF =&lt;/span&gt; DF[day])
+}
+
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(y), y)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-4-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;p&gt;Decreasing K should model decreasing sucrose I think?&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;K_0 =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1.76e5&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# continuous linear increase&lt;/span&gt;
+sucrose &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(K_0, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;)
+
+max_days &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(sucrose)
+y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(max_days)
+
+y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;
+for(day in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(max_days&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+  theta =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;gamma_high =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.4&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# hr^-1&lt;/span&gt;
+            &lt;span class=&quot;dt&quot;&gt;gamma_low =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# hr^-1&lt;/span&gt;
+            &lt;span class=&quot;dt&quot;&gt;T_lag =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;2.97&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# hr&lt;/span&gt;
+            &lt;span class=&quot;dt&quot;&gt;N_c =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;2.76e2&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# cells/μl&lt;/span&gt;
+            &lt;span class=&quot;dt&quot;&gt;K =&lt;/span&gt; sucrose[day])
+  y[day&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;g&lt;/span&gt;(y[day], &lt;span class=&quot;dt&quot;&gt;theta=&lt;/span&gt;theta)
+}
+
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(y), y) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_hline&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;yintercept=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;2.76e2&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-5-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;p&gt;Turn down the noise and increase &lt;span class=&quot;math&quot;&gt;\(N_c\)&lt;/span&gt; for a slightly more visible critical transition:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;N_c &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;2e3&lt;/span&gt;
+K_0 =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1.76e5&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# continuous linear increase&lt;/span&gt;
+sucrose &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(K_0, .&lt;span class=&quot;dv&quot;&gt;8&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;N_c, &lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;)
+
+max_days &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(sucrose)
+y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(max_days)
+
+y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;
+for(day in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(max_days&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+  theta =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;gamma_high =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.4&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# hr^-1&lt;/span&gt;
+            &lt;span class=&quot;dt&quot;&gt;gamma_low =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# hr^-1&lt;/span&gt;
+            &lt;span class=&quot;dt&quot;&gt;T_lag =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;2.97&lt;/span&gt;, &lt;span class=&quot;co&quot;&gt;# hr&lt;/span&gt;
+            &lt;span class=&quot;dt&quot;&gt;N_c =&lt;/span&gt; N_c, &lt;span class=&quot;co&quot;&gt;# cells/μl&lt;/span&gt;
+            &lt;span class=&quot;dt&quot;&gt;K =&lt;/span&gt; sucrose[day])
+  y[day&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;g&lt;/span&gt;(y[day], &lt;span class=&quot;dt&quot;&gt;theta=&lt;/span&gt;theta, &lt;span class=&quot;dt&quot;&gt;epsilon=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,.&lt;span class=&quot;dv&quot;&gt;01&lt;/span&gt;))
+}
+
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(y), y) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_hline&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;yintercept =&lt;/span&gt; N_c, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-6-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;p&gt;Much more to do: Would be nice to add simulations of the computation of the bifucation using replicates run a different fixed dilution regimes.&lt;/p&gt;
+&lt;h1 id=&quot;references&quot;&gt;References&lt;/h1&gt;
+&lt;p&gt;[1] L. Dai, D. Vorselen, K. S. Korolev, et al. “Generic Indicators for Loss of Resilience Before a Tipping Point Leading to Population Collapse”. In: &lt;em&gt;Science&lt;/em&gt; 336.6085 (May. 2012), pp. 1175-1177. DOI: 10.1126/science.1219805. &lt;URL:
+http://dx.doi.org/10.1126/science.1219805&gt;.&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Fun Standardizing Non Standard Evaluation</title>
+	 <link href="//02/06/fun-standardizing-non-standard-evaluation.html"/>
+   <updated>2015-02-06T00:00:00+00:00</updated>
+   <id>/02/06/fun-standardizing-non-standard-evaluation</id>
+   <content type="html">&lt;p&gt;Using &lt;code&gt;dplyr&lt;/code&gt; calls on the back-end of the &lt;code&gt;rfishbase&lt;/code&gt; re-write means working around the non-standard evaluation (NSE), as described in the &lt;a href=&quot;&quot;&gt;&lt;code&gt;dplyr&lt;/code&gt; vignette&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Grab the data I was using for this:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)
+downloader::&lt;span class=&quot;kw&quot;&gt;download&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;https://github.com/cboettig/2015/raw/fc0d9185659e7976927d0ec91981912537ac6018/assets/data/2015-02-06-taxa.csv&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;taxa.csv&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in loadNamespace(name): there is no package called &amp;#39;downloader&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;all_taxa &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;read.csv&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;taxa.csv&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in file(file, &amp;quot;rt&amp;quot;): cannot open the connection&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Consider a simple NSE &lt;code&gt;dplyr&lt;/code&gt; call:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(all_taxa, Family ==&lt;span class=&quot;st&quot;&gt; &amp;#39;Scaridae&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in filter_(.data, .dots = lazyeval::lazy_dots(...)): object &amp;#39;all_taxa&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The best SE version of this just needs to use the formula expression, &lt;code&gt;~&lt;/code&gt;, the &lt;code&gt;_&lt;/code&gt; SE version of the function and it’s &lt;code&gt;.dots&lt;/code&gt; argument:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;.dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(~Family ==&lt;span class=&quot;st&quot;&gt; &amp;#39;Scaridae&amp;#39;&lt;/span&gt;)
+x1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots=&lt;/span&gt;.dots)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in filter_(all_taxa, .dots = .dots): object &amp;#39;all_taxa&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x1)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in identical(x, x1): object &amp;#39;x&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This lets us treat the arguments (e.g. values of the factor on which we filter) as variables:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;family &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;#39;Scaridae&amp;#39;&lt;/span&gt;
+.dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(~Family ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;family)
+x2 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots=&lt;/span&gt;.dots)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in filter_(all_taxa, .dots = .dots): object &amp;#39;all_taxa&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x2)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in identical(x, x2): object &amp;#39;x&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we want both the key and value to vary, we need to get pretty fancy to subvert the non-standard evaluation:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(lazyeval)
+family &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;#39;Scaridae&amp;#39;&lt;/span&gt;
+field &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;#39;Family&amp;#39;&lt;/span&gt;
+.dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;interp&lt;/span&gt;(~y ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x, 
+                     &lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;as.name&lt;/span&gt;(field), &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; family)))
+x3 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots=&lt;/span&gt;.dots)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in filter_(all_taxa, .dots = .dots): object &amp;#39;all_taxa&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x3)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in identical(x, x3): object &amp;#39;x&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;query&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;Family =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;Scaridae&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;SpecCode =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5537&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in query(Family = &amp;quot;Scaridae&amp;quot;, SpecCode = 5537): unused arguments (Family = &amp;quot;Scaridae&amp;quot;, SpecCode = 5537)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(query), function(level){
+    value &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;query[[level]]
+    &lt;span class=&quot;kw&quot;&gt;interp&lt;/span&gt;(~y ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x, 
+                &lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;as.name&lt;/span&gt;(level), &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; value))
+  })
+  
+x3 &amp;lt;-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots =&lt;/span&gt; dots) &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in filter_(all_taxa, .dots = dots): object &amp;#39;all_taxa&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
  
  <entry>
    <title>Dockerizing Fishbase Api</title>
