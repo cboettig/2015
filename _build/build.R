@@ -27,7 +27,9 @@ local({
     warning = FALSE,
 		dev = 'png',
 		fig.cap = "",
-    fig.show="hold"
+    fig.show="hold",
+    fig.width=6,
+    fig.height=4
   )
 
 	## Embed svgs directly
