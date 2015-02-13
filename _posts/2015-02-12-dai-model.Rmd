@@ -10,9 +10,9 @@ tags:
 
 ## A first go at implementing the Dai et al model
 
-```{r include=FALSE}
-library(ggplot2)
-library(knitcitations)
+```{r include=FALSE, cache=FALSE}
+library("ggplot2")
+library("knitcitations")
 ```
 
 From  the supplement to `r citet("10.1126/science.1219805")`, we have:
