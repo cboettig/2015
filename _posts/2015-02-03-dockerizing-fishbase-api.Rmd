@@ -66,6 +66,8 @@ Instead, we must also specify the protocol and port of the server:
 mysql --host=$MYSQL_PORT_3306_TCP_ADDR --protocol=$MYSQL_PORT_3306_TCP_PROTO --password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD
 ```
 
+**EDIT** It's much better to use the hostname provided by the linked container in `/etc/hosts`.  This automatically binds the name used in the link `mysql` to the linked container's IP address, so we can simply do: `mysql =--host=mysql --password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD` (protocol, like the port, is guessed implicitly from host).  Unlike the env var solution, the `/etc/hosts` file is updated if the `mysql` container restarts.
+
 and we're good to go:
 
 ```
