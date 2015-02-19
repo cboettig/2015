@@ -140,6 +140,7 @@ _=/usr/bin/env</code></pre>
 <pre><code>ERROR 2002 (HY000): Can&#39;t connect to local MySQL server through socket &#39;/var/run/mysqld/mysqld.sock&#39; (2)</code></pre>
 <p>Instead, we must also specify the protocol and port of the server:</p>
 <pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">mysql</span> --host=<span class="ot">$MYSQL_PORT_3306_TCP_ADDR</span> --protocol=<span class="ot">$MYSQL_PORT_3306_TCP_PROTO</span> --password=<span class="ot">$MYSQL_ENV_MYSQL_ROOT_PASSWORD</span></code></pre>
+<p><strong>EDIT</strong> It’s much better to use the hostname provided by the linked container in <code>/etc/hosts</code>. This automatically binds the name used in the link <code>mysql</code> to the linked container’s IP address, so we can simply do: <code>mysql =--host=mysql --password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD</code> (protocol, like the port, is guessed implicitly from host). Unlike the env var solution, the <code>/etc/hosts</code> file is updated if the <code>mysql</code> container restarts.</p>
 <p>and we’re good to go:</p>
 <pre><code>Warning: Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -227,7 +228,7 @@ chown -R mysql:mysql /var/lib/mysql</code></pre>
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/9af58aeb7399b22de202689c29ed67b77682a0db/_posts/2015-02-03-dockerizing-fishbase-api.Rmd"> 9af58aeb7399b22de202689c29ed67b77682a0db</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/2420040a3c0dbc8017d9bd7f368827defd7b4f29/_posts/2015-02-03-dockerizing-fishbase-api.Rmd"> 2420040a3c0dbc8017d9bd7f368827defd7b4f29</a></small></p>
     
   <br/>
   

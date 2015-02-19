@@ -4,7 +4,7 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-02-13T20:08:42+00:00</updated>
+ <updated>2015-02-19T01:04:31+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
@@ -290,6 +290,7 @@ _=/usr/bin/env&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;ERROR 2002 (HY000): Can&amp;#39;t connect to local MySQL server through socket &amp;#39;/var/run/mysqld/mysqld.sock&amp;#39; (2)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Instead, we must also specify the protocol and port of the server:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mysql&lt;/span&gt; --host=&lt;span class=&quot;ot&quot;&gt;$MYSQL_PORT_3306_TCP_ADDR&lt;/span&gt; --protocol=&lt;span class=&quot;ot&quot;&gt;$MYSQL_PORT_3306_TCP_PROTO&lt;/span&gt; --password=&lt;span class=&quot;ot&quot;&gt;$MYSQL_ENV_MYSQL_ROOT_PASSWORD&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;EDIT&lt;/strong&gt; It’s much better to use the hostname provided by the linked container in &lt;code&gt;/etc/hosts&lt;/code&gt;. This automatically binds the name used in the link &lt;code&gt;mysql&lt;/code&gt; to the linked container’s IP address, so we can simply do: &lt;code&gt;mysql =--host=mysql --password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD&lt;/code&gt; (protocol, like the port, is guessed implicitly from host). Unlike the env var solution, the &lt;code&gt;/etc/hosts&lt;/code&gt; file is updated if the &lt;code&gt;mysql&lt;/code&gt; container restarts.&lt;/p&gt;
 &lt;p&gt;and we’re good to go:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;Warning: Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
