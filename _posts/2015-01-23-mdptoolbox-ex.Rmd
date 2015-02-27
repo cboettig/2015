@@ -31,10 +31,10 @@ f <- function(x, h, p){
 p <- c(a = 6, b = 0.05)
 
 profit <- function(x, h) min(x,h)  # vectorized for x
-x_grid <- seq(1, 150, length = 50)
-h_grid <- seq(1, 150,length = 50)
+x_grid <- seq(0, 150, length = 51)
+h_grid <- seq(0, 150,length = 51)
 delta <- 0.05
-sigma_g <- 0.1
+sigma_g <- 0.0
 z_g <- function() 1 + rlnorm(1, 0, sigma_g)
 pdfn <- function(P, s) dlnorm(P, 0, s)
 ```
@@ -60,11 +60,15 @@ determine_SDP_matrix <- function(f, p, x_grid, h_grid, sigma_g,
         # relative probability of a transition to that state
         ProportionalChance <- x_grid / x2_expected
         Prob <- pdfn(ProportionalChance, sigma_g)
+        
+        if(sum(Prob) > 0)
         # Store normalized probabilities in row
-        SDP_matrix[i,] <- Prob/sum(Prob)
+          SDP_matrix[i,] <- Prob/sum(Prob)
+        else 
+          SDP_matrix[i,] <- c(1, numeric(gridsize-1))
       }
     }
-    SDP_matrix
+    t(SDP_matrix)
   })
   SDP_Mat
 }
@@ -74,10 +78,12 @@ determine_SDP_matrix <- function(f, p, x_grid, h_grid, sigma_g,
 Building the reward matrix: 
 
 ```{r}
-R <- sapply(x_grid, function(x)
+# [S, A] array
+
+R <- t(sapply(x_grid, function(x)
   sapply(h_grid, function(h)
   profit(x,h)
-))
+)))
 ```
 
 Note that in $f$ we must define the harvesting take place before the population recruits.
@@ -86,6 +92,27 @@ Note that in $f$ we must define the harvesting take place before the population 
 P <- determine_SDP_matrix(f, p, x_grid, h_grid, sigma_g, pdfn)
 ```
 
+
 ```{r}
-out <- mdp_value_iteration(P, R, delta)
+x0 <- (p[[1]]-1)/p[[2]]
+i <- which.min(abs(x_grid-x0))
+
+V0 <- R[i,]
+```
+
+```{r}
+mdp_check(P=P,R=R)
+
+testthat::expect_equal(sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))), 0)
+```
+
+```{r}
+out <- mdp_value_iteration(P, R, discount=delta, epsilon=0.001, max_iter = 1e4, V0=V0)
+```
+
+
+Whoops, this doesn't look right:
+
+```{r}
+plot(x_grid, h_grid[out$policy])
 ```
