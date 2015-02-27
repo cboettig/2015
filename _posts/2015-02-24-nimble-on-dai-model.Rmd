@@ -1,0 +1,244 @@
+---
+layout: post
+category: ecology
+tags: 
+- early-warning
+- regime-shifts
+
+---
+
+## Testing nimble method on Dai model
+
+```{r}
+devtools::install_github("cboettig/regimeshifts")
+```
+
+
+```{r include=FALSE, cache=FALSE}
+library("nimble")
+library("regimeshifts")
+library("tidyr")
+library("ggplot2")
+```
+
+
+Define our mcmc procedure in Nimble
+
+```{r }
+my_mcmc <- function(code, constants, data, inits, n_iter=1e5, thin = 1e2){
+  Rmodel <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
+  Cmodel <- compileNimble(Rmodel)
+  mcmcspec <- configureMCMC(Rmodel, print=FALSE,thin=thin)
+  Rmcmc <- buildMCMC(mcmcspec)
+  Cmcmc <- compileNimble(Rmcmc, project = Cmodel)
+  Cmcmc$run(n_iter)
+  samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+  samples <- samples[,1:(length(inits)-1)]
+  gather(samples)
+}
+```
+
+
+
+Generate the test data:
+
+```{r}
+set.seed(1000)
+max_days <- 500
+DF <- seq(0, 2000, length=max_days) # schedule for env degredation (increased dilution)
+x <- numeric(max_days)   
+x[1] <- 1.76e5 # initial density
+   
+for(day in 1:(max_days-1)){
+ x[day+1] <- dai(x[day], DF = DF[day])
+}
+
+raw <- data.frame(t = 1:max_days, x = x)
+
+```
+
+
+Detrend: 
+
+```{r detrend, depends='data'}
+N <- length(raw$x)
+raw$t <- 1:N
+detrend <- loess(x ~ t, raw)
+data <- data.frame(x = detrend$residuals/sqrt(var(detrend$residuals)))
+qplot(raw$t, data$x, geom='line')
+```
+
+## OU Model ##
+
+```{r}
+ou <- nimbleCode({
+   theta ~ dunif(1e-10, 100.0)
+       r ~ dunif(1e-10, 20.0)
+   sigma ~ dunif(1e-10, 100)
+    x[1] ~ dunif(0, 100)
+
+  for(t in 1:(N-1)){
+    mu[t] <- x[t] + r * (theta - x[t]) 
+    x[t+1] ~ dnorm(mu[t], sd = sigma) 
+  }
+})
+
+ou_constants <- list(N = N)
+ou_inits <- list(theta = 0, r = 1e-3, sigma = 1)
+```
+
+Run the mcmc
+
+```{r message=FALSE}
+df <- my_mcmc(code=ou, ou_constants, data, ou_inits)
+```
+
+
+#### Summary statistics
+
+```{r , results='markup'}
+summarise(group_by(df, key), mean=mean(value), std=sqrt(var(value)))
+```
+
+#### Traces
+
+```{r , fig.show='hold'}
+ggplot(df) + 
+  geom_line(aes(seq_adf(value), value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+#### Posteriors
+
+```{r , fig.show='hold'}
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+
+
+
+
+
+## LSN version ##
+
+A modified version of the LSN model to explicitly model the changing parameter as a hidden variable changing at constant rate
+
+```{r , depends='detrend'}
+lsn <- nimbleCode({
+   theta ~ dunif(-1e2, 1e2)
+ sigma_x ~ dunif(1e-10, 1e2)
+       m ~ dunif(-1e2, 1e2)
+    x[1] ~ dunif(-1e3, 1e3)
+    y[1] ~ dunif(-1e3, 1e3) 
+
+  for(i in 1:(N-1)){
+    mu_x[i] <- x[i] + y[i] * (theta - x[i]) 
+    x[i+1] ~ dnorm(mu_x[i], sd = sigma_x) 
+    y[i+1] <- y[i] + m * t[i] / t[N] 
+    
+  }
+})
+
+constants <- list(N = N, t = raw$t)
+inits <- list(theta = 0, m = 0, sigma_x = 1, y = rep(1,N))
+```
+
+
+```{r}
+df <- my_mcmc(code=lsn, constants, data, inits)
+```
+
+#### Summary statistics
+
+```{r, results='markup'}
+summarise(group_by(df, key), mean=mean(value), std=sqrt(var(value)))
+```
+
+#### Traces
+
+```{r, fig.show='hold'}
+ggplot(long) + 
+  geom_line(aes(seq_along(value), value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+#### Posteriors
+
+```{r, fig.show='hold'}
+ggplot(long) + 
+	geom_density(aes(value)) + 
+	facet_wrap(~key, scale='free')
+```
+
+
+
+
+## LSN, stochastic hidden variable ##
+
+#### Define and model and run MCMC
+
+
+```{r }
+lsn <- nimbleCode({
+   theta ~ dunif(-1e2, 1e2)
+   sigma_x ~ dunif(1e-10, 1e2)
+   sigma_y ~ dunif(1e-10, 1e2)
+       m ~ dunif(-1e2, 1e2)
+    x[1] ~ dunif(-1e3, 1e3)
+    y[1] ~ dunif(-1e3, 1e3)
+
+  for(i in 1:(N-1)){
+    mu_x[i] <- x[i] + y[i] * (theta - x[i])
+    x[i+1] ~ dnorm(mu_x[i], sd = sigma_x)
+    mu_y[i] <- y[i] + m * t[i] / t[N]
+    y[i+1] ~ dnorm(mu_y[i], sd = sigma_y) 
+  }
+})
+
+constants <- list(N = N, t = raw$t)
+inits <- list(theta = 0, m = 0, sigma_x = 1, sigma_y = 1, y = rep(1,N))
+```
+
+
+
+```{r}
+df <- my_mcmc(code=lsn, constants, data, inits)
+```
+
+
+#### Summary statistics
+
+
+```{r, results='markup'}
+summarise(group_by(df, key), mean=mean(value), std=sqrt(var(value)))
+```
+
+
+#### Traces
+
+```{r, fig.show='hold'}
+ggplot(df) + 
+  geom_line(aes(seq_along(value), value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+#### Posteriors 
+
+```{r, fig.show='hold'}
+ggplot(df) + 
+  geom_density(aes(value)) + 
+	facet_wrap(~key, scale='free')
+```
+
+
+--------------
+
+
+```{r results='markup'}
+sessionInfo()
+```
+
+
+
