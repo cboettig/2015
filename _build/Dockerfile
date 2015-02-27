@@ -4,7 +4,10 @@ MAINTAINER Carl Boettiger cboettig@ropensci.org
 ## Install additional R package dependencies ###
 RUN sudo rm -rf /tmp/* && install2.r --error igraph sde MDPtoolbox \
   && install2.r --error --repo http://r-nimble.org nimble \
-  && installGithub.r yihui/servr cboettig/earlywarning \
-  && installGithub.r cboettig/pdg_control \
-  && installGithub.r cboettig/knitcitations
+  && installGithub.r \
+    yihui/servr 
+    cboettig/earlywarning \
+    cboettig/pdg_control \
+    cboettig/knitcitations \
+    cboettig/regimeshifts 
 
