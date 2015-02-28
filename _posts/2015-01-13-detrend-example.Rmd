@@ -33,7 +33,7 @@ Rather than explicitly modeling the trend element predicted by the linearization
 N <- length(raw$x)
 raw$t <- 1:N
 detrend <- loess(x ~ t, raw)
-data <- data.frame(x = detrend$residuals)
+data <- data.frame(x = detrend$residuals/sqrt(var(detrend$residuals)))
 qplot(raw$t, data$x, geom='line')
 ```
 
@@ -43,12 +43,12 @@ Modify the LSN model to explicitly model the changing parameter as a hidden, sto
 
 ```{r model, depends='detrend'}
 lsn <- nimbleCode({
-   theta ~ dunif(1e-10, 100.0)
+   theta ~ dunif(-100.0, 100.0)
    sigma_x ~ dunif(1e-10, 100.0)
    sigma_y ~ dunif(1e-10, 100.0)
        m ~ dunif(-1e2, 1e2)
-    x[1] ~ dunif(0, 100)
-    y[1] ~ dunif(0, 100) 
+    x[1] ~ dunif(-100, 100)
+    y[1] ~ dunif(-100, 100)
 
   for(i in 1:(N-1)){
     mu_x[i] <- x[i] + y[i] * (theta - x[i]) 
