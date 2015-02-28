@@ -126,7 +126,7 @@ raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_crit
 <pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
 raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
 detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals/<span class="kw">sqrt</span>(<span class="kw">var</span>(detrend$residuals)))
 <span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png" />
@@ -134,12 +134,12 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
 <h2 id="lsn-version">LSN version</h2>
 <p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
 <pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">100.0</span>, <span class="fl">100.0</span>)
    sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
    sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
        m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
-    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="dv">100</span>, <span class="dv">100</span>)
+    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="dv">100</span>, <span class="dv">100</span>)
 
   for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
     mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
@@ -262,7 +262,7 @@ loaded via a namespace (and not attached):
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/7fc7cd41e0951a04613ef59c5b4171647d6a4bbb/_posts/2015-01-13-detrend-example.Rmd"> 7fc7cd41e0951a04613ef59c5b4171647d6a4bbb</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/8fb3866d613669331f4d49c41c867caeb1cb3e44/_posts/2015-01-13-detrend-example.Rmd"> 8fb3866d613669331f4d49c41c867caeb1cb3e44</a></small></p>
     
   <br/>
   

@@ -1,16 +1,325 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head prefix="dc: http://purl.org/dc/terms/ og: http://ogp.me/ns#"> <!-- namespaces used in metadata.html -->
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
+  <title>Atom Feed</title>
+  <meta name="author" content="Carl Boettiger" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- HTML5 metadata -->
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<!-- RDFa Metadata (in DublinCore) -->
+<meta property="dc:title" content="Atom Feed" />
+<meta property="dc:creator" content="Carl Boettiger" />
+<meta property="dc:date" content="" />
+<meta property="dc:format" content="text/html" />
+<meta property="dc:language" content="en" />
+<meta property="dc:identifier" content="/atom.xml" />
+<meta property="dc:rights" content="CC0" />
+<meta property="dc:source" content="Lab Notebook" />
+<meta property="dc:subject" content="Ecology" /> 
+<meta property="dc:type" content="website" /> 
+<!-- RDFa Metadata (in OpenGraph) -->
+<meta property="og:title" content="Atom Feed" />
+<meta property="og:author" content="http://www.carlboettiger.info/index.html#me" />  <!-- Should be Liquid? URI? -->
+<meta property="http://ogp.me/ns/profile#first_name" content="Carl"/>
+<meta property="http://ogp.me/ns/profile#last_name" content="Boettiger"/>
+<meta property="http://ogp.me/ns/article#published_time" content="" />
+<meta property="og:site_name" content="Lab Notebook" /> <!-- Same as dc:source? -->
+<meta property="og:url" content="http://www.carlboettiger.info/atom.xml" />
+<meta property="og:type" content="website" /> 
+<!-- Google Scholar Metadata -->
+<!--
+<meta name="citation_author" content="Carl Boettiger"/>
+<meta name="citation_date" content=""/>
+<meta name="citation_title" content="Atom Feed"/>
+<meta name="citation_journal_title" content="Lab Notebook"/>
+-->
+<!--NOTE: see also the COinS Metadata in span element in footer -->
+
+
+
+
+	<link rel="stylesheet" href="http://www.carlboettiger.info/assets/css/bootstrap.min.css" type="text/css"/>
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="http://www.carlboettiger.info/assets/css/academicons.css" />
+  <!-- Help the browser identify the RSS feed automatically -->
+  <link rel="alternate" type="application/rss+xml" title="Carl Boettiger's Lab Notebook" href="http://www.carlboettiger.info/blog.xml" />
+</head>
+
+
+  <body prefix="dc: http://purl.org/dc/terms/ foaf: http://xmlns.com/foaf/0.1/"> 
+    <!-- Navbar  ================================================== -->
+
+<nav class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/README.html"><i class="icon-info-sign"></i></a>
+    </div>
+
+ <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+
+          <li  >
+          <a href="/index.html">Home</a></li>
+          <li  >
+          <a href="/vita.html">Vita</a></li>
+          <li  >
+          <a href="/research.html">Research</a></li>
+          <li  >
+          <a href="/teaching.html">Teaching</a></li>
+          <li  >
+          <a href="/community.html">Community</a></li>
+          <li  >
+          <a href="/lab-notebook.html">Lab Notebook</a></li>
+
+        </ul>
+
+      <!-- Search site using Google's index -->
+        <form class="navbar-form navbar-right" role="search" method="get" action="http://google.com/search">
+          <div class="form-group">
+            <input type="hidden" name="q" value="site:carlboettiger.info" />
+            <input type="text" class="form-control search-query" name="q" placeholder="Search"/>
+          </div>
+          <button class="btn btn-mini" type="submit"><i class="icon-search"></i></button> 
+       </form>
+
+    </div><!--/.nav-collapse -->
+  </div> <!-- /container -->
+</nav>
+
+
+
+    <div class="container"> <!-- Responsive grid layout, doesn't jump to full-width --> 
+      <header>
+        <h1 class="entry-title">Atom Feed</h1>
+        <h2></h2>
+      </header>
+
+      <div class="row">
+  <div class="col-md-8 col-md-offset-1">
+    <article>
+    <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
  
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-02-19T01:04:31+00:00</updated>
+ <updated>2015-02-28T03:05:02+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
    <email>cboettig@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Nimble On Dai Model</title>
+	 <link href="//02/24/nimble-on-dai-model.html"/>
+   <updated>2015-02-24T00:00:00+00:00</updated>
+   <id>/02/24/nimble-on-dai-model</id>
+   <content type="html">&lt;h2 id=&quot;testing-nimble-method-on-dai-model&quot;&gt;Testing nimble method on Dai model&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;cboettig/regimeshifts&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Define our mcmc procedure in Nimble&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;my_mcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(code, constants, data, inits, &lt;span class=&quot;dt&quot;&gt;n_iter=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;thin =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;){
+  Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)
+  Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)
+  mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;thin)
+  Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
+  Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)
+  Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(n_iter)
+  samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
+  samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(inits)-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)]
+  &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Generate the test data:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1000&lt;/span&gt;)
+max_days &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;500&lt;/span&gt;
+DF &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;2000&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;max_days) &lt;span class=&quot;co&quot;&gt;# schedule for env degredation (increased dilution)&lt;/span&gt;
+x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(max_days)   
+x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1.76e5&lt;/span&gt; &lt;span class=&quot;co&quot;&gt;# initial density&lt;/span&gt;
+   
+for(day in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(max_days&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+ x[day&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dai&lt;/span&gt;(x[day], &lt;span class=&quot;dt&quot;&gt;DF =&lt;/span&gt; DF[day])
+}
+
+raw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:max_days, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; x)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Detrend:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(raw$x)
+raw$t &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N
+detrend &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;loess&lt;/span&gt;(x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t, raw)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; detrend$residuals/&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(detrend$residuals)))
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(raw$t, data$x, &lt;span class=&quot;dt&quot;&gt;geom=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;line&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/detrend-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;ou-model&quot;&gt;OU Model&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;ou &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+       r ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;20.0&lt;/span&gt;)
+   sigma ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+
+  for(t in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+    mu[t] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[t] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;r *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[t]) 
+    x[t&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu[t], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma) 
+  }
+})
+
+ou_constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N)
+ou_inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;r =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e-3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Run the mcmc&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;my_mcmc&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code=&lt;/span&gt;ou, ou_constants, data, ou_inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;summary-statistics&quot;&gt;Summary statistics&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(df, key), &lt;span class=&quot;dt&quot;&gt;mean=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;std=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(value)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [2 x 3]
+
+    key      mean        std
+1     r 0.2075146 0.02739447
+2 sigma 0.6156283 0.01975407&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;traces&quot;&gt;Traces&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-8-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h4 id=&quot;posteriors&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-9-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;lsn-version&quot;&gt;LSN version&lt;/h2&gt;
+&lt;p&gt;A modified version of the LSN model to explicitly model the changing parameter as a hidden variable changing at constant rate&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+ sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+       m ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;)
+    y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;) 
+
+  for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+    mu_x[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i]) 
+    x[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_x[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_x) 
+    y[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;m *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[i] /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[N] 
+    
+  }
+})
+
+constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; raw$t)
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;m =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_x =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;my_mcmc&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code=&lt;/span&gt;lsn, constants, data, inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;summary-statistics-1&quot;&gt;Summary statistics&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(df, key), &lt;span class=&quot;dt&quot;&gt;mean=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;std=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(value)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [3 x 3]
+
+      key         mean          std
+1       m -0.003984249 0.0005859252
+2 sigma_x  0.575993873 0.0185972953
+3   theta -0.010341240 0.0410488393&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;traces-1&quot;&gt;Traces&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-13-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h4 id=&quot;posteriors-1&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-14-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;lsn-stochastic-hidden-variable&quot;&gt;LSN, stochastic hidden variable&lt;/h2&gt;
+&lt;h4 id=&quot;define-and-model-and-run-mcmc&quot;&gt;Define and model and run MCMC&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+   sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+   sigma_y ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+       m ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;)
+    y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;)
+
+  for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+    mu_x[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i])
+    x[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_x[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_x)
+    mu_y[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;m *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[i] /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[N]
+    y[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_y[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_y) 
+  }
+})
+
+constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; raw$t)
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;m =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_x =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_y =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;my_mcmc&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code=&lt;/span&gt;lsn, constants, data, inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;summary-statistics-2&quot;&gt;Summary statistics&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(df, key), &lt;span class=&quot;dt&quot;&gt;mean=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;std=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(value)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [4 x 3]
+
+      key         mean         std
+1       m -0.003001092 0.004531153
+2 sigma_x  0.563929151 0.020224310
+3 sigma_y  0.048817421 0.036018516
+4   theta  0.010243795 0.045674221&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;traces-2&quot;&gt;Traces&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-18-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h4 id=&quot;posteriors-2&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-19-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;hr /&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] methods   stats     graphics  grDevices utils     datasets 
+[7] base     
+
+other attached packages:
+[1] dplyr_0.4.1             ggplot2_1.0.0          
+[3] tidyr_0.2.0             regimeshifts_0.0.0.9000
+[5] nimble_0.3              yaml_2.1.13            
+[7] knitr_1.9              
+
+loaded via a namespace (and not attached):
+ [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-10
+ [4] colorspace_1.2-4 DBI_0.3.1        devtools_1.7.0  
+ [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+[10] grid_3.1.2       gtable_0.1.2     httr_0.6.1      
+[13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
+[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[19] parallel_3.1.2   plyr_1.8.1       proto_0.3-10    
+[22] Rcpp_0.11.4      RCurl_1.95-4.5   reshape2_1.4.1  
+[25] scales_0.2.4     stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
  
  <entry>
    <title>Dai Model</title>
@@ -353,10 +662,10 @@ opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quo
 p &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;a =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;b =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;)
 
 profit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x, h) &lt;span class=&quot;kw&quot;&gt;min&lt;/span&gt;(x,h)  &lt;span class=&quot;co&quot;&gt;# vectorized for x&lt;/span&gt;
-x_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;)
-h_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;)
+x_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;51&lt;/span&gt;)
+h_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;51&lt;/span&gt;)
 delta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;
-sigma_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt;
+sigma_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.0&lt;/span&gt;
 z_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function() &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rlnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, sigma_g)
 pdfn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(P, s) &lt;span class=&quot;kw&quot;&gt;dlnorm&lt;/span&gt;(P, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, s)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Building the transition probability matrix:&lt;/p&gt;
@@ -377,23 +686,44 @@ pdfn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(P, s) &lt;
         &lt;span class=&quot;co&quot;&gt;# relative probability of a transition to that state&lt;/span&gt;
         ProportionalChance &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x_grid /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x2_expected
         Prob &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;pdfn&lt;/span&gt;(ProportionalChance, sigma_g)
+        
+        if(&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(Prob) &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)
         &lt;span class=&quot;co&quot;&gt;# Store normalized probabilities in row&lt;/span&gt;
-        SDP_matrix[i,] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Prob/&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(Prob)
+          SDP_matrix[i,] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Prob/&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(Prob)
+        else 
+          SDP_matrix[i,] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(gridsize&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;))
       }
     }
-    SDP_matrix
+    &lt;span class=&quot;kw&quot;&gt;t&lt;/span&gt;(SDP_matrix)
   })
   SDP_Mat
 }&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Building the reward matrix:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;R &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(x_grid, function(x)
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# [S, A] array&lt;/span&gt;
+
+R &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;t&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(x_grid, function(x)
   &lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(h_grid, function(h)
   &lt;span class=&quot;kw&quot;&gt;profit&lt;/span&gt;(x,h)
-))&lt;/code&gt;&lt;/pre&gt;
+)))&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Note that in &lt;span class=&quot;math&quot;&gt;\(f\)&lt;/span&gt; we must define the harvesting take place before the population recruits.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;P &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;determine_SDP_matrix&lt;/span&gt;(f, p, x_grid, h_grid, sigma_g, pdfn)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P, R, delta)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in if (variation &amp;lt; thresh) {: missing value where TRUE/FALSE needed&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(p[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]]-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)/p[[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]]
+i &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;which.min&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;abs&lt;/span&gt;(x_grid-x0))
+
+V0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;R[i,]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mdp_check&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;P=&lt;/span&gt;P,&lt;span class=&quot;dt&quot;&gt;R=&lt;/span&gt;R)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox ERROR: Incompatibility between P and R dimensions&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;testthat::&lt;span class=&quot;kw&quot;&gt;expect_equal&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(P, function(x) &lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(x, &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, is.nan)))), &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error: sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))) not equal to 0
+Mean absolute difference: 13950&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P, R, &lt;span class=&quot;dt&quot;&gt;discount=&lt;/span&gt;delta, &lt;span class=&quot;dt&quot;&gt;epsilon=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e4&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0=&lt;/span&gt;V0)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;--------------------------------------------------------&amp;quot;
+[1] &amp;quot;MDP Toolbox ERROR: V0 must have the same dimension as P&amp;quot;
+[1] &amp;quot;--------------------------------------------------------&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in mdp_value_iteration(P, R, discount = delta, epsilon = 0.001, : object &amp;#39;V&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Whoops, this doesn’t look right:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(x_grid, h_grid[out$policy])&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in xy.coords(x, y, xlabel, ylabel, log): object &amp;#39;out&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
@@ -505,7 +835,7 @@ raw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(raw$x)
 raw$t &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N
 detrend &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;loess&lt;/span&gt;(x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t, raw)
-data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; detrend$residuals)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; detrend$residuals/&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(detrend$residuals)))
 &lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(raw$t, data$x, &lt;span class=&quot;dt&quot;&gt;geom=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;line&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png&quot; /&gt;
@@ -513,12 +843,12 @@ data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;h2 id=&quot;lsn-version&quot;&gt;LSN version&lt;/h2&gt;
 &lt;p&gt;Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
-   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
    sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
    sigma_y ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
        m ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
-    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
-    y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;) 
+    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+    y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
 
   for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
     mu_x[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i]) 
@@ -847,3 +1177,130 @@ git gc --prune=now&lt;/code&gt;&lt;/pre&gt;
  </entry>
  
  
+
+    </article>
+  </div>
+</div>
+
+
+
+      <footer class="footer">
+
+<!--************** FOAF information to social networks ***************************** -->
+  <div class="row">
+    <div class="col-md-3 col-xs-4 socialicons" style="font-size:20px" typeof="foaf:Person" about="http://www.carlboettiger.info#me">
+      <p>
+          <script type="text/javascript" src="/assets/js/obfuscate-email-link.js"></script> 
+
+          <a rel="foaf:account" href="https://twitter.com/cboettig" 
+             onclick="recordOutboundLink(this, 'Outbound Links', 'Twitter'); 
+             return false;"><span class="showtooltip" title="follow me on twitter (reading, discussing)"><i class="fa fa-twitter"></i></span></a> 
+
+          <a rel="foaf:account" href="https://github.com/cboettig" 
+             onclick="recordOutboundLink(this, 'Outbound Links', 'Github'); 
+             return false;"><span class="showtooltip" title="follow me on Github (code, research)"><i class="fa fa-github"></i></span></a>
+      <!--
+          <a rel="foaf:account" href="https://plus.google.com/" 
+             onclick="recordOutboundLink(this, 'Outbound Links', 'GPlus'); 
+             return false;"><i class="fa fa-google-plus"></i></a>
+
+          <a rel="foaf:account" href="http://www.mendeley.com/profiles/carl-boettiger" 
+             onclick="recordOutboundLink(this, 'Outbound Links', 'Mendeley'); 
+             return false;"><img src="/assets/img/icon-mendeley.png" /></a> 
+
+           citations on google-scholar
+
+           stackoverflow
+      -->
+      <a rel="foaf:weblog" type="application/atom+xml" href="/blog.xml"  
+         class="showtooltip" title="RSS feeds for my blog-style entries. See the feed on my lab notebook (/atom.xml) to follow all entries instead." 
+         onclick="recordOutboundLink(this, 'Outbound Links', 'RSS'); 
+         return false;"><i class="fa fa-rss"></i></a>
+       </p>
+    </div>
+
+    
+    <!--**************** End social links **************************** -->
+
+
+    <div class="col-md-4 col-md-offset-1 col-xs-4">
+      <p><a onclick="recordOutboundLink(this, 'Outbound Links', 'ONS_claim'); return false;" href="http://onsclaims.wikispaces.com/"><img src="/assets/img/ons-aci2-icon.svg" alt="ONS" class="showtooltip" title="An Open Notebook Science (ONS) project claim: Entry provides all content (AC) immediately (I) or without significant delay.  See link for details"/></a></p>
+    </div>
+
+
+    <div class="col-md-3 col-md-offset-1 col-xs-4">
+      <p>
+      <a rel="license" property="http://creativecommons.org/ns#license" href="http://creativecommons.org/publicdomain/zero/1.0/" onclick="recordOutboundLink(this, 'Outbound Links', 'CC0'); return false;"><img src="/assets/img/cc-zero.svg" alt="CC0"/></a> 
+      </p>
+    </div>
+  </div>
+
+
+  
+<!-- COinS metadata (for citation managers like Zotero etc), goes in body text -->
+  <span
+      class="Z3988" 
+      title="ctx_ver=Z39.88-2004
+      &amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc
+      &amp;rfr_id=info%3Asid%2Focoins.info%3Agenerator
+      &amp;rft.title=Atom Feed
+      &amp;rft.creator=Carl Boettiger
+      &amp;rft.date=
+      &amp;rft.language=EN
+      &amp;rft.rights=CC0
+      &amp;rft_id=http://www.carlboettiger.info/atom.xml">
+  </span>
+
+
+</footer>
+
+
+
+
+          <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    <!-- JQuery, used on a few pages (still?) -->
+    <!-- <script type="text/javascript" src="/assets/js/jquery.js"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <!-- Equations using MathJax -->
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config"> MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });       </script>
+    <!-- Twitter Bootstrap Javascript -->
+    <!--  <script src="/assets/js/bootstrap.min.js"></script> -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+
+    
+
+        <script type="text/javascript">
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', 'UA-18401403-1']);
+          _gaq.push(['_trackPageview']);
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+  </script>
+
+
+
+<script type="text/javascript">
+function recordOutboundLink(link, category, action) {
+  try {
+    var pageTracker=_gat._getTracker("UA-18401403-1");
+    pageTracker._trackEvent(category, action);
+    setTimeout('document.location = "' + link.href + '"', 100)
+  }catch(err){}
+}
+</script>
+
+
+
+
+    </div>
+  </body>
+</html>
+   

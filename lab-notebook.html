@@ -114,6 +114,216 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/02/24/nimble-on-dai-model.html">Nimble On Dai Model</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 24 Feb 2015</p>
+
+<article>
+<div class="excerpt">
+<h2 id="testing-nimble-method-on-dai-model">Testing nimble method on Dai model</h2>
+<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;cboettig/regimeshifts&quot;</span>)</code></pre>
+<p>Define our mcmc procedure in Nimble</p>
+<pre class="sourceCode r"><code class="sourceCode r">my_mcmc &lt;-<span class="st"> </span>function(code, constants, data, inits, <span class="dt">n_iter=</span><span class="fl">1e5</span>, <span class="dt">thin =</span> <span class="fl">1e2</span>){
+  Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)
+  Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
+  mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>,<span class="dt">thin=</span>thin)
+  Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
+  Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)
+  Cmcmc$<span class="kw">run</span>(n_iter)
+  samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
+  samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:(<span class="kw">length</span>(inits)-<span class="dv">1</span>)]
+  <span class="kw">gather</span>(samples)
+}</code></pre>
+<p>Generate the test data:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1000</span>)
+max_days &lt;-<span class="st"> </span><span class="dv">500</span>
+DF &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">2000</span>, <span class="dt">length=</span>max_days) <span class="co"># schedule for env degredation (increased dilution)</span>
+x &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)   
+x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1.76e5</span> <span class="co"># initial density</span>
+   
+for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
+ x[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">dai</span>(x[day], <span class="dt">DF =</span> DF[day])
+}
+
+raw &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">t =</span> <span class="dv">1</span>:max_days, <span class="dt">x =</span> x)</code></pre>
+<p>Detrend:</p>
+<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
+raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
+detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals/<span class="kw">sqrt</span>(<span class="kw">var</span>(detrend$residuals)))
+<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/detrend-1.png" />
+</figure>
+<h2 id="ou-model">OU Model</h2>
+<pre class="sourceCode r"><code class="sourceCode r">ou &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+       r ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">20.0</span>)
+   sigma ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="dv">100</span>)
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
+
+  for(t in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
+    mu[t] &lt;-<span class="st"> </span>x[t] +<span class="st"> </span>r *<span class="st"> </span>(theta -<span class="st"> </span>x[t]) 
+    x[t<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu[t], <span class="dt">sd =</span> sigma) 
+  }
+})
+
+ou_constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N)
+ou_inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">0</span>, <span class="dt">r =</span> <span class="fl">1e-3</span>, <span class="dt">sigma =</span> <span class="dv">1</span>)</code></pre>
+<p>Run the mcmc</p>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>ou, ou_constants, data, ou_inits)</code></pre>
+<h4 id="summary-statistics">Summary statistics</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
+<pre><code>Source: local data frame [2 x 3]
+
+    key      mean        std
+1     r 0.2075146 0.02739447
+2 sigma 0.6156283 0.01975407</code></pre>
+<h4 id="traces">Traces</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-8-1.png" />
+</figure>
+<h4 id="posteriors">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-9-1.png" />
+</figure>
+<h2 id="lsn-version">LSN version</h2>
+<p>A modified version of the LSN model to explicitly model the changing parameter as a hidden variable changing at constant rate</p>
+<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+ sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">1e2</span>)
+       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
+    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>) 
+
+  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
+    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
+    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x) 
+    y[i<span class="dv">+1</span>] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i] /<span class="st"> </span>t[N] 
+    
+  }
+})
+
+constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">0</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>lsn, constants, data, inits)</code></pre>
+<h4 id="summary-statistics-1">Summary statistics</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
+<pre><code>Source: local data frame [3 x 3]
+
+      key         mean          std
+1       m -0.003984249 0.0005859252
+2 sigma_x  0.575993873 0.0185972953
+3   theta -0.010341240 0.0410488393</code></pre>
+<h4 id="traces-1">Traces</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-13-1.png" />
+</figure>
+<h4 id="posteriors-1">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-14-1.png" />
+</figure>
+<h2 id="lsn-stochastic-hidden-variable">LSN, stochastic hidden variable</h2>
+<h4 id="define-and-model-and-run-mcmc">Define and model and run MCMC</h4>
+<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+   sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">1e2</span>)
+   sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">1e2</span>)
+       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
+    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
+
+  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
+    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i])
+    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x)
+    mu_y[i] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i] /<span class="st"> </span>t[N]
+    y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_y[i], <span class="dt">sd =</span> sigma_y) 
+  }
+})
+
+constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">0</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>lsn, constants, data, inits)</code></pre>
+<h4 id="summary-statistics-2">Summary statistics</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
+<pre><code>Source: local data frame [4 x 3]
+
+      key         mean         std
+1       m -0.003001092 0.004531153
+2 sigma_x  0.563929151 0.020224310
+3 sigma_y  0.048817421 0.036018516
+4   theta  0.010243795 0.045674221</code></pre>
+<h4 id="traces-2">Traces</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-18-1.png" />
+</figure>
+<h4 id="posteriors-2">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-19-1.png" />
+</figure>
+<hr />
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
+<pre><code>R version 3.1.2 (2014-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] methods   stats     graphics  grDevices utils     datasets 
+[7] base     
+
+other attached packages:
+[1] dplyr_0.4.1             ggplot2_1.0.0          
+[3] tidyr_0.2.0             regimeshifts_0.0.0.9000
+[5] nimble_0.3              yaml_2.1.13            
+[7] knitr_1.9              
+
+loaded via a namespace (and not attached):
+ [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-10
+ [4] colorspace_1.2-4 DBI_0.3.1        devtools_1.7.0  
+ [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+[10] grid_3.1.2       gtable_0.1.2     httr_0.6.1      
+[13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
+[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[19] parallel_3.1.2   plyr_1.8.1       proto_0.3-10    
+[22] Rcpp_0.11.4      RCurl_1.95-4.5   reshape2_1.4.1  
+[25] scales_0.2.4     stringr_0.6.2    tools_3.1.2     </code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/02/24/nimble-on-dai-model.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/02/12/dai-model.html">Dai Model</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 12 Feb 2015</p>
@@ -373,6 +583,10 @@ x3 &lt;-<span class="st">  </span><span class="kw">filter_</span>(all_taxa, <spa
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/02/03/dockerizing-fishbase-api.html">Dockerizing Fishbase Api</a></h4></header>
 <p><span></span></p>
@@ -467,10 +681,6 @@ chown -R mysql:mysql /var/lib/mysql</code></pre>
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/01/23/mdptoolbox-ex.html">Mdptoolbox Ex</a></h4></header>
 <p><span></span></p>
@@ -490,10 +700,10 @@ opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="
 p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">a =</span> <span class="dv">6</span>, <span class="dt">b =</span> <span class="fl">0.05</span>)
 
 profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">min</span>(x,h)  <span class="co"># vectorized for x</span>
-x_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">150</span>, <span class="dt">length =</span> <span class="dv">50</span>)
-h_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">150</span>,<span class="dt">length =</span> <span class="dv">50</span>)
+x_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">150</span>, <span class="dt">length =</span> <span class="dv">51</span>)
+h_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">150</span>,<span class="dt">length =</span> <span class="dv">51</span>)
 delta &lt;-<span class="st"> </span><span class="fl">0.05</span>
-sigma_g &lt;-<span class="st"> </span><span class="fl">0.1</span>
+sigma_g &lt;-<span class="st"> </span><span class="fl">0.0</span>
 z_g &lt;-<span class="st"> </span>function() <span class="dv">1</span> +<span class="st"> </span><span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_g)
 pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>(P, <span class="dv">0</span>, s)</code></pre>
 <p>Building the transition probability matrix:</p>
@@ -514,23 +724,44 @@ pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>
         <span class="co"># relative probability of a transition to that state</span>
         ProportionalChance &lt;-<span class="st"> </span>x_grid /<span class="st"> </span>x2_expected
         Prob &lt;-<span class="st"> </span><span class="kw">pdfn</span>(ProportionalChance, sigma_g)
+        
+        if(<span class="kw">sum</span>(Prob) &gt;<span class="st"> </span><span class="dv">0</span>)
         <span class="co"># Store normalized probabilities in row</span>
-        SDP_matrix[i,] &lt;-<span class="st"> </span>Prob/<span class="kw">sum</span>(Prob)
+          SDP_matrix[i,] &lt;-<span class="st"> </span>Prob/<span class="kw">sum</span>(Prob)
+        else 
+          SDP_matrix[i,] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="kw">numeric</span>(gridsize<span class="dv">-1</span>))
       }
     }
-    SDP_matrix
+    <span class="kw">t</span>(SDP_matrix)
   })
   SDP_Mat
 }</code></pre>
 <p>Building the reward matrix:</p>
-<pre class="sourceCode r"><code class="sourceCode r">R &lt;-<span class="st"> </span><span class="kw">sapply</span>(x_grid, function(x)
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># [S, A] array</span>
+
+R &lt;-<span class="st"> </span><span class="kw">t</span>(<span class="kw">sapply</span>(x_grid, function(x)
   <span class="kw">sapply</span>(h_grid, function(h)
   <span class="kw">profit</span>(x,h)
-))</code></pre>
+)))</code></pre>
 <p>Note that in <span class="math">\(f\)</span> we must define the harvesting take place before the population recruits.</p>
 <pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">determine_SDP_matrix</span>(f, p, x_grid, h_grid, sigma_g, pdfn)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, delta)</code></pre>
-<pre><code>Error in if (variation &lt; thresh) {: missing value where TRUE/FALSE needed</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">x0 &lt;-<span class="st"> </span>(p[[<span class="dv">1</span>]]-<span class="dv">1</span>)/p[[<span class="dv">2</span>]]
+i &lt;-<span class="st"> </span><span class="kw">which.min</span>(<span class="kw">abs</span>(x_grid-x0))
+
+V0 &lt;-<span class="st"> </span>R[i,]</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mdp_check</span>(<span class="dt">P=</span>P,<span class="dt">R=</span>R)</code></pre>
+<pre><code>[1] &quot;MDP Toolbox ERROR: Incompatibility between P and R dimensions&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">testthat::<span class="kw">expect_equal</span>(<span class="kw">sum</span>(<span class="kw">sapply</span>(P, function(x) <span class="kw">sum</span>(<span class="kw">apply</span>(x, <span class="dv">2</span>, is.nan)))), <span class="dv">0</span>)</code></pre>
+<pre><code>Error: sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))) not equal to 0
+Mean absolute difference: 13950</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, <span class="dt">discount=</span>delta, <span class="dt">epsilon=</span><span class="fl">0.001</span>, <span class="dt">max_iter =</span> <span class="fl">1e4</span>, <span class="dt">V0=</span>V0)</code></pre>
+<pre><code>[1] &quot;--------------------------------------------------------&quot;
+[1] &quot;MDP Toolbox ERROR: V0 must have the same dimension as P&quot;
+[1] &quot;--------------------------------------------------------&quot;</code></pre>
+<pre><code>Error in mdp_value_iteration(P, R, discount = delta, epsilon = 0.001, : object &#39;V&#39; not found</code></pre>
+<p>Whoops, this doesn’t look right:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(x_grid, h_grid[out$policy])</code></pre>
+<pre><code>Error in xy.coords(x, y, xlabel, ylabel, log): object &#39;out&#39; not found</code></pre>
  
 <!-- not that raw_content depends on custom generator, 
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
@@ -599,6 +830,10 @@ profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</spa
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/01/22/invasives-sdp.html">Invasives Sdp</a></h4></header>
 <p><span></span></p>
@@ -646,10 +881,6 @@ pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/01/13/detrend-example.html">Detrend Example</a></h4></header>
 <p><span></span></p>
@@ -676,7 +907,7 @@ raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_crit
 <pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
 raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
 detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals/<span class="kw">sqrt</span>(<span class="kw">var</span>(detrend$residuals)))
 <span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png" />
@@ -684,12 +915,12 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
 <h2 id="lsn-version">LSN version</h2>
 <p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
 <pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">100.0</span>, <span class="fl">100.0</span>)
    sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
    sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
        m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
-    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>) 
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="dv">100</span>, <span class="dv">100</span>)
+    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="dv">100</span>, <span class="dv">100</span>)
 
   for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
     mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
@@ -831,51 +1062,6 @@ loaded via a namespace (and not attached):
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/01/07/automated-knitr-in-jekyll.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/01/05/notes.html">Notes</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 05 Jan 2015</p>
-
-<article>
-<div class="excerpt">
-<h2 id="more-user-craziness-with-docker">more user craziness with docker</h2>
-<p>Should do something about rstudio script when running as a non-root user…. Fixed! Requires changing user more carefully; we cannot simply delete the existing user.</p>
-<p>When using a docker image with a non-root default user, we can launch a container as root by giving root’s UID instead with the <code>--user 0</code> flag. (Note that we can do this with other UIDs as well, though it produces a troublesome unnamed user when the userid hasn’t been assigned to a user name).</p>
-<ul>
-<li>RStudio image now completely configures default user in the Dockerfile, such that userconf.sh need only configure custom users. See <a href="https://github.com/rocker-org/rocker/blob/cec3912d3bc40352fc4ca7d7d281db9e25b3dd86/rstudio/userconf.sh">userconf.sh</a>. We now do:</li>
-</ul>
-<pre><code>usermod -l rstudio docker \
-    &amp;&amp; usermod -m -d /home/rstudio rstudio \
-    &amp;&amp; groupmod -n rstudio docker </code></pre>
-<p>instead of <code>userdel</code> which causes issues if we launch as that user. Note, this means containers built on <code>rstudio</code> have only the user <code>rstudio</code> available and not the <code>docker</code> user, unless explicitly added/renamed. Avoids issues like multiple home directories/unpredictable home directory name as well (Since RStudio-server wants to open in home dir and not in a user-owned root directory like <code>/data</code> like most other apps would use.) - RStudio must still be launched as root (see <a href="https://support.rstudio.com/hc/communities/public/questions/200661923-Does-Rstudio-have-to-run-as-root-">RStudio issue</a>), so a Dockerfile with non-root user must use the <code>--user 0</code> flag or run <code>rserver</code> or the default <code>supervisord</code> using <code>sudo</code>.<br />- Configure <a href="https://github.com/rocker-org/rocker/blob/cec3912d3bc40352fc4ca7d7d281db9e25b3dd86/rstudio/supervisord.conf">supervisord.conf</a> configuration not to throw erroneous error messages (e.g. <code>userconf.sh</code> is expected to exit with 0, users explicitly declared, config file explicitly declared to avoid security vulnerability of custom conf in working dir, etc).</p>
-<h2 id="reading-list-notes">Reading list notes</h2>
-<p>Sebastian has a very nice reading list for his upcoming seminar on evolution in stochastic environments that I wanted to make note of for my own reference as well.</p>
-<p>Reading: Ruel, Jonathan J., and Matthew P. Ayres. “Jensen’s inequality predicts effects of environmental variation.” Trends in Ecology &amp; Evolution 14.9 (1999): 361-366. Optional Reading: Frank, Steven A., and Montgomery Slatkin. “Evolution in a variable environment.” American Naturalist (1990): 244-260.</p>
-<p>BETWEEN-GENERATION BET-HEDGING</p>
-<p>Week 2: Historical perspective and overview</p>
-<p>Readings: Stearns, Stephen C. “Daniel Bernoulli (1738): evolution and economics under risk.” Journal of biosciences 25.3 (2000): 221-228. Childs, Dylan Z., C. J. E. Metcalf, and Mark Rees. “Evolutionary bet-hedging in the real world: empirical evidence and challenges revealed by plants.” Proceedings of the Royal Society B: Biological Sciences (2010): rspb20100707. Optional Reading: Simons, Andrew M. “Modes of response to environmental change and the elusive empirical evidence for bet hedging.” Proceedings of the Royal Society B: Biological Sciences (2011): rspb20110176.</p>
-<p>Week 3: Seedbanks in annual plants Readings: Venable, D. Lawrence. “Bet hedging in a guild of desert annuals.” Ecology 88.5 (2007): 1086-1090; Gremer, Jennifer R., and D. Lawrence Venable. “Bet hedging in desert winter annual plants: optimal germination strategies in a variable environment.” Ecology letters 17.3 (2014): 380-387.</p>
-<p>Week 4: Stochastic switches, epigenetics, and bacteria</p>
-<p>Readings: Beaumont, Hubertus JE, et al. “Experimental evolution of bet hedging.” Nature 462.7269 (2009): 90-93; Veening, J. et al. “Bistability, Epigenetics, and Bet-Hedging in Bacteria.” Annual Reviews of Microbiology (2008)</p>
-<p>Week 5: Bet-hedging in structured populations</p>
-<p>Potential readings: Carja, Oana, Uri Liberman, and Marcus W. Feldman. “The evolution of phenotypic switching in subdivided populations.” Genetics 196.4 (2014): 1185-1197; Pfister, Catherine A. “Patterns of variance in stage-structured populations: evolutionary predictions and ecological implications.” Proceedings of the National Academy of Sciences 95.1 (1998): 213-218.; Schreiber, Sebastian J. “The evolution of patch selection in stochastic environments.” The American Naturalist 180.1 (2012): 17-34.</p>
-<p>WITHIN-GENERATION BET-HEDGING</p>
-<p>Week 6: The idea and a perspective Readings: Gillespie, John H. “Natural selection for within-generation variance in offspring number.” Genetics 76.3 (1974): 601-606; Hopper, Keith R., et al. “Within-generation bet hedging: a seductive explanation?.” Oikos 101.1 (2003): 219-222.</p>
-<p>Week 7: Multiple matings in wasps and cooperative breeding in birds Readings: Sarhan, Alia, and Hanna Kokko. “Multiple mating in the glanville fritillary butterfly: A case of within-generation bethedging?” Evolution 61.3 (2007): 606-616; Rubenstein, Dustin R “Spatiotemporal environmental variation, risk aversion, and the evolution of cooperative breeding as a bet-hedging strategy.” Proceedings of the National Academy of Sciences 108.Supplement 2 (2011): 10816-10822.</p>
-<p>Week 8: Synthesis of between- and within-generation bet-hedging Readings: Starrfelt, Jostein, and Hanna Kokko. “Bet-hedging: a triple trade-off between means, variances and correlations.” Biological Reviews 87.3 (2012): 742-755; Frank, Steven A. “Natural selection. I. Variable environments and uncertain returns on investment*.&quot; Journal of evolutionary biology 24.11 (2011): 2299-2309.</p>
-<p>RESOURCE VARIATION AND RISK AVERSION</p>
-<p>Week 9: Multiple limiting factors and ovule packaging in angiosperms Readings: Rosenheim, Jay A., Uri Alon, and Guy Shinar. “Evolutionary Balancing of Fitness-Limiting Factors.” The American Naturalist 175.6 (2010): 662-674. Burd, Martin, et al. “Ovule number per flower in a world of unpredictable pollination.” American Journal of Botany 96.6 (2009): 1159-1167.</p>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/01/05/notes.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
