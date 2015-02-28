@@ -19,6 +19,7 @@ library("nimble")
 library("regimeshifts")
 library("tidyr")
 library("ggplot2")
+library("dplyr")
 ```
 
 
@@ -104,7 +105,7 @@ summarise(group_by(df, key), mean=mean(value), std=sqrt(var(value)))
 
 ```{r , fig.show='hold'}
 ggplot(df) + 
-  geom_line(aes(seq_adf(value), value)) + 
+  geom_line(aes(seq_along(value), value)) + 
   facet_wrap(~key, scale='free')
 ```
 
@@ -115,7 +116,6 @@ ggplot(df) +
   geom_density(aes(value)) + 
   facet_wrap(~key, scale='free')
 ```
-
 
 
 
@@ -159,7 +159,7 @@ summarise(group_by(df, key), mean=mean(value), std=sqrt(var(value)))
 #### Traces
 
 ```{r, fig.show='hold'}
-ggplot(long) + 
+ggplot(df) + 
   geom_line(aes(seq_along(value), value)) + 
   facet_wrap(~key, scale='free')
 ```
@@ -167,7 +167,7 @@ ggplot(long) +
 #### Posteriors
 
 ```{r, fig.show='hold'}
-ggplot(long) + 
+ggplot(df) + 
 	geom_density(aes(value)) + 
 	facet_wrap(~key, scale='free')
 ```
