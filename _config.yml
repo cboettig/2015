@@ -16,6 +16,9 @@ username: cboettig
 gems:
   - jekyll-pandoc
 
+# For local jekyll serve
+host: 0.0.0.0
+
 encoding: utf-8
 
 ## Markdown Parser 
@@ -38,9 +41,22 @@ analytics: UA-18401403-1 ## Google Analytics key (in _includes/analytics.html)
 
 exclude:
   - _posts/*.Rmd
-  - build.R
-  - _deploy.sh
-  - _build.sh
   - .drone.yml
-  - tmp/
-  - tmp/cache
+
+
+## Have pages & posts use their default layouts, respectively
+defaults:
+  -
+    scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "page"
+  -
+    scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+
+
