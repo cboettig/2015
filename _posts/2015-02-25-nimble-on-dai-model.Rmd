@@ -9,7 +9,7 @@ tags:
 
 ## Testing nimble method on Dai model
 
-(long data series)
+(shorter data series)
 
 ```{r}
 devtools::install_github("cboettig/regimeshifts")
@@ -47,7 +47,7 @@ Generate the test data:
 
 ```{r}
 set.seed(1000)
-max_days <- 500
+max_days <- 50
 DF <- seq(0, 2000, length=max_days) # schedule for env degredation (increased dilution)
 x <- numeric(max_days)   
 x[1] <- 1.76e5 # initial density
