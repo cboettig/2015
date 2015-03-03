@@ -1,0 +1,34 @@
+---
+published: false
+
+---
+
+
+
+
+
+
+misc tricks
+-----------
+
+- docker X11 sharing
+
+```bash
+docker run  -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:ro r-base
+```
+
+
+- `devtools::install_version` 
+
+- `devtools::use_readme_rmd`
+
+- Specify a custom action for the knit button: add `knit: (function(inputFile, encoding) ...)` to the top-level YAML header; e.g. to control output directory ()
+
+```r
+rmarkdown::render(inputFile, 
+                  encoding = encoding, 
+                  output_file = paste0(dirname(inputFile),
+                                       basename(inputFile), 
+                                       ".pdf"))
+```
+
