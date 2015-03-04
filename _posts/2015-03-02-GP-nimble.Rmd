@@ -19,6 +19,37 @@ library("ggplot2")
 
 
 
+## dmnorm example ##
+
+from Daniel:
+
+```{r}
+code <- nimbleCode({
+    mu ~ dunif(-100, 100)
+    sigma ~ dunif(0, 100)
+    rho ~ dunif(20, 100)
+    muVec[1:N] <- mu * onesVector[1:N]
+    Cov[1:N, 1:N] <- sigma^2 * exp(-dist[1:N, 1:N]/rho)
+    g[1:N] ~ dmnorm(muVec[1:N], cov = Cov[1:N, 1:N])
+    for (i in 1:N) {
+        y[i] ~ dpois(exp(g[i]))
+    }
+})
+
+constants <- list(N = 148, 
+                  onesVector = rep(1, 148), 
+                  dist = matrix(1, nrow=148, ncol=148))
+
+y = rpois(148, 1) # vector of 148 observations (counts)
+data <- list(y=y)
+
+inits <- list(mu = 0, 
+              sigma = 5, 
+              rho = 60, 
+              g = rep(0, 148))
+
+m <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
+```
 
 ## GP Model ##
 
@@ -34,9 +65,9 @@ code <- nimbleCode({
   
    SE <- function(xi,xj, l) exp(-0.5 * (xi - xj) ^ 2 / l ^ 2)
    Mu <- rep(0, N)
-   Sigma <- outer(x, x, SE, l) + sigma.n ^ 2 * diag(1, N)
+   Sigma <- outer(x[1:N], x[1:N], SE, l) + sigma.n ^ 2 * diag(1, N)
    Lambda <- solve(Sigma)
-   y ~ dmnorm(Mu, Lambda)  
+   y[1:N] ~ dmnorm(Mu, Lambda)  
 
 })
 
