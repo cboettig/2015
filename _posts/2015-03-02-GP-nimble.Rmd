@@ -8,16 +8,9 @@ tags:
 
 ---
 
-
-
-
-
 ```{r include=FALSE, cache=FALSE}
 library("nimble")
 library("ggplot2")
-```
-
-
 
 ## dmnorm example ##
 
@@ -64,14 +57,13 @@ code <- nimbleCode({
    sigma.n ~ dgamma(5, 5)
   
    SE <- function(xi,xj, l) exp(-0.5 * (xi - xj) ^ 2 / l ^ 2)
-   Mu <- rep(0, N)
-   Sigma <- outer(x[1:N], x[1:N], SE, l) + sigma.n ^ 2 * diag(1, N)
-   Lambda <- solve(Sigma)
-   y[1:N] ~ dmnorm(Mu, Lambda)  
+   Sigma <- outer(x[1:N], x[1:N], SE, l) + sigma.n ^ 2 * I
+   y[1:N] ~ dmnorm(Mu, cov = Sigma)  
 
 })
 
-constants = list(N = length(obs$x), x = obs$x)
+N <- length(obs$x)
+constants = list(N = N, x = obs$x, Mu = rep(0,N), I = diag(1,N))
 inits <- list(l = 1, sigma.n = 10)
 data <- data.frame(y = obs$y)
 ```
