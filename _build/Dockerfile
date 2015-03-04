@@ -5,7 +5,7 @@ MAINTAINER Carl Boettiger cboettig@ropensci.org
 RUN sudo rm -rf /tmp/* && install2.r --error igraph sde MDPtoolbox \
   && install2.r --error --repo http://r-nimble.org nimble \
   && installGithub.r \
-    yihui/servr 
+    yihui/servr \ 
     cboettig/earlywarning \
     cboettig/pdg_control \
     cboettig/knitcitations \
