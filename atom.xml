@@ -113,7 +113,7 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-03-05T05:55:46+00:00</updated>
+ <updated>2015-03-05T18:51:20+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
@@ -1524,14 +1524,17 @@ loaded via a namespace (and not attached):
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(sde)
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(ggplot2)
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(tidyr)
-opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dev=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;png&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fig.width=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fig.height=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;cache=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;results=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;hide&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dev =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;png&amp;#39;&lt;/span&gt;, 
+               &lt;span class=&quot;dt&quot;&gt;fig.width =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, 
+               &lt;span class=&quot;dt&quot;&gt;fig.height =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, 
+               &lt;span class=&quot;dt&quot;&gt;cache =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;, 
+               &lt;span class=&quot;dt&quot;&gt;results =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;hide&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Stick with SDE example as a reference point:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
 d &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;-x))
 s &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) 
-data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sde.sim&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;X0=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;drift=&lt;/span&gt;d, &lt;span class=&quot;dt&quot;&gt;sigma=&lt;/span&gt;s, &lt;span class=&quot;dt&quot;&gt;T=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;20&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;N=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;sigma.x not provided, attempting symbolic derivation.&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(data) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(x),x))
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sde.sim&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;X0=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;drift=&lt;/span&gt;d, &lt;span class=&quot;dt&quot;&gt;sigma=&lt;/span&gt;s, &lt;span class=&quot;dt&quot;&gt;T=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;20&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;N=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;))
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(data) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(x),x))
 N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(data$x)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png&quot; /&gt;
@@ -1563,32 +1566,30 @@ N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;k
                       &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, 
                       &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)
 Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error: Failed to create the shared library&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;2e2&lt;/span&gt;)
 Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
 Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in inherits(project, &amp;quot;nimbleProjectClass&amp;quot;): object &amp;#39;Cmodel&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e6&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;Cmcmc&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and examine results&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in as.matrix(Cmcmc$mvSamples): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;as.matrix&amp;#39;: Error: object &amp;#39;Cmcmc&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in as.vector(x): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
+&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)
+samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]
+long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(samples, &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, mean)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in apply(samples, 2, mean): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;            m       sigma_x       sigma_y         theta 
+-1.675333e-05  3.875174e-01  4.066872e-02  1.022867e+01 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(long) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot(long): object &amp;#39;long&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/trace-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(long) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot(long): object &amp;#39;long&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
 Platform: x86_64-pc-linux-gnu (64-bit)
@@ -1607,7 +1608,7 @@ attached base packages:
 
 other attached packages:
  [1] tidyr_0.2.0   ggplot2_1.0.0 sde_2.0.13    zoo_1.7-11   
- [5] fda_2.4.4     Matrix_1.1-5  MASS_7.3-37   nimble_0.3   
+ [5] fda_2.4.4     Matrix_1.1-5  MASS_7.3-39   nimble_0.3   
  [9] yaml_2.1.13   knitr_1.9    
 
 loaded via a namespace (and not attached):

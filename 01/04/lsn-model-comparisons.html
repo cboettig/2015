@@ -112,14 +112,17 @@
 <span class="kw">library</span>(sde)
 <span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(tidyr)
-opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">5</span>, <span class="dt">fig.height=</span><span class="dv">5</span>, <span class="dt">cache=</span><span class="dv">1</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>)</code></pre>
+opts_chunk$<span class="kw">set</span>(<span class="dt">dev =</span> <span class="st">&#39;png&#39;</span>, 
+               <span class="dt">fig.width =</span> <span class="dv">5</span>, 
+               <span class="dt">fig.height =</span> <span class="dv">5</span>, 
+               <span class="dt">cache =</span> <span class="ot">FALSE</span>, 
+               <span class="dt">results =</span> <span class="st">&#39;hide&#39;</span>)</code></pre>
 <p>Stick with SDE example as a reference point:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
 d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
 s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
-data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))</code></pre>
-<pre><code>sigma.x not provided, attempting symbolic derivation.</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
+data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))
+<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
 N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png" />
@@ -151,32 +154,30 @@ N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></p
                       <span class="dt">data =</span> data, 
                       <span class="dt">inits =</span> inits)
 Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
-<pre><code>Error: Failed to create the shared library</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">2e2</span>)
 Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
-<pre><code>Error in inherits(project, &quot;nimbleProjectClass&quot;): object &#39;Cmodel&#39; not found</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;Cmcmc&#39; not found</code></pre>
 <p>and examine results</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))</code></pre>
-<pre><code>Error in as.matrix(Cmcmc$mvSamples): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;as.matrix&#39;: Error: object &#39;Cmcmc&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(samples)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
-<pre><code>Error in as.vector(x): object &#39;samples&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
+<span class="kw">dim</span>(samples)
+samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
-<pre><code>Error in apply(samples, 2, mean): object &#39;samples&#39; not found</code></pre>
+<pre><code>            m       sigma_x       sigma_y         theta 
+-1.675333e-05  3.875174e-01  4.066872e-02  1.022867e+01 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<pre><code>Error in ggplot(long): object &#39;long&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/trace-1.png" />
+</figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<pre><code>Error in ggplot(long): object &#39;long&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png" />
+</figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
 <pre><code>R version 3.1.2 (2014-10-31)
 Platform: x86_64-pc-linux-gnu (64-bit)
@@ -195,7 +196,7 @@ attached base packages:
 
 other attached packages:
  [1] tidyr_0.2.0   ggplot2_1.0.0 sde_2.0.13    zoo_1.7-11   
- [5] fda_2.4.4     Matrix_1.1-5  MASS_7.3-37   nimble_0.3   
+ [5] fda_2.4.4     Matrix_1.1-5  MASS_7.3-39   nimble_0.3   
  [9] yaml_2.1.13   knitr_1.9    
 
 loaded via a namespace (and not attached):
@@ -258,7 +259,7 @@ loaded via a namespace (and not attached):
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/9d00cd648accd67fcaa53734db4437e6b34e1f8c/_posts/2015-01-04-lsn-model-comparisons.Rmd"> 9d00cd648accd67fcaa53734db4437e6b34e1f8c</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/a2e85952b032ccc9573390ba32a65c9ac9212c9e/_posts/2015-01-04-lsn-model-comparisons.Rmd"> a2e85952b032ccc9573390ba32a65c9ac9212c9e</a></small></p>
     
   <br/>
   
