@@ -114,6 +114,540 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/03/04/GP-nimble-explore.html">Gp Nimble Explore</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 04 Mar 2015</p>
+
+<article>
+<div class="excerpt">
+<h2 id="gp-model">GP Model</h2>
+<p>A successful specification looks like this:</p>
+<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+
+  
+<span class="co">#   s ~ dunif(0,1e5) </span>
+<span class="co">#   l ~ dgamma(s, 1)</span>
+  
+   l ~<span class="st"> </span><span class="kw">dgamma</span>(<span class="dv">10</span>, <span class="dv">1</span>) 
+   sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
+   Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span><span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>diff[<span class="dv">1</span>:N, <span class="dv">1</span>:N] /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I[<span class="dv">1</span>:N, <span class="dv">1</span>:N]
+   y[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(Mu[<span class="dv">1</span>:N], <span class="dt">cov =</span> Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N])  
+
+})</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(-<span class="dv">4</span>, -<span class="dv">3</span>, -<span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">2</span>),
+                   <span class="dt">y =</span> <span class="kw">c</span>(-<span class="dv">2</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">2</span>, -<span class="dv">1</span>))
+
+N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
+diff &lt;-<span class="st"> </span><span class="kw">outer</span>(obs$x, obs$x, function(xi, xj) (xi-xj)^<span class="dv">2</span>)
+constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">diff =</span> diff, <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
+<p>We can simulate parameters from the prior:</p>
+<pre class="sourceCode r"><code class="sourceCode r">Rmodel$l</code></pre>
+<pre><code>[1] 1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate</span>(Rmodel, <span class="st">&quot;l&quot;</span>)
+Rmodel$l</code></pre>
+<pre><code>[1] 6.378872</code></pre>
+<p>Other nodes and likelihoods are updated to reflect the new value only after we run <code>calculate()</code>, so this is the logProb of <code>l</code> originally:</p>
+<pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
+<pre><code>[1] NA</code></pre>
+<p>After we run <code>calculate()</code>, the <code>logProb</code> is updated to reflect our simulated value of <code>l</code>, as are the dependent terms (like the Sigma matrix)</p>
+<pre class="sourceCode r"><code class="sourceCode r">Sigma &lt;-<span class="st"> </span>Rmodel$Sigma
+<span class="kw">calculate</span>(Rmodel)</code></pre>
+<pre><code>[1] -30.19878</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(Sigma, Rmodel$Sigma)</code></pre>
+<pre><code>[1] FALSE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
+<pre><code>[1] -2.503778</code></pre>
+<p>Interestingly, we don’t seem to be able to simulate actual data from the model in this way:</p>
+<pre class="sourceCode r"><code class="sourceCode r">Rmodel$y</code></pre>
+<pre><code>[1] -2  0  1  2 -1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate</span>(Rmodel, <span class="st">&quot;y&quot;</span>)
+Rmodel$y</code></pre>
+<pre><code>[1] -2  0  1  2 -1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(Rmodel$y, Rmodel$origData[[<span class="st">&quot;y&quot;</span>]])</code></pre>
+<pre><code>[1] TRUE</code></pre>
+<p>Note that <code>y</code> remaines fixed to the original data values. We have to do this manually:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mvrnorm</span>(<span class="dt">mu =</span> constants$Mu, <span class="dt">Sigma =</span> Rmodel$Sigma) </code></pre>
+<pre><code>[1] -14.951663  12.265050  -5.410019   1.604755 -12.239603</code></pre>
+<p>Define our mcmc procedure in Nimble</p>
+<pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
+mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>)
+Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
+Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Rmodel)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+Cmcmc$<span class="kw">run</span>(<span class="fl">1e5</span>)
+)</code></pre>
+<pre><code>   user  system elapsed 
+  1.107   0.028   1.139 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
+df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
+<h4 id="posteriors">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-03-04-GP-nimble-explore/unnamed-chunk-13-1.png" />
+</figure>
+<p>Note that <code>simulate</code> continues to draw from the prior, not the posterior:</p>
+<pre class="sourceCode r"><code class="sourceCode r">sigmas &lt;-<span class="st"> </span><span class="kw">replicate</span>(<span class="fl">1e4</span>, {
+  <span class="kw">simulate</span>(Rmodel, <span class="st">&quot;sigma.n&quot;</span>)
+  Rmodel$sigma.n
+  })
+<span class="kw">hist</span>(sigmas)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-03-04-GP-nimble-explore/unnamed-chunk-14-1.png" />
+</figure>
+<p>(Also note this isn’t a particularly efficient way to simulate). Conveniently drawing data, <span class="math">\(y\)</span>, from the posterior is even less obvious.</p>
+<h2 id="comparison">Comparison</h2>
+<pre class="sourceCode r"><code class="sourceCode r"> lpriors &lt;-<span class="st"> </span>function(pars){
+      <span class="kw">dgamma</span>(pars[[<span class="dv">1</span>]], <span class="dv">10</span>, <span class="dv">1</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>) +
+<span class="st">      </span><span class="kw">dunif</span>(pars[[<span class="dv">2</span>]], <span class="dv">0</span>, <span class="fl">1e5</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>) 
+  }
+  
+  posterior &lt;-<span class="st"> </span>function(pars, x, y){ 
+    l &lt;-<span class="st"> </span>pars[<span class="dv">1</span>]
+    sigma.n &lt;-<span class="st"> </span>pars[<span class="dv">2</span>]
+
+    SE &lt;-<span class="st"> </span>function(Xi,Xj, l) <span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>(Xi -<span class="st"> </span>Xj) ^<span class="st"> </span><span class="dv">2</span> /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>)
+    cov &lt;-<span class="st"> </span>function(X, Y) <span class="kw">outer</span>(X, Y, SE, l)
+    I &lt;-<span class="st"> </span><span class="kw">diag</span>(<span class="dv">1</span>, <span class="kw">length</span>(x))
+    K &lt;-<span class="st"> </span><span class="kw">cov</span>(x, x) 
+  
+    loglik &lt;-<span class="st"> </span>-<span class="st"> </span><span class="fl">0.5</span> *<span class="st"> </span><span class="kw">t</span>(y) %*%<span class="st"> </span><span class="kw">solve</span>(K +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I) %*%<span class="st"> </span>y -
+<span class="st">      </span><span class="kw">log</span>(<span class="kw">det</span>(K +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I)) -
+<span class="st">      </span><span class="kw">length</span>(y) *<span class="st"> </span><span class="kw">log</span>(<span class="dv">2</span> *<span class="st"> </span>pi) /<span class="st"> </span><span class="dv">2</span>
+    
+    loglik +<span class="st"> </span><span class="kw">lpriors</span>(pars)
+  }</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+out &lt;-<span class="st"> </span><span class="kw">metrop</span>(posterior, <span class="dt">initial =</span> <span class="kw">c</span>(<span class="dt">l =</span> <span class="dv">1</span>,<span class="dt">sigma.n =</span> <span class="dv">10</span>), <span class="dt">nbatch =</span> <span class="fl">1e5</span>, <span class="dt">x =</span> obs$x, <span class="dt">y =</span> obs$y)  
+)</code></pre>
+<pre><code>   user  system elapsed 
+ 19.426   0.008  19.554 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">burnin &lt;-<span class="st"> </span><span class="fl">1e3</span>
+thin &lt;-<span class="st"> </span><span class="fl">1e2</span>
+df &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">index=</span><span class="dv">1</span>:out$nbatch, <span class="kw">as.data.frame</span>(<span class="kw">exp</span>(out$batch)))
+s &lt;-<span class="st"> </span><span class="kw">seq</span>(burnin<span class="dv">+1</span>, out$nbatch, <span class="dt">by=</span>thin)
+df &lt;-<span class="st"> </span>df[s,]
+df &lt;-<span class="st"> </span>df[-<span class="dv">1</span>] <span class="co"># drop index</span>
+<span class="kw">names</span>(df) &lt;-<span class="st"> </span><span class="kw">names</span>(out$initial)
+df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>) +
+<span class="st">  </span><span class="kw">scale_x_log10</span>()</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-03-04-GP-nimble-explore/unnamed-chunk-18-1.png" />
+</figure>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/03/04/GP-nimble-explore.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
+          <header><h4><a href="/2015/03/03/GP-nimble-setup.html">Gp Nimble Setup</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 03 Mar 2015</p>
+
+<article>
+<div class="excerpt">
+<h2 id="dmnorm-example">dmnorm example</h2>
+<p>from Daniel, who notes we need to be explicit about vector/matrix sizes on both LHS and RHS,</p>
+<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+    mu ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="dv">100</span>, <span class="dv">100</span>)
+    sigma ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
+    rho ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">20</span>, <span class="dv">100</span>)
+    muVec[<span class="dv">1</span>:N] &lt;-<span class="st"> </span>mu *<span class="st"> </span>onesVector[<span class="dv">1</span>:N]
+    Cov[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span>sigma^<span class="dv">2</span> *<span class="st"> </span><span class="kw">exp</span>(-dist[<span class="dv">1</span>:N, <span class="dv">1</span>:N]/rho)
+    g[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(muVec[<span class="dv">1</span>:N], <span class="dt">cov =</span> Cov[<span class="dv">1</span>:N, <span class="dv">1</span>:N])
+    for (i in <span class="dv">1</span>:N) {
+        y[i] ~<span class="st"> </span><span class="kw">dpois</span>(<span class="kw">exp</span>(g[i]))
+    }
+})
+constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> <span class="dv">148</span>, 
+                  <span class="dt">onesVector =</span> <span class="kw">rep</span>(<span class="dv">1</span>, <span class="dv">148</span>), 
+                  <span class="dt">dist =</span> <span class="kw">matrix</span>(<span class="dv">1</span>, <span class="dt">nrow=</span><span class="dv">148</span>, <span class="dt">ncol=</span><span class="dv">148</span>))
+y =<span class="st"> </span><span class="kw">rpois</span>(<span class="dv">148</span>, <span class="dv">1</span>) <span class="co"># vector of 148 observations (counts)</span>
+data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">y=</span>y)
+
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">mu =</span> <span class="dv">0</span>, 
+              <span class="dt">sigma =</span> <span class="dv">5</span>, 
+              <span class="dt">rho =</span> <span class="dv">60</span>, 
+              <span class="dt">g =</span> <span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">148</span>))
+m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
+<h2 id="gp-model-original-specification">GP Model, original specification</h2>
+<p>This model definition doesn’t work, since we do not define sizes explicitly</p>
+<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+   l ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>,<span class="fl">1e4</span>)
+   sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e4</span>) 
+   Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span><span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>diff /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I
+   y[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(Mu, <span class="dt">cov =</span> Sigma)  
+})
+obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(-<span class="dv">4</span>, -<span class="dv">3</span>, -<span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">2</span>),
+                   <span class="dt">y =</span> <span class="kw">c</span>(-<span class="dv">2</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">2</span>, -<span class="dv">1</span>))
+
+N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
+diff &lt;-<span class="st"> </span><span class="kw">outer</span>(obs$x, obs$x, function(xi, xj) (xi-xj)^<span class="dv">2</span>)
+constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">diff =</span> diff, <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)
+m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
+<pre><code>Error in x$parentNodeExprs[[iV]][[iDim + 2]]: object of type &#39;symbol&#39; is not subsettable</code></pre>
+<h2 id="gp-model-v2">GP Model, v2</h2>
+<p>This model definition still doesn’t work, even though it appears to be more explicit</p>
+<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+
+   l ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>,<span class="dv">100</span>)
+   sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>,<span class="dv">100</span>)
+   SE &lt;-<span class="st"> </span>function(xi,xj, l) <span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>(xi -<span class="st"> </span>xj) ^<span class="st"> </span><span class="dv">2</span> /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>)
+   Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span><span class="kw">outer</span>(x[<span class="dv">1</span>:N], x[<span class="dv">1</span>:N], SE, l) +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I[<span class="dv">1</span>:N, <span class="dv">1</span>:N]
+   y[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(Mu[<span class="dv">1</span>:N], <span class="dt">cov =</span> Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N])  
+
+})
+obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(-<span class="dv">4</span>, -<span class="dv">3</span>, -<span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">2</span>),
+                   <span class="dt">y =</span> <span class="kw">c</span>(-<span class="dv">2</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">2</span>, -<span class="dv">1</span>))
+N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
+constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)
+<span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
+<pre><code>Error in replaceConstantsRecurse(x, constEnv, constNames): Error, hit end</code></pre>
+<h2 id="gp-model">GP Model</h2>
+<p>A successful specification looks like this:</p>
+<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+
+   l ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>,<span class="fl">1e5</span>) <span class="co"># dgamma(5, 5)</span>
+   sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>) <span class="co"># dgamma(5, 5) </span>
+   Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span><span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>diff[<span class="dv">1</span>:N, <span class="dv">1</span>:N] /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I[<span class="dv">1</span>:N, <span class="dv">1</span>:N]
+   y[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(Mu[<span class="dv">1</span>:N], <span class="dt">cov =</span> Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N])  
+
+})</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(-<span class="dv">4</span>, -<span class="dv">3</span>, -<span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">2</span>),
+                   <span class="dt">y =</span> <span class="kw">c</span>(-<span class="dv">2</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">2</span>, -<span class="dv">1</span>))
+
+N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
+diff &lt;-<span class="st"> </span><span class="kw">outer</span>(obs$x, obs$x, function(xi, xj) (xi-xj)^<span class="dv">2</span>)
+constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">diff =</span> diff, <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)
+m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
+<p>Define our mcmc procedure in Nimble</p>
+<pre class="sourceCode r"><code class="sourceCode r">my_mcmc &lt;-<span class="st"> </span>function(code, constants, data, inits, <span class="dt">n_iter=</span><span class="fl">1e5</span>, <span class="dt">thin =</span> <span class="fl">1e2</span>){  
+  Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)
+  Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
+  mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>,<span class="dt">thin=</span>thin)
+  Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
+  Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)
+  Cmcmc$<span class="kw">run</span>(n_iter)
+  samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
+  <span class="co">#samples &lt;- samples[,1:(length(inits)-1)]</span>
+  <span class="kw">gather</span>(samples)
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits, <span class="dt">n =</span> <span class="fl">1e6</span>)</code></pre>
+<h4 id="summary-statistics">Summary statistics</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
+<pre><code>Source: local data frame [2 x 3]
+
+      key         mean         std
+1       l 49849.877654 28940.56878
+2 sigma.n     2.203577     1.38111</code></pre>
+<h4 id="traces">Traces</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df,<span class="dv">500</span>)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-10-1.png" />
+</figure>
+<h4 id="posteriors">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-11-1.png" />
+</figure>
+<h2 id="time-series-example">Time-series example</h2>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function (x, p){ x *<span class="st"> </span><span class="kw">exp</span>(p[<span class="dv">1</span>] *<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>x /<span class="st"> </span>p[<span class="dv">2</span>]) *<span class="st"> </span>(x -<span class="st"> </span>p[<span class="dv">3</span>]) /<span class="st"> </span>p[<span class="dv">2</span>]) }
+p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">8</span>, <span class="dv">5</span>)
+z_g &lt;-<span class="st"> </span>function() <span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="fl">0.05</span>)
+T &lt;-<span class="st"> </span><span class="dv">40</span>
+
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+x &lt;-<span class="st"> </span><span class="kw">numeric</span>(T)
+x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">5.5</span>
+
+for(t in <span class="dv">1</span>:(T<span class="dv">-1</span>))
+  x[t<span class="dv">+1</span>] =<span class="st"> </span><span class="kw">z_g</span>() *<span class="st"> </span><span class="kw">f</span>(x[t], <span class="dt">p=</span>p)
+
+<span class="kw">qplot</span>(<span class="kw">seq_along</span>(x), x)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span>x)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-12-1.png" />
+</figure>
+<h4 id="model-setup">model setup</h4>
+<pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span>x[<span class="dv">1</span>:(T<span class="dv">-1</span>)], <span class="dt">y =</span> x[<span class="dv">2</span>:T])
+N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
+diff &lt;-<span class="st"> </span><span class="kw">outer</span>(obs$x, obs$x, function(xi, xj) (xi-xj)^<span class="dv">2</span>)
+constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">diff =</span> diff, <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)</code></pre>
+<h4 id="estimate-gp-bm-mcmc-with-nimble">Estimate GP bm MCMC with Nimble</h4>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits, <span class="dt">n =</span> <span class="fl">1e6</span>)</code></pre>
+<h4 id="summary-statistics-1">Summary statistics</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
+<pre><code>Source: local data frame [2 x 3]
+
+      key      mean        std
+1       l 3.8059775 0.60843921
+2 sigma.n 0.3641306 0.04565619</code></pre>
+<h4 id="traces-1">Traces</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df,<span class="dv">500</span>)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-16-1.png" />
+</figure>
+<h4 id="posteriors-1">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-17-1.png" />
+</figure>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/03/03/GP-nimble-setup.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
+          <header><h4><a href="/2015/02/25/nimble-on-dai-model.html">Nimble On Dai Model</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 25 Feb 2015</p>
+
+<article>
+<div class="excerpt">
+<h2 id="testing-nimble-method-on-dai-model">Testing nimble method on Dai model</h2>
+<p>(shorter data series)</p>
+<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;cboettig/regimeshifts&quot;</span>)</code></pre>
+<p>Define our mcmc procedure in Nimble</p>
+<pre class="sourceCode r"><code class="sourceCode r">my_mcmc &lt;-<span class="st"> </span>function(code, constants, data, inits, <span class="dt">n_iter=</span><span class="fl">1e5</span>, <span class="dt">thin =</span> <span class="fl">1e2</span>){
+  Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)
+  Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
+  mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>,<span class="dt">thin=</span>thin)
+  Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
+  Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)
+  Cmcmc$<span class="kw">run</span>(n_iter)
+  samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
+  samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:(<span class="kw">length</span>(inits)-<span class="dv">1</span>)]
+  <span class="kw">gather</span>(samples)
+}</code></pre>
+<p>Generate the test data:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1000</span>)
+max_days &lt;-<span class="st"> </span><span class="dv">50</span>
+DF &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">2000</span>, <span class="dt">length=</span>max_days) <span class="co"># schedule for env degredation (increased dilution)</span>
+x &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)   
+x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1.76e5</span> <span class="co"># initial density</span>
+   
+for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
+ x[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">dai</span>(x[day], <span class="dt">DF =</span> DF[day])
+}
+
+raw &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">t =</span> <span class="dv">1</span>:max_days, <span class="dt">x =</span> x)</code></pre>
+<p>Detrend:</p>
+<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
+raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
+detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals/<span class="kw">sqrt</span>(<span class="kw">var</span>(detrend$residuals)))
+<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/detrend-1.png" />
+</figure>
+<h2 id="ou-model">OU Model</h2>
+<pre class="sourceCode r"><code class="sourceCode r">ou &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
+       r ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">20.0</span>)
+   sigma ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="dv">100</span>)
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
+
+  for(t in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
+    mu[t] &lt;-<span class="st"> </span>x[t] +<span class="st"> </span>r *<span class="st"> </span>(theta -<span class="st"> </span>x[t]) 
+    x[t<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu[t], <span class="dt">sd =</span> sigma) 
+  }
+})
+
+ou_constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N)
+ou_inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">0</span>, <span class="dt">r =</span> <span class="fl">1e-3</span>, <span class="dt">sigma =</span> <span class="dv">1</span>)</code></pre>
+<p>Run the mcmc</p>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>ou, ou_constants, data, ou_inits)</code></pre>
+<h4 id="summary-statistics">Summary statistics</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
+<pre><code>Source: local data frame [2 x 3]
+
+    key      mean       std
+1     r 0.7866844 0.1600235
+2 sigma 1.0375633 0.1113334</code></pre>
+<h4 id="traces">Traces</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-8-1.png" />
+</figure>
+<h4 id="posteriors">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-9-1.png" />
+</figure>
+<h2 id="lsn-version">LSN version</h2>
+<p>A modified version of the LSN model to explicitly model the changing parameter as a hidden variable changing at constant rate</p>
+<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+ sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">1e2</span>)
+       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
+    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>) 
+
+  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
+    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
+    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x) 
+    y[i<span class="dv">+1</span>] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i] /<span class="st"> </span>t[N] 
+    
+  }
+})
+
+constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">0</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>lsn, constants, data, inits)</code></pre>
+<h4 id="summary-statistics-1">Summary statistics</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
+<pre><code>Source: local data frame [3 x 3]
+
+      key        mean        std
+1       m -0.02060616 0.02779506
+2 sigma_x  1.03148569 0.11158787
+3   theta -0.03136262 0.18565435</code></pre>
+<h4 id="traces-1">Traces</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-13-1.png" />
+</figure>
+<h4 id="posteriors-1">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-14-1.png" />
+</figure>
+<h2 id="lsn-stochastic-hidden-variable">LSN, stochastic hidden variable</h2>
+<h4 id="define-and-model-and-run-mcmc">Define and model and run MCMC</h4>
+<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+   theta ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+   sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">1e2</span>)
+   sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">1e2</span>)
+       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
+    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
+    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
+
+  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
+    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i])
+    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x)
+    mu_y[i] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i] /<span class="st"> </span>t[N]
+    y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_y[i], <span class="dt">sd =</span> sigma_y) 
+  }
+})
+
+constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">0</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>lsn, constants, data, inits)</code></pre>
+<h4 id="summary-statistics-2">Summary statistics</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
+<pre><code>Source: local data frame [4 x 3]
+
+      key         mean        std
+1       m -0.008170135 0.06970863
+2 sigma_x  1.023650010 0.11068862
+3 sigma_y  0.171747380 0.14767809
+4   theta -0.025881301 0.18058435</code></pre>
+<h4 id="traces-2">Traces</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-18-1.png" />
+</figure>
+<h4 id="posteriors-2">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-19-1.png" />
+</figure>
+<hr />
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
+<pre><code>R version 3.1.2 (2014-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] methods   stats     graphics  grDevices utils     datasets 
+[7] base     
+
+other attached packages:
+[1] dplyr_0.4.1             ggplot2_1.0.0          
+[3] tidyr_0.2.0             regimeshifts_0.0.0.9000
+[5] nimble_0.3              yaml_2.1.13            
+[7] knitr_1.9              
+
+loaded via a namespace (and not attached):
+ [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-10
+ [4] colorspace_1.2-4 DBI_0.3.1        devtools_1.7.0  
+ [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+[10] grid_3.1.2       gtable_0.1.2     httr_0.6.1      
+[13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
+[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[19] parallel_3.1.2   plyr_1.8.1       proto_0.3-10    
+[22] Rcpp_0.11.4      RCurl_1.95-4.5   reshape2_1.4.1  
+[25] scales_0.2.4     stringr_0.6.2    tools_3.1.2     </code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/02/25/nimble-on-dai-model.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+    </div>
+
+    <div class="row">
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/02/24/nimble-on-dai-model.html">Nimble On Dai Model</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 24 Feb 2015</p>
@@ -121,6 +655,7 @@
 <article>
 <div class="excerpt">
 <h2 id="testing-nimble-method-on-dai-model">Testing nimble method on Dai model</h2>
+<p>(long data series)</p>
 <pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;cboettig/regimeshifts&quot;</span>)</code></pre>
 <p>Define our mcmc procedure in Nimble</p>
 <pre class="sourceCode r"><code class="sourceCode r">my_mcmc &lt;-<span class="st"> </span>function(code, constants, data, inits, <span class="dt">n_iter=</span><span class="fl">1e5</span>, <span class="dt">thin =</span> <span class="fl">1e2</span>){
@@ -824,244 +1359,6 @@ profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</spa
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/01/22/sdp-Reed-controls-comparisons.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-    </div>
-
-    <div class="row">
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/01/22/invasives-sdp.html">Invasives Sdp</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 22 Jan 2015</p>
-
-<article>
-<div class="excerpt">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
-opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;svg&#39;</span>, <span class="dt">fig.width=</span><span class="dv">4</span>, <span class="dt">fig.height=</span><span class="dv">4</span>, <span class="dt">cache=</span><span class="ot">FALSE</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>, <span class="dt">fig.show=</span><span class="st">&#39;hold&#39;</span>)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="kw">c</span>(<span class="st">&quot;cboettig/pdg_control&quot;</span>, <span class="st">&quot;cboettig/knitcitations&quot;</span>))</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pdgControl)
-<span class="kw">library</span>(ggplot2)
-<span class="kw">library</span>(knitcitations)</code></pre>
-<p>We propose a state model consistent with ; in this case a simple Beverton-Holt model. Note that in defining <span class="math">\(f\)</span> we have assumed the harvesting take place before the population recruits.</p>
-<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x, h, p){ 
-  x &lt;-<span class="st"> </span>x -<span class="st"> </span>h 
-  p[[<span class="dv">1</span>]] *<span class="st"> </span>x /<span class="st"> </span>{<span class="dv">1</span> +<span class="st"> </span>p[[<span class="dv">2</span>]] *<span class="st"> </span>x}  
-}
-p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">a =</span> <span class="dv">6</span>, <span class="dt">b =</span> <span class="fl">0.05</span>)</code></pre>
-<p>This meets Olson’s three assumptions. We must also define our cost/reward function to meet assumptions 4 &amp; 5:</p>
-<pre class="sourceCode r"><code class="sourceCode r">damage &lt;-<span class="st"> </span><span class="dv">1</span>
-profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</span>(x, function(x)  -damage *<span class="st"> </span>x -<span class="st"> </span>h /<span class="st"> </span>(x -<span class="st"> </span>h) ) <span class="co"># vectorized for x</span></code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">x_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">150</span>, <span class="dt">length =</span> <span class="dv">50</span>)
-h_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">150</span>, <span class="dt">length =</span> <span class="dv">50</span>)
-delta &lt;-<span class="st"> </span><span class="fl">0.05</span>
-OptTime &lt;-<span class="st"> </span><span class="dv">1000</span>
-xT &lt;-<span class="st"> </span><span class="dv">0</span> <span class="co"># not used</span>
-sigma_g &lt;-<span class="st"> </span><span class="fl">0.1</span>
-z_g &lt;-<span class="st"> </span>function() <span class="dv">1</span> +<span class="st"> </span><span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_g)
-pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>(P, <span class="dv">0</span>, s)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">SDP_Mat &lt;-<span class="st"> </span><span class="kw">determine_SDP_matrix</span>(f, p, x_grid, h_grid, sigma_g, pdfn)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">opt &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(SDP_Mat, x_grid, h_grid, OptTime, xT, profit, delta)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(x_grid, h_grid[opt$D]) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Invasive population size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Control effort&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-22-invasives-sdp/unnamed-chunk-6-1.png" />
-</figure>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/01/22/invasives-sdp.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/01/13/detrend-example.html">Detrend Example</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 13 Jan 2015</p>
-
-<article>
-<div class="excerpt">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
-<span class="kw">library</span>(nimble)
-<span class="kw">library</span>(earlywarning)
-<span class="kw">library</span>(ggplot2)
-<span class="kw">library</span>(tidyr)
-opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">5</span>, <span class="dt">fig.height=</span><span class="dv">5</span>, <span class="dt">cache=</span><span class="dv">1</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>)</code></pre>
-<p>some sample data from earlywarning:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
-<span class="kw">data</span>(ibms)
-<span class="kw">plot</span>(ibm_critical)
-raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
-<span class="kw">names</span>(raw) &lt;-<span class="st"> &quot;x&quot;</span></code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/data-1.png" />
-</figure>
-<p>Rather than explicitly modeling the trend element predicted by the linearization, let us simply remove it:</p>
-<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
-raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
-detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals/<span class="kw">sqrt</span>(<span class="kw">var</span>(detrend$residuals)))
-<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png" />
-</figure>
-<h2 id="lsn-version">LSN version</h2>
-<p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
-<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   theta ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">100.0</span>, <span class="fl">100.0</span>)
-   sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-   sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="dv">100</span>, <span class="dv">100</span>)
-    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="dv">100</span>, <span class="dv">100</span>)
-
-  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
-    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
-    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x) 
-    mu_y[i] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i]
-    y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_y[i], <span class="dt">sd =</span> sigma_y) 
-  }
-})</code></pre>
-<p>Constants in the model definition are the length of the dataset, <span class="math">\(N\)</span> and the time points of the sample. Note we’ve made time explicit, we’ll assume uniform spacing here.</p>
-<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)</code></pre>
-<p>Initial values for the parameters</p>
-<pre class="sourceCode r"><code class="sourceCode r">inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">6</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
-<p>and here we go:</p>
-<pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> lsn, 
-                      <span class="dt">constants =</span> constants, 
-                      <span class="dt">data =</span> data, 
-                      <span class="dt">inits =</span> inits)
-Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">TRUE</span>,<span class="dt">thin=</span><span class="fl">2e2</span>)
-Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
-Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
-<pre><code>NULL</code></pre>
-<p>and examine results</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)</code></pre>
-<pre><code>[1] 5000   84</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
-long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
-<pre><code>          m     sigma_x     sigma_y       theta 
- 0.00028628 29.70868668  0.18206002  4.42949275 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/trace-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/histogram-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.2 (2014-10-31)
-Platform: x86_64-pc-linux-gnu (64-bit)
-
-locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
- [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] methods   stats     graphics  grDevices utils     datasets 
-[7] base     
-
-other attached packages:
-[1] tidyr_0.2.0        ggplot2_1.0.0      earlywarning_0.0-1
-[4] nimble_0.3         yaml_2.1.13        knitr_1.9         
-
-loaded via a namespace (and not attached):
- [1] codetools_0.2-10 colorspace_1.2-4 deSolve_1.11    
- [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
- [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
-[10] labeling_0.3     MASS_7.3-37      mnormt_1.5-1    
-[13] munsell_0.4.2    parallel_3.1.2   plyr_1.8.1      
-[16] proto_0.3-10     psych_1.5.1      Rcpp_0.11.4     
-[19] reshape2_1.4.1   scales_0.2.4     stringr_0.6.2   
-[22] tools_3.1.2     </code></pre>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/01/13/detrend-example.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/01/07/automated-knitr-in-jekyll.html">Automated Knitr In Jekyll</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 07 Jan 2015</p>
-
-<article>
-<div class="excerpt">
-<h2 id="combining-knitr-jeykll-using-servr">Combining knitr &amp; jeykll using <code>servr</code></h2>
-<p>Yihui Xie, author &amp; maintainer of <code>knitr</code>, has a nice little package out called <a href="http://github.com/yihui/servr">servr</a> for serving websites from R. It includes a handy <code>jekyll</code> function which streamlines the process of first running <code>knitr</code> on any <code>.Rmd</code> posts before running Jekyll. Having broken my <a href="http://www.carlboettiger.info/2015/01/01/notebook-maintenance-and-scaling.html">notebook into volumes</a>, my setup is now ready to take advantage of this approach.</p>
-<h3 id="configuring-knitr-with-the-build.r-script">Configuring <code>knitr</code> with the <code>build.R</code> script</h3>
-<p>The R build process can be tuned using a custom <code>build.R</code> script. In particular, it can be useful to set up some default knitr package and chunk options such as how to handle caching, figures, and messages. See <a href="https://github.com/cboettig/2015/blob/4ce767965a0015ca2890023aa6adfb1109b6f94c/_build.R">my build.R script</a> at the time of writing.</p>
-<ul>
-<li><p>Caching: By turning caching on I avoid having to make the server re-run all the unchanged R code from scratch each time. I simply point the cache to a directory, <code>_cache</code> in the repository root that is ignored both by git and jekyll.</p></li>
-<li><p>Figures: I’m still not completely decided how to best to handle figures. Two questions in particular.</p></li>
-</ul>
-<p>I’m undecided if it is better to embed them in the html (as data uris or embedded svg) or link as external files? Embedding avoids the risk of broken paths to the images, and means we can view the history of the file by rendering the committed html with sites like <code>http://rawgit.com/</code>. Perhaps for the reasons it seems to be the default setting in RStudio’s <code>rmarkdown::render</code>. On the other hand it makes it harder to diff the images themselves when they aren’t committed as stand-alone files. Note that never need to commit the figures to the source branch, or commit the intermediate <code>.md</code> file produced by <code>knitr</code>, thus embedding data URI’s isn’t so cumbersome (i.e. doesn’t create cumbersome markdown, though it makes the HTML even less readable). I’ve currently configured this to handle both cases, though some care must be taken in setting the paths correctly (e.g. <code>baseurl</code>) if images are only linked.</p>
-<p>My other question is whether to rely on png or svg images. svg images tend to look better and can result in very small file sizes for certain plots, but can also get much too large on others. svg files are text based and so play nicely with git, whether they are embedded in the HTML or linked externally. Meanwhile, pngs can be diff’d by Github now, and provide more reliable file sizes even on plots with tons of points, so I am using them as the default setting.</p>
-<h2 id="automated-deploy-with-drone">Automated deploy with Drone</h2>
-<p>A nice feature of jekyll has always been the ability for Github to build the pages automatically whenever changes to the source files are pushed to the repository. Since Github’s jekyll doesn’t support plugins such as the one needed to use pandoc as a markdown parser, I have long worked around this using travis CI to run jekyll with pandoc installed. Unfortunately, adding knitr to the mix is too much for travis:</p>
-<ul>
-<li>The R commands of any or all posts may exceed the 50 minute max build time</li>
-</ul>
-<p>A few other difficulties also arise for travis:</p>
-<ul>
-<li><p>we would need to install the complete R environment, pandoc, and the complete jekyll+ruby gems environment necessary to build the site (also within the 50 minute time, unless these could be cached externally too).</p></li>
-<li><p>we couldn’t easily store the knitr cache (would have to push and pull this from some remote)</p></li>
-<li><p>we have to encrypt the credentials to push to Github, use the twitter API, etc (on a per-repository basis).</p></li>
-</ul>
-<p>The simplest alternative is simply to build the site locally. While this is always a viable option and often preferable (one will usually want to run the script interactively before committing anyway), it precludes the ability to make changes from the online interface or a tablet where the resources to run the code are not immediately available. Having automated build is much nicer.</p>
-<p>Running a Drone instance on a personal server is much more appealing. I already have a small DigitalOcean instance at the moment which runs a variety of services, including Drone. Advantages include:</p>
-<ul>
-<li><p>Having drone on a personal server means I can use <em>custom docker images</em>. In thiw way, I can provide an image with all or most of the software I need already installed. Here’s the <a href="http://hub.docker.com/u/cboettig/labnotebook">Dockerfile for cboettig/labnotebook</a>.</p></li>
-<li><p>Logging into the Drone instance (secured with a Github application handshake), I can add private environmental variables for credentials and keys without the need to go through the encryption dance on travis.</p></li>
-<li><p>Running on my own server, Drone keeps a library of docker images (no need to pull each time). Because this image is not automatically pulled a-fresh on each commit, the build is faster and I have more control over when the software environment is updated (which always carries the potential of breaking things).</p></li>
-<li><p>For the R scripts, the build time can be further speed up by configuring to cache selected files such that the knitr cache and generated figures are available to future builds.</p></li>
-</ul>
-<h3 id="caching-knitr-files">Caching knitr files</h3>
-<p>See my <a href="http://github.com/cboettig/2015/tree/master/.drone.yml">.drone.yml</a> for an overview of my configuration. Most of the script is concerned with setting up the caching appropriately, which isn’t yet as streamlined as it might be (see <a href="http://github.com/drone/drone/issues/147">drone/147</a>). The deploy script must also do a bit of a dance to build the site on the <code>master</code> branch but push the contents of <code>_site</code> to the <code>gh-pages</code> branch. Perhaps these can be improved upon.</p>
-<h2 id="a-docker-image-for-the-labnotebook">A docker image for the labnotebook</h2>
-<p>Having a docker image with all the software needed to build the notebook also goes a long way to making the notebook more portable. The labnotebook docker images could further be versioned with tags matching the year, such that <code>cboettig/labnotebook:2015</code> corresponded to a Dockerfile with software environment specific to building the repository. Because such an image contains most of the software I use regularly, it also provides something of a swiss-army knife for common tasks (on any machine where docker is available):</p>
-<p>An R shell:</p>
-<pre><code>docker run --rm -i -v $(pwd):/data R </code></pre>
-<p>Pandoc:</p>
-<pre><code>docker run --rm -i -v $(pwd):/data pandoc</code></pre>
-<p>jekyll server: (Note that running jekyll or servr from within docker requires changing the default host from <code>127.0.0.1</code> to <code>0.0.0.0</code>)</p>
-<pre><code>docker run -d -p 4000:4000 -v $(pwd):/data jekyll serve -H 0.0.0.0</code></pre>
-<p>bash:</p>
-<pre><code>docker run --rm -i -v $(pwd):/data bash </code></pre>
-<p>latex:</p>
-<pre><code>docker run --rm -i -v $(pwd):/data pdflatex file.tex </code></pre>
-<p>RStudio server (note the <code>-u 0</code> to launch server as root):</p>
-<pre><code>docker run -d -p 8787:8787 -u 0 -v $(pwd):/data supervisord</code></pre>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/01/07/automated-knitr-in-jekyll.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 

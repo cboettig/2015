@@ -113,7 +113,7 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-02-28T03:05:02+00:00</updated>
+ <updated>2015-03-05T05:55:46+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
@@ -122,11 +122,512 @@
 
  
  <entry>
+   <title>Gp Nimble Explore</title>
+	 <link href="//03/04/GP-nimble-explore.html"/>
+   <updated>2015-03-04T00:00:00+00:00</updated>
+   <id>/03/04/GP-nimble-explore</id>
+   <content type="html">&lt;h2 id=&quot;gp-model&quot;&gt;GP Model&lt;/h2&gt;
+&lt;p&gt;A successful specification looks like this:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;code &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+
+  
+&lt;span class=&quot;co&quot;&gt;#   s ~ dunif(0,1e5) &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;#   l ~ dgamma(s, 1)&lt;/span&gt;
+  
+   l ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dgamma&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) 
+   sigma.n ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
+   Sigma[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;diff[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;l ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigma.n ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;I[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N]
+   y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dmnorm&lt;/span&gt;(Mu[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N], &lt;span class=&quot;dt&quot;&gt;cov =&lt;/span&gt; Sigma[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N])  
+
+})&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;),
+                   &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;))
+
+N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(obs$x)
+diff &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(obs$x, obs$x, function(xi, xj) (xi-xj)^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
+constants =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; obs$x, &lt;span class=&quot;dt&quot;&gt;Mu =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,N), &lt;span class=&quot;dt&quot;&gt;diff =&lt;/span&gt; diff, &lt;span class=&quot;dt&quot;&gt;I =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;l =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma.n =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; obs$y)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can simulate parameters from the prior:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$l&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 1&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;simulate&lt;/span&gt;(Rmodel, &lt;span class=&quot;st&quot;&gt;&amp;quot;l&amp;quot;&lt;/span&gt;)
+Rmodel$l&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 6.378872&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Other nodes and likelihoods are updated to reflect the new value only after we run &lt;code&gt;calculate()&lt;/code&gt;, so this is the logProb of &lt;code&gt;l&lt;/code&gt; originally:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$logProb_l&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] NA&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;After we run &lt;code&gt;calculate()&lt;/code&gt;, the &lt;code&gt;logProb&lt;/code&gt; is updated to reflect our simulated value of &lt;code&gt;l&lt;/code&gt;, as are the dependent terms (like the Sigma matrix)&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Sigma &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Rmodel$Sigma
+&lt;span class=&quot;kw&quot;&gt;calculate&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] -30.19878&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(Sigma, Rmodel$Sigma)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] FALSE&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$logProb_l&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] -2.503778&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Interestingly, we don’t seem to be able to simulate actual data from the model in this way:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$y&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] -2  0  1  2 -1&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;simulate&lt;/span&gt;(Rmodel, &lt;span class=&quot;st&quot;&gt;&amp;quot;y&amp;quot;&lt;/span&gt;)
+Rmodel$y&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] -2  0  1  2 -1&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(Rmodel$y, Rmodel$origData[[&lt;span class=&quot;st&quot;&gt;&amp;quot;y&amp;quot;&lt;/span&gt;]])&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that &lt;code&gt;y&lt;/code&gt; remaines fixed to the original data values. We have to do this manually:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mvrnorm&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;mu =&lt;/span&gt; constants$Mu, &lt;span class=&quot;dt&quot;&gt;Sigma =&lt;/span&gt; Rmodel$Sigma) &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] -14.951663  12.265050  -5.410019   1.604755 -12.239603&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Define our mcmc procedure in Nimble&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)
+mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
+Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
+Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Rmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+  1.107   0.028   1.139 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
+df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;posteriors&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-03-04-GP-nimble-explore/unnamed-chunk-13-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;p&gt;Note that &lt;code&gt;simulate&lt;/code&gt; continues to draw from the prior, not the posterior:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;sigmas &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;replicate&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e4&lt;/span&gt;, {
+  &lt;span class=&quot;kw&quot;&gt;simulate&lt;/span&gt;(Rmodel, &lt;span class=&quot;st&quot;&gt;&amp;quot;sigma.n&amp;quot;&lt;/span&gt;)
+  Rmodel$sigma.n
+  })
+&lt;span class=&quot;kw&quot;&gt;hist&lt;/span&gt;(sigmas)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-03-04-GP-nimble-explore/unnamed-chunk-14-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;p&gt;(Also note this isn’t a particularly efficient way to simulate). Conveniently drawing data, &lt;span class=&quot;math&quot;&gt;\(y\)&lt;/span&gt;, from the posterior is even less obvious.&lt;/p&gt;
+&lt;h2 id=&quot;comparison&quot;&gt;Comparison&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt; lpriors &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(pars){
+      &lt;span class=&quot;kw&quot;&gt;dgamma&lt;/span&gt;(pars[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]], &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;log =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;      &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(pars[[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]], &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;log =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;) 
+  }
+  
+  posterior &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(pars, x, y){ 
+    l &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;pars[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]
+    sigma.n &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;pars[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]
+
+    SE &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(Xi,Xj, l) &lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(Xi -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Xj) ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;l ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
+    cov &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(X, Y) &lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(X, Y, SE, l)
+    I &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(x))
+    K &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;cov&lt;/span&gt;(x, x) 
+  
+    loglik &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;t&lt;/span&gt;(y) %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;solve&lt;/span&gt;(K +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigma.n ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;I) %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y -
+&lt;span class=&quot;st&quot;&gt;      &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;log&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;det&lt;/span&gt;(K +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigma.n ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;I)) -
+&lt;span class=&quot;st&quot;&gt;      &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(y) *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;log&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;pi) /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;
+    
+    loglik +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lpriors&lt;/span&gt;(pars)
+  }&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;metrop&lt;/span&gt;(posterior, &lt;span class=&quot;dt&quot;&gt;initial =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;l =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;sigma.n =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;), &lt;span class=&quot;dt&quot;&gt;nbatch =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; obs$x, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; obs$y)  
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+ 19.426   0.008  19.554 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;burnin &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;
+thin &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;
+df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;cbind&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;index=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:out$nbatch, &lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(out$batch)))
+s &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(burnin&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, out$nbatch, &lt;span class=&quot;dt&quot;&gt;by=&lt;/span&gt;thin)
+df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;df[s,]
+df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;df[-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &lt;span class=&quot;co&quot;&gt;# drop index&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(df) &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(out$initial)
+df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(df)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;scale_x_log10&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-03-04-GP-nimble-explore/unnamed-chunk-18-1.png&quot; /&gt;
+&lt;/figure&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Gp Nimble Setup</title>
+	 <link href="//03/03/GP-nimble-setup.html"/>
+   <updated>2015-03-03T00:00:00+00:00</updated>
+   <id>/03/03/GP-nimble-setup</id>
+   <content type="html">&lt;h2 id=&quot;dmnorm-example&quot;&gt;dmnorm example&lt;/h2&gt;
+&lt;p&gt;from Daniel, who notes we need to be explicit about vector/matrix sizes on both LHS and RHS,&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;code &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+    mu ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+    sigma ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+    rho ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;20&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+    muVec[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;mu *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;onesVector[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N]
+    Cov[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigma^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-dist[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N]/rho)
+    g[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dmnorm&lt;/span&gt;(muVec[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N], &lt;span class=&quot;dt&quot;&gt;cov =&lt;/span&gt; Cov[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N])
+    for (i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N) {
+        y[i] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dpois&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(g[i]))
+    }
+})
+constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;148&lt;/span&gt;, 
+                  &lt;span class=&quot;dt&quot;&gt;onesVector =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;148&lt;/span&gt;), 
+                  &lt;span class=&quot;dt&quot;&gt;dist =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;nrow=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;148&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ncol=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;148&lt;/span&gt;))
+y =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rpois&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;148&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) &lt;span class=&quot;co&quot;&gt;# vector of 148 observations (counts)&lt;/span&gt;
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;y)
+
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;mu =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, 
+              &lt;span class=&quot;dt&quot;&gt;sigma =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, 
+              &lt;span class=&quot;dt&quot;&gt;rho =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;60&lt;/span&gt;, 
+              &lt;span class=&quot;dt&quot;&gt;g =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;148&lt;/span&gt;))
+m &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;gp-model-original-specification&quot;&gt;GP Model, original specification&lt;/h2&gt;
+&lt;p&gt;This model definition doesn’t work, since we do not define sizes explicitly&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;code &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+   l ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;fl&quot;&gt;1e4&lt;/span&gt;)
+   sigma.n ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e4&lt;/span&gt;) 
+   Sigma[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;diff /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;l ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigma.n ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;I
+   y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dmnorm&lt;/span&gt;(Mu, &lt;span class=&quot;dt&quot;&gt;cov =&lt;/span&gt; Sigma)  
+})
+obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;),
+                   &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;))
+
+N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(obs$x)
+diff &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(obs$x, obs$x, function(xi, xj) (xi-xj)^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
+constants =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; obs$x, &lt;span class=&quot;dt&quot;&gt;Mu =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,N), &lt;span class=&quot;dt&quot;&gt;diff =&lt;/span&gt; diff, &lt;span class=&quot;dt&quot;&gt;I =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;l =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma.n =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; obs$y)
+m &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in x$parentNodeExprs[[iV]][[iDim + 2]]: object of type &amp;#39;symbol&amp;#39; is not subsettable&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;gp-model-v2&quot;&gt;GP Model, v2&lt;/h2&gt;
+&lt;p&gt;This model definition still doesn’t work, even though it appears to be more explicit&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;code &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+
+   l ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+   sigma.n ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+   SE &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(xi,xj, l) &lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(xi -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;xj) ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;l ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
+   Sigma[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N], x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N], SE, l) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigma.n ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;I[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N]
+   y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dmnorm&lt;/span&gt;(Mu[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N], &lt;span class=&quot;dt&quot;&gt;cov =&lt;/span&gt; Sigma[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N])  
+
+})
+obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;),
+                   &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;))
+N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(obs$x)
+constants =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; obs$x, &lt;span class=&quot;dt&quot;&gt;Mu =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,N), &lt;span class=&quot;dt&quot;&gt;I =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;l =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma.n =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; obs$y)
+&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in replaceConstantsRecurse(x, constEnv, constNames): Error, hit end&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;gp-model&quot;&gt;GP Model&lt;/h2&gt;
+&lt;p&gt;A successful specification looks like this:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;code &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+
+   l ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;) &lt;span class=&quot;co&quot;&gt;# dgamma(5, 5)&lt;/span&gt;
+   sigma.n ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;) &lt;span class=&quot;co&quot;&gt;# dgamma(5, 5) &lt;/span&gt;
+   Sigma[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;diff[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;l ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigma.n ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;I[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N]
+   y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dmnorm&lt;/span&gt;(Mu[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N], &lt;span class=&quot;dt&quot;&gt;cov =&lt;/span&gt; Sigma[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N])  
+
+})&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;),
+                   &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,  &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, -&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;))
+
+N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(obs$x)
+diff &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(obs$x, obs$x, function(xi, xj) (xi-xj)^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
+constants =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; obs$x, &lt;span class=&quot;dt&quot;&gt;Mu =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,N), &lt;span class=&quot;dt&quot;&gt;diff =&lt;/span&gt; diff, &lt;span class=&quot;dt&quot;&gt;I =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;l =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma.n =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; obs$y)
+m &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Define our mcmc procedure in Nimble&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;my_mcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(code, constants, data, inits, &lt;span class=&quot;dt&quot;&gt;n_iter=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;thin =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;){  
+  Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)
+  Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)
+  mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;thin)
+  Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
+  Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)
+  Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(n_iter)
+  samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
+  &lt;span class=&quot;co&quot;&gt;#samples &amp;lt;- samples[,1:(length(inits)-1)]&lt;/span&gt;
+  &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;my_mcmc&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits, &lt;span class=&quot;dt&quot;&gt;n =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e6&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;summary-statistics&quot;&gt;Summary statistics&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(df, key), &lt;span class=&quot;dt&quot;&gt;mean=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;std=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(value)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [2 x 3]
+
+      key         mean         std
+1       l 49849.877654 28940.56878
+2 sigma.n     2.203577     1.38111&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;traces&quot;&gt;Traces&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sample_n&lt;/span&gt;(df,&lt;span class=&quot;dv&quot;&gt;500&lt;/span&gt;)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-10-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h4 id=&quot;posteriors&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-11-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;time-series-example&quot;&gt;Time-series example&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;f &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function (x, p){ x *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(p[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;p[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]) *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(x -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;p[&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;]) /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;p[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]) }
+p &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;8&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;)
+z_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function() &lt;span class=&quot;kw&quot;&gt;rlnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;)
+T &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;40&lt;/span&gt;
+
+&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1234&lt;/span&gt;)
+x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(T)
+x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;5.5&lt;/span&gt;
+
+for(t in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(T&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;))
+  x[t&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;z_g&lt;/span&gt;() *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(x[t], &lt;span class=&quot;dt&quot;&gt;p=&lt;/span&gt;p)
+
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(x), x)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x=&lt;/span&gt;x)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-12-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h4 id=&quot;model-setup&quot;&gt;model setup&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x=&lt;/span&gt;x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(T&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)], &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; x[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;:T])
+N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(obs$x)
+diff &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(obs$x, obs$x, function(xi, xj) (xi-xj)^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
+constants =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; obs$x, &lt;span class=&quot;dt&quot;&gt;Mu =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,N), &lt;span class=&quot;dt&quot;&gt;diff =&lt;/span&gt; diff, &lt;span class=&quot;dt&quot;&gt;I =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;l =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma.n =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; obs$y)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;estimate-gp-bm-mcmc-with-nimble&quot;&gt;Estimate GP bm MCMC with Nimble&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;my_mcmc&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits, &lt;span class=&quot;dt&quot;&gt;n =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e6&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;summary-statistics-1&quot;&gt;Summary statistics&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(df, key), &lt;span class=&quot;dt&quot;&gt;mean=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;std=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(value)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [2 x 3]
+
+      key      mean        std
+1       l 3.8059775 0.60843921
+2 sigma.n 0.3641306 0.04565619&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;traces-1&quot;&gt;Traces&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sample_n&lt;/span&gt;(df,&lt;span class=&quot;dv&quot;&gt;500&lt;/span&gt;)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-16-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h4 id=&quot;posteriors-1&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-17-1.png&quot; /&gt;
+&lt;/figure&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Nimble On Dai Model</title>
+	 <link href="//02/25/nimble-on-dai-model.html"/>
+   <updated>2015-02-25T00:00:00+00:00</updated>
+   <id>/02/25/nimble-on-dai-model</id>
+   <content type="html">&lt;h2 id=&quot;testing-nimble-method-on-dai-model&quot;&gt;Testing nimble method on Dai model&lt;/h2&gt;
+&lt;p&gt;(shorter data series)&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;cboettig/regimeshifts&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Define our mcmc procedure in Nimble&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;my_mcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(code, constants, data, inits, &lt;span class=&quot;dt&quot;&gt;n_iter=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;thin =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;){
+  Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)
+  Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)
+  mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;thin)
+  Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
+  Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)
+  Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(n_iter)
+  samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
+  samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(inits)-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)]
+  &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Generate the test data:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1000&lt;/span&gt;)
+max_days &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;
+DF &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;2000&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;max_days) &lt;span class=&quot;co&quot;&gt;# schedule for env degredation (increased dilution)&lt;/span&gt;
+x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(max_days)   
+x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1.76e5&lt;/span&gt; &lt;span class=&quot;co&quot;&gt;# initial density&lt;/span&gt;
+   
+for(day in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(max_days&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+ x[day&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dai&lt;/span&gt;(x[day], &lt;span class=&quot;dt&quot;&gt;DF =&lt;/span&gt; DF[day])
+}
+
+raw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:max_days, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; x)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Detrend:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(raw$x)
+raw$t &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N
+detrend &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;loess&lt;/span&gt;(x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t, raw)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; detrend$residuals/&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(detrend$residuals)))
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(raw$t, data$x, &lt;span class=&quot;dt&quot;&gt;geom=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;line&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/detrend-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;ou-model&quot;&gt;OU Model&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;ou &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;100.0&lt;/span&gt;)
+       r ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;20.0&lt;/span&gt;)
+   sigma ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+
+  for(t in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+    mu[t] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[t] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;r *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[t]) 
+    x[t&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu[t], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma) 
+  }
+})
+
+ou_constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N)
+ou_inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;r =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e-3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Run the mcmc&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;my_mcmc&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code=&lt;/span&gt;ou, ou_constants, data, ou_inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;summary-statistics&quot;&gt;Summary statistics&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(df, key), &lt;span class=&quot;dt&quot;&gt;mean=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;std=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(value)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [2 x 3]
+
+    key      mean       std
+1     r 0.7866844 0.1600235
+2 sigma 1.0375633 0.1113334&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;traces&quot;&gt;Traces&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-8-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h4 id=&quot;posteriors&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-9-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;lsn-version&quot;&gt;LSN version&lt;/h2&gt;
+&lt;p&gt;A modified version of the LSN model to explicitly model the changing parameter as a hidden variable changing at constant rate&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+ sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+       m ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;)
+    y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;) 
+
+  for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+    mu_x[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i]) 
+    x[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_x[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_x) 
+    y[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;m *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[i] /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[N] 
+    
+  }
+})
+
+constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; raw$t)
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;m =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_x =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;my_mcmc&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code=&lt;/span&gt;lsn, constants, data, inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;summary-statistics-1&quot;&gt;Summary statistics&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(df, key), &lt;span class=&quot;dt&quot;&gt;mean=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;std=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(value)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [3 x 3]
+
+      key        mean        std
+1       m -0.02060616 0.02779506
+2 sigma_x  1.03148569 0.11158787
+3   theta -0.03136262 0.18565435&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;traces-1&quot;&gt;Traces&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-13-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h4 id=&quot;posteriors-1&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-14-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;lsn-stochastic-hidden-variable&quot;&gt;LSN, stochastic hidden variable&lt;/h2&gt;
+&lt;h4 id=&quot;define-and-model-and-run-mcmc&quot;&gt;Define and model and run MCMC&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;lsn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+   theta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+   sigma_x ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+   sigma_y ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e-10&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+       m ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;)
+    x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;)
+    y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;)
+
+  for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(N&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+    mu_x[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(theta -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[i])
+    x[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_x[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_x)
+    mu_y[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;m *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[i] /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;t[N]
+    y[i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dnorm&lt;/span&gt;(mu_y[i], &lt;span class=&quot;dt&quot;&gt;sd =&lt;/span&gt; sigma_y) 
+  }
+})
+
+constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; raw$t)
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;m =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_x =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma_y =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;my_mcmc&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code=&lt;/span&gt;lsn, constants, data, inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;summary-statistics-2&quot;&gt;Summary statistics&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(df, key), &lt;span class=&quot;dt&quot;&gt;mean=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;std=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(value)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [4 x 3]
+
+      key         mean        std
+1       m -0.008170135 0.06970863
+2 sigma_x  1.023650010 0.11068862
+3 sigma_y  0.171747380 0.14767809
+4   theta -0.025881301 0.18058435&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;traces-2&quot;&gt;Traces&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-18-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h4 id=&quot;posteriors-2&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-19-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;hr /&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] methods   stats     graphics  grDevices utils     datasets 
+[7] base     
+
+other attached packages:
+[1] dplyr_0.4.1             ggplot2_1.0.0          
+[3] tidyr_0.2.0             regimeshifts_0.0.0.9000
+[5] nimble_0.3              yaml_2.1.13            
+[7] knitr_1.9              
+
+loaded via a namespace (and not attached):
+ [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-10
+ [4] colorspace_1.2-4 DBI_0.3.1        devtools_1.7.0  
+ [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+[10] grid_3.1.2       gtable_0.1.2     httr_0.6.1      
+[13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
+[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[19] parallel_3.1.2   plyr_1.8.1       proto_0.3-10    
+[22] Rcpp_0.11.4      RCurl_1.95-4.5   reshape2_1.4.1  
+[25] scales_0.2.4     stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
    <title>Nimble On Dai Model</title>
 	 <link href="//02/24/nimble-on-dai-model.html"/>
    <updated>2015-02-24T00:00:00+00:00</updated>
    <id>/02/24/nimble-on-dai-model</id>
    <content type="html">&lt;h2 id=&quot;testing-nimble-method-on-dai-model&quot;&gt;Testing nimble method on Dai model&lt;/h2&gt;
+&lt;p&gt;(long data series)&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;cboettig/regimeshifts&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Define our mcmc procedure in Nimble&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;my_mcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(code, constants, data, inits, &lt;span class=&quot;dt&quot;&gt;n_iter=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;thin =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;){
