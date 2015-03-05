@@ -17,7 +17,7 @@ library(tidyr)
 opts_chunk$set(dev = 'png', 
                fig.width = 5, 
                fig.height = 5, 
-               cache = FALSE, 
+               cache = 1, 
                results = 'hide')
 ```
 
