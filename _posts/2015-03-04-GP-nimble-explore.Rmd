@@ -100,7 +100,12 @@ Cmodel <- compileNimble(Rmodel)
 mcmcspec <- configureMCMC(Rmodel, print=FALSE)
 Rmcmc <- buildMCMC(mcmcspec)
 Cmcmc <- compileNimble(Rmcmc, project = Rmodel)
-Cmcmc$run(1e6)
+```
+
+```{r}
+system.time(
+Cmcmc$run(1e5)
+)
 ```
 
 
@@ -138,23 +143,49 @@ hist(sigmas)
 ```{r}
 
  lpriors <- function(pars){
-      dgamma(pars[[1]], 10, 1, log=TRUE) +
+      dgamma(pars[[1]], 10, 1, log = TRUE) +
       dunif(pars[[2]], 0, 1e5, log = TRUE) 
   }
+  
   posterior <- function(pars, x, y){ 
     l <- pars[1]
     sigma.n <- pars[2]
-    
+
+    SE <- function(Xi,Xj, l) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
     cov <- function(X, Y) outer(X, Y, SE, l)
     I <- diag(1, length(x))
     K <- cov(x, x) 
-    
+  
     loglik <- - 0.5 * t(y) %*% solve(K + sigma.n ^ 2 * I) %*% y -
       log(det(K + sigma.n ^ 2 * I)) -
       length(y) * log(2 * pi) / 2
     
     loglik + lpriors(pars)
   }
-  
-  out <- metrop(posterior, c(1,10), n, x = x, y = y)  
 ```
+
+```{r}
+system.time(
+out <- metrop(posterior, initial = c(l = 1,sigma.n = 10), nbatch = 1e5, x = obs$x, y = obs$y)  
+)
+```
+
+```{r}
+burnin <- 1e3
+thin <- 1e2
+df <- cbind(index=1:out$nbatch, as.data.frame(exp(out$batch)))
+s <- seq(burnin+1, out$nbatch, by=thin)
+df <- df[s,]
+df <- df[-1] # drop index
+names(df) <- names(out$initial)
+df <- gather(df)
+```
+
+
+```{r}
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free') +
+  scale_x_log10()
+```
+
