@@ -113,7 +113,7 @@
  <title>Lab Notebook</title>
  <link href="//atom.xml" rel="self"/>
  <link href="/"/>
- <updated>2015-03-05T18:51:20+00:00</updated>
+ <updated>2015-03-05T19:30:52+00:00</updated>
  <id>http://www.carlboettiger.info/</id>
  <author>
    <name>Carl Boettiger</name>
@@ -1527,7 +1527,7 @@ loaded via a namespace (and not attached):
 opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dev =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;png&amp;#39;&lt;/span&gt;, 
                &lt;span class=&quot;dt&quot;&gt;fig.width =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, 
                &lt;span class=&quot;dt&quot;&gt;fig.height =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, 
-               &lt;span class=&quot;dt&quot;&gt;cache =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;, 
+               &lt;span class=&quot;dt&quot;&gt;cache =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, 
                &lt;span class=&quot;dt&quot;&gt;results =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;hide&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Stick with SDE example as a reference point:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
