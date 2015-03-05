@@ -2,8 +2,9 @@
 layout: post
 category: ecology
 tags: 
-- early-warning
-- regime-shifts
+  - early-warning
+  - regime-shifts
+  - nimble
 
 ---
 

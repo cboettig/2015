@@ -2,7 +2,8 @@
 layout: post
 category: ecology
 tags:
-  - earlywarning
+  - early-warning
+  - nimble
 code: true
 ---
 

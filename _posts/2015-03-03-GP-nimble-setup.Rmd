@@ -1,0 +1,243 @@
+---
+layout: post
+category: ecology
+tags: 
+- gp
+- nimble 
+
+---
+
+```{r include=FALSE, cache=FALSE}
+library("nimble")
+library("ggplot2")
+library("tidyr")
+library("dplyr")
+```
+
+
+
+## dmnorm example ##
+
+from Daniel, who notes we need to be explicit about vector/matrix sizes on both LHS and RHS,
+
+```{r}
+code <- nimbleCode({
+    mu ~ dunif(-100, 100)
+    sigma ~ dunif(0, 100)
+    rho ~ dunif(20, 100)
+    muVec[1:N] <- mu * onesVector[1:N]
+    Cov[1:N, 1:N] <- sigma^2 * exp(-dist[1:N, 1:N]/rho)
+    g[1:N] ~ dmnorm(muVec[1:N], cov = Cov[1:N, 1:N])
+    for (i in 1:N) {
+        y[i] ~ dpois(exp(g[i]))
+    }
+})
+constants <- list(N = 148, 
+                  onesVector = rep(1, 148), 
+                  dist = matrix(1, nrow=148, ncol=148))
+y = rpois(148, 1) # vector of 148 observations (counts)
+data <- list(y=y)
+
+inits <- list(mu = 0, 
+              sigma = 5, 
+              rho = 60, 
+              g = rep(0, 148))
+m <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
+```
+
+
+
+
+## GP Model, original specification ## 
+
+This model definition doesn't work, since we do not define sizes explicitly
+
+
+
+```{r warnings=TRUE, error=TRUE}
+code <- nimbleCode({
+   l ~ dunif(0,1e4)
+   sigma.n ~ dunif(0, 1e4) 
+   Sigma[1:N, 1:N] <- exp(-0.5 * diff / l ^ 2) + sigma.n ^ 2 * I
+   y[1:N] ~ dmnorm(Mu, cov = Sigma)  
+})
+obs <- data.frame(x = c(-4, -3, -1,  0,  2),
+                   y = c(-2,  0,  1,  2, -1))
+
+N <- length(obs$x)
+diff <- outer(obs$x, obs$x, function(xi, xj) (xi-xj)^2)
+constants = list(N = N, x = obs$x, Mu = rep(0,N), diff = diff, I = diag(1,N))
+inits <- list(l = 1, sigma.n = 10)
+data <- data.frame(y = obs$y)
+m <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
+```
+
+
+## GP Model, v2 ## 
+
+This model definition still doesn't work, even though it appears to be more explicit
+
+
+
+```{r, error=TRUE}
+code <- nimbleCode({
+
+   l ~ dunif(0,100)
+   sigma.n ~ dunif(0,100)
+   SE <- function(xi,xj, l) exp(-0.5 * (xi - xj) ^ 2 / l ^ 2)
+   Sigma[1:N, 1:N] <- outer(x[1:N], x[1:N], SE, l) + sigma.n ^ 2 * I[1:N, 1:N]
+   y[1:N] ~ dmnorm(Mu[1:N], cov = Sigma[1:N, 1:N])  
+
+})
+obs <- data.frame(x = c(-4, -3, -1,  0,  2),
+                   y = c(-2,  0,  1,  2, -1))
+N <- length(obs$x)
+constants = list(N = N, x = obs$x, Mu = rep(0,N), I = diag(1,N))
+inits <- list(l = 1, sigma.n = 10)
+data <- data.frame(y = obs$y)
+nimbleModel(code = code, constants = constants, data = data, inits = inits)
+```
+
+
+
+
+
+## GP Model ##
+
+A successful specification looks like this:
+
+```{r}
+code <- nimbleCode({
+
+   l ~ dunif(0,1e5) # dgamma(5, 5)
+   sigma.n ~ dunif(0, 1e5) # dgamma(5, 5) 
+   Sigma[1:N, 1:N] <- exp(-0.5 * diff[1:N, 1:N] / l ^ 2) + sigma.n ^ 2 * I[1:N, 1:N]
+   y[1:N] ~ dmnorm(Mu[1:N], cov = Sigma[1:N, 1:N])  
+
+})
+```
+
+
+```{r}
+obs <- data.frame(x = c(-4, -3, -1,  0,  2),
+                   y = c(-2,  0,  1,  2, -1))
+
+N <- length(obs$x)
+diff <- outer(obs$x, obs$x, function(xi, xj) (xi-xj)^2)
+constants = list(N = N, x = obs$x, Mu = rep(0,N), diff = diff, I = diag(1,N))
+inits <- list(l = 1, sigma.n = 10)
+data <- data.frame(y = obs$y)
+m <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
+```
+
+
+Define our mcmc procedure in Nimble
+
+```{r }
+my_mcmc <- function(code, constants, data, inits, n_iter=1e5, thin = 1e2){  
+  Rmodel <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
+  Cmodel <- compileNimble(Rmodel)
+  mcmcspec <- configureMCMC(Rmodel, print=FALSE,thin=thin)
+  Rmcmc <- buildMCMC(mcmcspec)
+  Cmcmc <- compileNimble(Rmcmc, project = Cmodel)
+  Cmcmc$run(n_iter)
+  samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+  #samples <- samples[,1:(length(inits)-1)]
+  gather(samples)
+}
+```
+
+```{r, message=FALSE}
+df <- my_mcmc(code = code, constants = constants, data = data, inits = inits, n = 1e6)
+```
+
+
+#### Summary statistics
+
+```{r , results='markup'}
+summarise(group_by(df, key), mean=mean(value), std=sqrt(var(value)))
+```
+
+#### Traces
+
+```{r , fig.show='hold'}
+ggplot(sample_n(df,500)) + 
+  geom_line(aes(seq_along(value), value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+#### Posteriors
+
+```{r , fig.show='hold'}
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+
+
+## Time-series example
+
+```{r}
+f <- function (x, p){ x * exp(p[1] * (1 - x / p[2]) * (x - p[3]) / p[2]) }
+p <- c(2, 8, 5)
+z_g <- function() rlnorm(1, 0, 0.05)
+T <- 40
+
+set.seed(1234)
+x <- numeric(T)
+x[1] <- 5.5
+
+for(t in 1:(T-1))
+  x[t+1] = z_g() * f(x[t], p=p)
+
+qplot(seq_along(x), x)
+data <- data.frame(x=x)
+
+```
+
+
+#### model setup
+
+```{r}
+obs <- data.frame(x=x[1:(T-1)], y = x[2:T])
+N <- length(obs$x)
+diff <- outer(obs$x, obs$x, function(xi, xj) (xi-xj)^2)
+constants = list(N = N, x = obs$x, Mu = rep(0,N), diff = diff, I = diag(1,N))
+inits <- list(l = 1, sigma.n = 10)
+data <- data.frame(y = obs$y)
+```
+
+#### Estimate GP bm MCMC with Nimble
+
+
+```{r, message=FALSE}
+df <- my_mcmc(code = code, constants = constants, data = data, inits = inits, n = 1e6)
+```
+
+
+#### Summary statistics
+
+```{r , results='markup'}
+summarise(group_by(df, key), mean=mean(value), std=sqrt(var(value)))
+```
+
+#### Traces
+
+```{r , fig.show='hold'}
+ggplot(sample_n(df,500)) + 
+  geom_line(aes(seq_along(value), value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+#### Posteriors
+
+```{r , fig.show='hold'}
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+
+
+

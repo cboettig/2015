@@ -4,7 +4,7 @@ category: ecology
 tags: 
 - early-warning
 - regime-shifts
-
+- nimble
 ---
 
 ## Testing nimble method on Dai model

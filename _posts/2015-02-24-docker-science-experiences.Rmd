@@ -7,13 +7,18 @@ tags:
 ---
 
 
+I received an interesting email from an academic computing unit regarding the use of Docker in my research:
+
 > We’ve been reading, listing, and prototyping best practices for building base images, achieving image composition, addressing interoperability, and standardizing on common APIs. When I read your paper, I thought you might have some opinions on the subject. 
 
 > Would you be willing to share your experiences using Docker for research with our team? It doesn’t have to be a formal presentation. In fact, we generally prefer interactive conversations over slides, abstracts, etc. I appreciate that you must be terribly busy with your postdoc fellowship and rOpenScience responsibilities. If you’re not able to speak, perhaps you can answer a few questions about your use of Docker.
 
+Here are some quick answers in reply; though like the questions themselves my replies are on the technical end and don't give a useful overview of how I'm actually using Docker.  Maybe that's a subject for another post some time.  
+
+
 1.  Are you currently still using Docker for your research? If so, how are you integrating that into your more demanding computational needs? 
 
-Yes. Docker helps me quickly provision and deploy a temporary compute environment on a cloud server with resources appropriate to the computation. This model much more accurately reflects the nature of computational research in a discipline such as ecology.
+Yes. Docker helps me quickly provision and deploy a temporary compute environment on a cloud server with resources appropriate to the computation. This model much more accurately reflects the nature of computational research in a discipline such as ecology than does the standard HPC cluster model.  My research typically involves many different tasks that can be easily separated and do not need the specialized architecture of a supercomputer, but do rely on a wide range of existing software tools and frequently also rely on internet connectivity for accessing certain data resources, etc.  Because Docker makes it very easy for me to deploy customized software environments locally and on cloud computing resources, it facilitates my process of testing, scaling and distributing tasks to the appropriate computational resources quickly, while also increasing the portability & reproducibility of my work by colleagues who can benefit from the prebuilt environment provided by the container.  
 
 2. How/do you make use of data containers? 
 
@@ -24,11 +29,9 @@ Also, it's rather a nuisance that on the current Debian/Ubuntu kernels at least,
 
 3. What are you using to run your containers in production?
 
-Production is a diverse notion in scientific research -- from a software perspective scientific work is almost 100% development and 0% production. 
+Production is a diverse notion in scientific research -- from a software perspective scientific work is almost 100% development and 0% production. For containers running public, always-on services, I tend to run from a dedicated, appropriately resourced cloud server such as Digital Ocean. I don't write such services very often (though we have been doing this to deploy public APIs for data recently), so this is the closest I get to 'production'.  I run my development environment and all my research code out of containers as well, both locally and on various cloud servers. 
 
-For containers running public services, I tend to run these from a dedicated, appropriately resourced cloud server such as Digital Ocean. After spending some time with CoreOS, I tend to use Ubuntu machines for this: 'highly available' isn't much of a priority in the research context, where few things are at a scale where hardware failure is an issue. I found CoreOS worked poorly on individual machines or cluster sizes that might shrink below 2; while the new OS model was a barrier to entry for myself and for collaborators. I suspect this situation will improve dramatically as these tools gain polish and abstraction that requires less manual tooling for common patterns (I find that ambassador containers, sidekick containers, etc place too many OS-level tasks on the shoulders of the user). Of course there is a large ecosystem of solutions in this space, which also needs time to harden into standards.
-
-I tend to run containers using the Docker CLI.  I've found fig places larger resource requirements to run the same set of containers -- so much so that it will fail to start on a machine that can run the containers fine from CLI or Fleet. fig also feels immature; it does not provide anything close to parity with the Docker CLI options. 
+In all cases, I tend to run containers using the Docker CLI.  I've found fig places larger resource requirements to run the same set of containers -- so much so that it will fail to start on a machine that can run the containers fine from CLI or Fleet. fig also feels immature; it does not provide anything close to parity with the Docker CLI options. 
 
 Further, while I find orchestration a powerful concept that is well suited for certain use-cases (our recent API uses five containers), for many academic research uses I find that orchestration is both unnecessary and a barrier to use. Orchestration works really well for professionally designed, web native, open source stack: our recent API deployment uses Redis, MySQL, NGINX, Sinatra, Unicorn, Logstash, ElasticSearch and Kibana -- services that are all readily composed from official Docker containers into an existing application. Most scientific work looks nothing like this -- the common elements tend to be shared libraries that are not well adapted to the same abstraction into separate services.
 
@@ -40,17 +43,22 @@ Primarily through making the Dockerfiles available on Github.  This makes it eas
 
 Overall this hasn't been much of an issue.  Sharing volumes with the host machine on hosts that require virtualization/boot2docker was an early problem, though this has been much better since Docker 1.3. In a similar vein, getting `boot2docker` running on older hardware can be problematic.  And of course docker isn't really compatible with 32 bit machines. 
 
+After spending some time with CoreOS, I tend to use Ubuntu machines when running in the cloud: 'highly available' isn't much of a priority in the research context, where few things are at a scale where hardware failure is an issue. I found CoreOS worked poorly on individual machines or cluster sizes that might shrink below 2; while the new OS model was a barrier to entry for myself and for collaborators. I suspect this situation will improve dramatically as these tools gain polish and abstraction that requires less manual tooling for common patterns (I find that ambassador containers, sidekick containers, etc place too many OS-level tasks on the shoulders of the user). Of course there is a large ecosystem of solutions in this space, which also needs time to harden into standards.
+
+Perhaps my comments re: CLI vs fig in Q3 are also relevant here?
+
+
 6. Have the computational requirements of your research codes outgrown a physical node? 
 
-
+Not at the present.  I've run prior work on clusters on a campus and at the DOE's Carver machine at NERSC, though at this time I can almost always meet computational needs with the larger single instances of a service like EC2 or DigitalOcean.  Much more often I have the need to run many different codes (sometimes related things that could be parallelized in a single command but are better off distributed, but much more often unrelated tasks) at the same time.  Being able to deploy these in isolated, pre-provisioned environments on one or multiple machines using Docker has thus been a huge gain in both my efficiency and realized computational performance.  If any particular task becomes too intensive, Docker makes it very easy to move over to a new cloud instance with more resources that will not interfere with other tasks.
 
 7. Do you have a workflow for versioning and releasing images comparable to GitFlow?
 
-Nope, though maybe this would be a good idea. I work almost exclusively with automated builds and hardly ever use `docker commit`. Though the Dockerfiles themselves are versioned, obviously the software that is installed between different automated builds can differ substantially, and there is in general no way to recover an earlier build. 
+Nope, though maybe this would be a good idea. I work almost exclusively with automated builds and hardly ever use `docker commit`. Though the Dockerfiles themselves are versioned, obviously the software that is installed between different automated builds can differ substantially, and there is in general no way to recover an earlier build. Using a `docker commit` workflow instead would provide this more versioned history and greater stability of the precise binaries installed, but also feels more like a black box as the whole thing cannot then be reproduced from scratch.  
 
 8. Do you version your Dockerfile/image/source code separately?
 
-I version all my Dockerfiles with git. I version my images as needed but more rarely, and in a way that reflects the version of the predominant software they install.
+I version all my Dockerfiles with git. I version my images as needed but more rarely, and in a way that reflects the version of the predominant software they install (e.g. r-base:3.1.2).  
 
 9. Do you prefer using the entrypoint or command to run your containers by default?
 
