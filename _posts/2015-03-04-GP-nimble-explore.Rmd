@@ -24,10 +24,6 @@ A successful specification looks like this:
 ```{r}
 code <- nimbleCode({
 
-  
-#   s ~ dunif(0,1e5) 
-#   l ~ dgamma(s, 1)
-  
    l ~ dgamma(10, 1) 
    sigma.n ~ dunif(0, 1e5)
    Sigma[1:N, 1:N] <- exp(-0.5 * diff[1:N, 1:N] / l ^ 2) + sigma.n ^ 2 * I[1:N, 1:N]
