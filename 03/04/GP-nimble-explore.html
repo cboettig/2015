@@ -111,10 +111,6 @@
 <p>A successful specification looks like this:</p>
 <pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
 
-  
-<span class="co">#   s ~ dunif(0,1e5) </span>
-<span class="co">#   l ~ dgamma(s, 1)</span>
-  
    l ~<span class="st"> </span><span class="kw">dgamma</span>(<span class="dv">10</span>, <span class="dv">1</span>) 
    sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
    Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span><span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>diff[<span class="dv">1</span>:N, <span class="dv">1</span>:N] /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I[<span class="dv">1</span>:N, <span class="dv">1</span>:N]
@@ -246,8 +242,8 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
 	<p><a class="btn btn-default" rel="prev" href='/2015/03/03/GP-nimble-setup.html'><i class="icon-chevron-left"></i> prev</a>
   
   
-    </p>
-    
+  <a class="btn btn-default" rel="next" href='/2015/03/09/simpler-nimble-dai-model.html'>next <i class="icon-chevron-right"></i></a></p>
+  
 
   <br />
 
@@ -281,7 +277,7 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/23d4b6fcb061e99274d83ba591dad5c344a664b0/_posts/2015-03-04-GP-nimble-explore.Rmd"> 23d4b6fcb061e99274d83ba591dad5c344a664b0</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/b1ab993914b127a549e631a38a01bca4cc2ef29e/_posts/2015-03-04-GP-nimble-explore.Rmd"> b1ab993914b127a549e631a38a01bca4cc2ef29e</a></small></p>
     
   <br/>
   

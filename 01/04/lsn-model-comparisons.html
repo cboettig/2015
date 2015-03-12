@@ -121,8 +121,9 @@ opts_chunk$<span class="kw">set</span>(<span class="dt">dev =</span> <span class
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
 d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
 s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
-data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))
-<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
+data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))</code></pre>
+<pre><code>sigma.x not provided, attempting symbolic derivation.</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
 N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png" />
@@ -158,10 +159,12 @@ Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmode
 Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
+<pre><code>NULL</code></pre>
 <p>and examine results</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+<span class="kw">dim</span>(samples)</code></pre>
+<pre><code>[1] 5000  206</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
 long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
 <pre><code>            m       sigma_x       sigma_y         theta 
@@ -200,12 +203,13 @@ other attached packages:
  [9] yaml_2.1.13   knitr_1.9    
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-10 colorspace_1.2-4 digest_0.6.8    
+ [1] codetools_0.2-10 colorspace_1.2-5 digest_0.6.8    
  [4] evaluate_0.5.5   formatR_1.0      grid_3.1.2      
  [7] gtable_0.1.2     igraph_0.7.1     labeling_0.3    
 [10] lattice_0.20-29  munsell_0.4.2    plyr_1.8.1      
-[13] proto_0.3-10     Rcpp_0.11.4      reshape2_1.4.1  
-[16] scales_0.2.4     stringr_0.6.2    tools_3.1.2     </code></pre>
+[13] proto_0.3-10     Rcpp_0.11.5      reshape2_1.4.1  
+[16] scales_0.2.4     stringr_0.6.2    tcltk_3.1.2     
+[19] tools_3.1.2     </code></pre>
 
     </article>
   </div>

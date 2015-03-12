@@ -119,6 +119,7 @@ http://www.carlboettiger.info//sitemap.txt
 http://www.carlboettiger.info//tags.html 
 
  
+http://www.carlboettiger.info//03/09/simpler-nimble-dai-model.html  
 http://www.carlboettiger.info//03/04/GP-nimble-explore.html  
 http://www.carlboettiger.info//03/03/GP-nimble-setup.html  
 http://www.carlboettiger.info//02/25/nimble-on-dai-model.html  
