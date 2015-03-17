@@ -169,15 +169,12 @@ i &lt;-<span class="st"> </span><span class="kw">which.min</span>(<span class="k
 
 V0 &lt;-<span class="st"> </span>R[i,]</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mdp_check</span>(<span class="dt">P=</span>P,<span class="dt">R=</span>R)</code></pre>
-<pre><code>[1] &quot;MDP Toolbox ERROR: Incompatibility between P and R dimensions&quot;</code></pre>
+<pre><code>Error in if (max(abs(rowSums(X) - rep(1, s2))) &gt; 10^(-12)) {: missing value where TRUE/FALSE needed</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">testthat::<span class="kw">expect_equal</span>(<span class="kw">sum</span>(<span class="kw">sapply</span>(P, function(x) <span class="kw">sum</span>(<span class="kw">apply</span>(x, <span class="dv">2</span>, is.nan)))), <span class="dv">0</span>)</code></pre>
 <pre><code>Error: sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))) not equal to 0
-Mean absolute difference: 13950</code></pre>
+Mean absolute difference: 130</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, <span class="dt">discount=</span>delta, <span class="dt">epsilon=</span><span class="fl">0.001</span>, <span class="dt">max_iter =</span> <span class="fl">1e4</span>, <span class="dt">V0=</span>V0)</code></pre>
-<pre><code>[1] &quot;--------------------------------------------------------&quot;
-[1] &quot;MDP Toolbox ERROR: V0 must have the same dimension as P&quot;
-[1] &quot;--------------------------------------------------------&quot;</code></pre>
-<pre><code>Error in mdp_value_iteration(P, R, discount = delta, epsilon = 0.001, : object &#39;V&#39; not found</code></pre>
+<pre><code>Error in if (variation &lt; thresh) {: missing value where TRUE/FALSE needed</code></pre>
 <p>Whoops, this doesn’t look right:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(x_grid, h_grid[out$policy])</code></pre>
 <pre><code>Error in xy.coords(x, y, xlabel, ylabel, log): object &#39;out&#39; not found</code></pre>
@@ -199,7 +196,7 @@ Mean absolute difference: 13950</code></pre>
 	<p><a class="btn btn-default" rel="prev" href='/2015/01/22/sdp-Reed-controls-comparisons.html'><i class="icon-chevron-left"></i> prev</a>
   
   
-  <a class="btn btn-default" rel="next" href='/2015/02/03/dockerizing-fishbase-api.html'>next <i class="icon-chevron-right"></i></a></p>
+  <a class="btn btn-default" rel="next" href='/2015/01/28/notes.html'>next <i class="icon-chevron-right"></i></a></p>
   
 
   <br />

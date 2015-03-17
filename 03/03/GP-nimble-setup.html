@@ -204,9 +204,9 @@ m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class=
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
 <pre><code>Source: local data frame [2 x 3]
 
-      key         mean         std
-1       l 49849.877654 28940.56878
-2 sigma.n     2.203577     1.38111</code></pre>
+      key         mean          std
+1       l 50395.212849 28777.154239
+2 sigma.n     2.172972     1.140774</code></pre>
 <h4 id="traces">Traces</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df,<span class="dv">500</span>)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
@@ -284,7 +284,7 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
  <br />
 
   
-	<p><a class="btn btn-default" rel="prev" href='/2015/02/25/nimble-on-dai-model.html'><i class="icon-chevron-left"></i> prev</a>
+	<p><a class="btn btn-default" rel="prev" href='/2015/03/02/notes.html'><i class="icon-chevron-left"></i> prev</a>
   
   
   <a class="btn btn-default" rel="next" href='/2015/03/04/GP-nimble-explore.html'>next <i class="icon-chevron-right"></i></a></p>
