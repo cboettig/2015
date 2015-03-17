@@ -1,9 +1,10 @@
 ---
-published: false
+title: "Question-and-Answer-post on my use of Docker in research"
 category:
   - computing
 tags: 
   - docker
+  - blog
 ---
 
 

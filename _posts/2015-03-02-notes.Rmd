@@ -1,5 +1,6 @@
 ---
-published: false
+layout: post
+category: computing
 
 ---
 
@@ -8,7 +9,7 @@ published: false
 
 
 
-misc tricks
+Misc tricks
 -----------
 
 - docker X11 sharing
@@ -17,12 +18,10 @@ misc tricks
 docker run  -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:ro r-base
 ```
 
-
 - `devtools::install_version` 
+- `devtools::use_readme_rmd` (with git commit hooks)
 
-- `devtools::use_readme_rmd`
-
-- Specify a custom action for the knit button: add `knit: (function(inputFile, encoding) ...)` to the top-level YAML header; e.g. to control output directory ()
+- How to specify a custom action for the knit button: add `knit: (function(inputFile, encoding) ...)` to the top-level YAML header; e.g. to control output directory:
 
 ```r
 rmarkdown::render(inputFile, 
