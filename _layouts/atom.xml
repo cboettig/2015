@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{{ site.title }} - {{rss-tag}}</title>
+  <link href="/{{ site.repo }}/{{rss-tag}}.xml" rel="self"/>
+  <link href="/"/>
+  <updated>{{ site.time | date_to_xmlschema }}</updated>
+  <id>{{ site.url }}/{{ site.repo }}</id>
+  <author>
+    <name>{{ site.author.name }}</name>
+    <email>{{ site.author.email }}</email>
+  </author>
+
+  {{ content }}
+
+</feed>
