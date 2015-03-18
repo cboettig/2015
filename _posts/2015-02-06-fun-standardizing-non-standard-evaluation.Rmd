@@ -72,3 +72,9 @@ dots <- lapply(names(query), function(level){
   
 x3 <-  filter_(all_taxa, .dots = dots) 
 ```
+
+```{r include=FALSE}
+unlink("taxa.csv")
+```
+
+
