@@ -114,6 +114,100 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/03/26/ropensci-unconf-teaching-session.html">Ropensci Unconf Teaching Session</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 26 Mar 2015</p>
+
+<article>
+<div class="excerpt">
+<p>Effective teaching with R</p>
+<p>Panel:</p>
+<ol type="1">
+<li>Tracy Teal - Data Carpentry</li>
+<li>Hadley Wickhan - undergrads at Rice, R master classes for RStudio</li>
+<li>Mine, Prof Stats, Duke, also MOOC</li>
+<li>Roger Peng Prof Biostats, John Hopkins</li>
+<li>Jenny Bryan, Prof Stats, UBC.<br /></li>
+<li>Ben Marwick, Prof Archaelogy</li>
+</ol>
+<p>How do you engage new users? (Or what doesn’t work?)</p>
+<p>Hadley: Start with visualization. +1 Jenny Jenny: Making an HTML page with .Rmd (+1 Mine), scaling/aggregation Roger: these days, they come to me excited about R Mine: I have to convince social scientists to use computers at all. Visualization, faceting etc helps, Rmd helps.<br />Ben: Reproducible scripts, not click trails (Excel).</p>
+<p>What’s the worst way to start?</p>
+<ul>
+<li>teaching data structures / programming first.</li>
+</ul>
+<p>teach loops, control structures?</p>
+<ul>
+<li>later / no. Mine teaches loops with index cards.</li>
+<li>Hadley aims to to get people to re-invent lapply as a common pattern…</li>
+</ul>
+<p>Keeping people engaged? (Break-out session to develop reading lists, user groups)</p>
+<ul>
+<li>Mine data hack weekend. (PhD students mentoring, undergrads doing).<br /></li>
+<li>Roger: capstone project. Track alumni (via linked-in, other ideas?)</li>
+<li>Tracy: Pointing people to courses like Roger’s MOOC</li>
+</ul>
+<p>Engaging later-stage students?</p>
+<ul>
+<li>Working with own data and problems.</li>
+</ul>
+<p>R’s horrible gotchas (recycling, NA stuff, factor stuff, dropping columns/names)</p>
+<ul>
+<li>Hadley: 1) set the expectations that R has frustrations. 2) room / chance to fail safely, how to debug (google error).<br /></li>
+<li>Roger: 10 examples of annoying things in R</li>
+<li>Jenny: user str and fear factors.</li>
+<li>Ben: getting help</li>
+<li>Roger: students with programming experience need different kind of help.</li>
+</ul>
+<p>R &amp; Github?</p>
+<ul>
+<li>Hadley, Mine – nope. Hadley - I didn’t commit to teaching it. Don’t try it at the end.</li>
+<li>Roger – it’s better (though students think git == github). Avoid why git is awesome, just teach it in a narrow sense!<br /></li>
+<li>Jenny – intensive use of Github whole time, starting with it up front.<br /></li>
+<li>Ben: not with undergrads, yes with grads. takes time.</li>
+</ul>
+<p>Markdown, Github – if you’re gonna do it, commit and do everything in it from the beginning.</p>
+<p>Hadley: If something feels painful, do it more often. (git, R CMD check).</p>
+<p>Writing functions: need to learn eventually, but it’s really hard to teach. Hadley’s book exercises for the reader. Over time course gets simpler.</p>
+<p>When do you teach data cleaning?</p>
+<p>Jenny: a data-cleaning script itself cannot be clean. It’s an advanced topic I teach it midway.<br />Jenny, Roger: includes teaching regex.</p>
+<p>Find outside dataset mid-way, sudo-messy data.</p>
+<p>Hadley: Hardest part is that students don’t know what the goal is, while I see it instantly. Takes a super long time to learn how to do this and to articulate this.</p>
+<p>Data shouldn’t be too real, should be Disney-real (more real than reality). individual/personal they put in the time, so do a kaggle competition to clean data, top 3 winners get automatic A’s, opt out of final</p>
+<p>Starting with spreadsheets and data entry!</p>
+<p>Infrastructure for package building:</p>
+<ul>
+<li>takes time, possibly &gt; 30 min 1:1.</li>
+<li>Mine: students run on cloud, I can replicate. but cannot run on own computer.</li>
+<li>Roger: Better to live through the cli bs, once it’s done it’s done. VM’s not how the real world works. Hosting service for 1000s of people too expensive.</li>
+<li>Jenny: pain is only when we need build environment</li>
+<li><p>Ben: Use <em>local</em> Docker, replicates his own research. A slight taste of shell, but avoids CLI BS</p></li>
+<li><p>install challenges is the opposite of a motivator / win. Luckily doesn’t bite early.</p></li>
+</ul>
+<p>Evaluate:</p>
+<ul>
+<li>peer review</li>
+</ul>
+<hr />
+<p>Breakouts / products:</p>
+<ol type="1">
+<li>Listing follow-up resources</li>
+<li>Iris data sets</li>
+<li>dependencies &amp; scaling</li>
+</ol>
+<hr />
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/03/26/ropensci-unconf-teaching-session.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/03/09/simpler-nimble-dai-model.html">Simpler Nimble Dai Model</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 09 Mar 2015</p>
@@ -244,7 +338,7 @@ df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt
 </figure>
 <hr />
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.3 RC (2015-03-06 r67947)
+<pre><code>R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Debian GNU/Linux 8 (jessie)
 
@@ -261,7 +355,7 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.0          
+[1] dplyr_0.4.1             ggplot2_1.0.1          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
 [5] nimble_0.3-1            yaml_2.1.13            
 [7] knitr_1.9              
@@ -271,7 +365,7 @@ loaded via a namespace (and not attached):
  [4] DBI_0.3.1        digest_0.6.8     evaluate_0.5.5  
  [7] formatR_1.0      grid_3.1.3       gtable_0.1.2    
 [10] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[13] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[13] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
 [16] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
 [19] Rcpp_0.11.5      reshape2_1.4.1   scales_0.2.4    
 [22] stringr_0.6.2    tools_3.1.3     </code></pre>
@@ -317,18 +411,18 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
 <pre><code>[1] 1</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate</span>(Rmodel, <span class="st">&quot;l&quot;</span>)
 Rmodel$l</code></pre>
-<pre><code>[1] 9.035881</code></pre>
+<pre><code>[1] 10.53233</code></pre>
 <p>Other nodes and likelihoods are updated to reflect the new value only after we run <code>calculate()</code>, so this is the logProb of <code>l</code> originally:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
 <pre><code>[1] NA</code></pre>
 <p>After we run <code>calculate()</code>, the <code>logProb</code> is updated to reflect our simulated value of <code>l</code>, as are the dependent terms (like the Sigma matrix)</p>
 <pre class="sourceCode r"><code class="sourceCode r">Sigma &lt;-<span class="st"> </span>Rmodel$Sigma
 <span class="kw">calculate</span>(Rmodel)</code></pre>
-<pre><code>[1] -29.72186</code></pre>
+<pre><code>[1] -29.83908</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(Sigma, Rmodel$Sigma)</code></pre>
 <pre><code>[1] FALSE</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
-<pre><code>[1] -2.026878</code></pre>
+<pre><code>[1] -2.144112</code></pre>
 <p>Interestingly, we don’t seem to be able to simulate actual data from the model in this way:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$y</code></pre>
 <pre><code>[1] -2  0  1  2 -1</code></pre>
@@ -339,7 +433,7 @@ Rmodel$y</code></pre>
 <pre><code>[1] TRUE</code></pre>
 <p>Note that <code>y</code> remaines fixed to the original data values. We have to do this manually:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mvrnorm</span>(<span class="dt">mu =</span> constants$Mu, <span class="dt">Sigma =</span> Rmodel$Sigma) </code></pre>
-<pre><code>[1]  -8.6045224   7.3979272 -12.4359639 -11.8483387   0.2755511</code></pre>
+<pre><code>[1]  -0.4314916   3.7030315  10.8916817   4.6035105 -20.7145158</code></pre>
 <p>Define our mcmc procedure in Nimble</p>
 <pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
 mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>)
@@ -349,7 +443,7 @@ Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc,
 Cmcmc$<span class="kw">run</span>(<span class="fl">1e5</span>)
 )</code></pre>
 <pre><code>   user  system elapsed 
-  1.133   0.008   1.144 </code></pre>
+  1.140   0.028   1.172 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
 df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <h4 id="posteriors">Posteriors</h4>
@@ -394,7 +488,7 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code><
 out &lt;-<span class="st"> </span><span class="kw">metrop</span>(posterior, <span class="dt">initial =</span> <span class="kw">c</span>(<span class="dt">l =</span> <span class="dv">1</span>,<span class="dt">sigma.n =</span> <span class="dv">10</span>), <span class="dt">nbatch =</span> <span class="fl">1e5</span>, <span class="dt">x =</span> obs$x, <span class="dt">y =</span> obs$y)  
 )</code></pre>
 <pre><code>   user  system elapsed 
- 18.808   0.004  18.908 </code></pre>
+ 16.314   0.004  16.387 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">burnin &lt;-<span class="st"> </span><span class="fl">1e3</span>
 thin &lt;-<span class="st"> </span><span class="fl">1e2</span>
 df &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">index=</span><span class="dv">1</span>:out$nbatch, <span class="kw">as.data.frame</span>(<span class="kw">exp</span>(out$batch)))
@@ -420,6 +514,10 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/03/03/GP-nimble-setup.html">Gp Nimble Setup</a></h4></header>
@@ -526,8 +624,8 @@ m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class=
 <pre><code>Source: local data frame [2 x 3]
 
       key         mean          std
-1       l 50395.212849 28777.154239
-2 sigma.n     2.172972     1.140774</code></pre>
+1       l 49870.926633 28732.960042
+2 sigma.n     2.179598     1.250408</code></pre>
 <h4 id="traces">Traces</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df,<span class="dv">500</span>)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
@@ -600,10 +698,6 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/03/02/notes.html">Notes</a></h4></header>
@@ -807,7 +901,7 @@ inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt
 </figure>
 <hr />
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.3 RC (2015-03-06 r67947)
+<pre><code>R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Debian GNU/Linux 8 (jessie)
 
@@ -824,7 +918,7 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.0          
+[1] dplyr_0.4.1             ggplot2_1.0.1          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
 [5] nimble_0.3-1            yaml_2.1.13            
 [7] knitr_1.9              
@@ -835,7 +929,7 @@ loaded via a namespace (and not attached):
  [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
 [10] grid_3.1.3       gtable_0.1.2     httr_0.6.1      
 [13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[16] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
 [19] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
 [22] Rcpp_0.11.5      RCurl_1.95-4.5   reshape2_1.4.1  
 [25] scales_0.2.4     stringr_0.6.2    tools_3.1.3     </code></pre>
@@ -849,6 +943,10 @@ loaded via a namespace (and not attached):
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/02/24/nimble-on-dai-model.html">Nimble On Dai Model</a></h4></header>
@@ -1019,7 +1117,7 @@ inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt
 </figure>
 <hr />
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.3 RC (2015-03-06 r67947)
+<pre><code>R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Debian GNU/Linux 8 (jessie)
 
@@ -1036,7 +1134,7 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.0          
+[1] dplyr_0.4.1             ggplot2_1.0.1          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
 [5] nimble_0.3-1            yaml_2.1.13            
 [7] knitr_1.9              
@@ -1047,7 +1145,7 @@ loaded via a namespace (and not attached):
  [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
 [10] grid_3.1.3       gtable_0.1.2     httr_0.6.1      
 [13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[16] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
 [19] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
 [22] Rcpp_0.11.5      RCurl_1.95-4.5   reshape2_1.4.1  
 [25] scales_0.2.4     stringr_0.6.2    tools_3.1.3     </code></pre>
@@ -1061,10 +1159,6 @@ loaded via a namespace (and not attached):
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/02/24/docker-science-question-and-answer.html">Question-and-Answer-post on my use of Docker in research</a></h4></header>
@@ -1332,61 +1426,6 @@ http://dx.doi.org/10.1126/science.1219805>.</p>
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/02/12/dai-model.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/02/06/fun-standardizing-non-standard-evaluation.html">Fun Standardizing Non Standard Evaluation</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 06 Feb 2015</p>
-
-<article>
-<div class="excerpt">
-<p>Using <code>dplyr</code> calls on the back-end of the <code>rfishbase</code> re-write means working around the non-standard evaluation (NSE), as described in the <a href=""><code>dplyr</code> vignette</a>.</p>
-<p>Grab the data I was using for this:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
-downloader::<span class="kw">download</span>(<span class="st">&quot;https://github.com/cboettig/2015/raw/fc0d9185659e7976927d0ec91981912537ac6018/assets/data/2015-02-06-taxa.csv&quot;</span>, <span class="st">&quot;taxa.csv&quot;</span>)
-all_taxa &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;taxa.csv&quot;</span>)</code></pre>
-<p>Consider a simple NSE <code>dplyr</code> call:</p>
-<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">filter</span>(all_taxa, Family ==<span class="st"> &#39;Scaridae&#39;</span>)</code></pre>
-<p>The best SE version of this just needs to use the formula expression, <code>~</code>, the <code>_</code> SE version of the function and it’s <code>.dots</code> argument:</p>
-<pre class="sourceCode r"><code class="sourceCode r">.dots &lt;-<span class="st"> </span><span class="kw">list</span>(~Family ==<span class="st"> &#39;Scaridae&#39;</span>)
-x1 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots=</span>.dots)
-
-<span class="kw">identical</span>(x, x1)</code></pre>
-<pre><code>[1] TRUE</code></pre>
-<p>This lets us treat the arguments (e.g. values of the factor on which we filter) as variables:</p>
-<pre class="sourceCode r"><code class="sourceCode r">family &lt;-<span class="st"> &#39;Scaridae&#39;</span>
-.dots &lt;-<span class="st"> </span><span class="kw">list</span>(~Family ==<span class="st"> </span>family)
-x2 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots=</span>.dots)
-<span class="kw">identical</span>(x, x2)</code></pre>
-<pre><code>[1] TRUE</code></pre>
-<p>If we want both the key and value to vary, we need to get pretty fancy to subvert the non-standard evaluation:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lazyeval)
-family &lt;-<span class="st"> &#39;Scaridae&#39;</span>
-field &lt;-<span class="st"> &#39;Family&#39;</span>
-.dots &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="kw">interp</span>(~y ==<span class="st"> </span>x, 
-                     <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> <span class="kw">as.name</span>(field), <span class="dt">x =</span> family)))
-x3 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots=</span>.dots)
-<span class="kw">identical</span>(x, x3)</code></pre>
-<pre><code>[1] TRUE</code></pre>
-<p>At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:</p>
-<pre class="sourceCode r"><code class="sourceCode r">query &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">Family =</span> <span class="st">&#39;Scaridae&#39;</span>, <span class="dt">SpecCode =</span> <span class="dv">5537</span>)
-dots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(query), function(level){
-    value &lt;-<span class="st"> </span>query[[level]]
-    <span class="kw">interp</span>(~y ==<span class="st"> </span>x, 
-                <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> <span class="kw">as.name</span>(level), <span class="dt">x =</span> value))
-  })
-  
-x3 &lt;-<span class="st">  </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots =</span> dots) </code></pre>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/02/06/fun-standardizing-non-standard-evaluation.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 

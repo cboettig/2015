@@ -131,18 +131,18 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
 <pre><code>[1] 1</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate</span>(Rmodel, <span class="st">&quot;l&quot;</span>)
 Rmodel$l</code></pre>
-<pre><code>[1] 9.035881</code></pre>
+<pre><code>[1] 10.53233</code></pre>
 <p>Other nodes and likelihoods are updated to reflect the new value only after we run <code>calculate()</code>, so this is the logProb of <code>l</code> originally:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
 <pre><code>[1] NA</code></pre>
 <p>After we run <code>calculate()</code>, the <code>logProb</code> is updated to reflect our simulated value of <code>l</code>, as are the dependent terms (like the Sigma matrix)</p>
 <pre class="sourceCode r"><code class="sourceCode r">Sigma &lt;-<span class="st"> </span>Rmodel$Sigma
 <span class="kw">calculate</span>(Rmodel)</code></pre>
-<pre><code>[1] -29.72186</code></pre>
+<pre><code>[1] -29.83908</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(Sigma, Rmodel$Sigma)</code></pre>
 <pre><code>[1] FALSE</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
-<pre><code>[1] -2.026878</code></pre>
+<pre><code>[1] -2.144112</code></pre>
 <p>Interestingly, we don’t seem to be able to simulate actual data from the model in this way:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$y</code></pre>
 <pre><code>[1] -2  0  1  2 -1</code></pre>
@@ -153,7 +153,7 @@ Rmodel$y</code></pre>
 <pre><code>[1] TRUE</code></pre>
 <p>Note that <code>y</code> remaines fixed to the original data values. We have to do this manually:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mvrnorm</span>(<span class="dt">mu =</span> constants$Mu, <span class="dt">Sigma =</span> Rmodel$Sigma) </code></pre>
-<pre><code>[1]  -8.6045224   7.3979272 -12.4359639 -11.8483387   0.2755511</code></pre>
+<pre><code>[1]  -0.4314916   3.7030315  10.8916817   4.6035105 -20.7145158</code></pre>
 <p>Define our mcmc procedure in Nimble</p>
 <pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
 mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>)
@@ -163,7 +163,7 @@ Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc,
 Cmcmc$<span class="kw">run</span>(<span class="fl">1e5</span>)
 )</code></pre>
 <pre><code>   user  system elapsed 
-  1.133   0.008   1.144 </code></pre>
+  1.140   0.028   1.172 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
 df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <h4 id="posteriors">Posteriors</h4>
@@ -208,7 +208,7 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code><
 out &lt;-<span class="st"> </span><span class="kw">metrop</span>(posterior, <span class="dt">initial =</span> <span class="kw">c</span>(<span class="dt">l =</span> <span class="dv">1</span>,<span class="dt">sigma.n =</span> <span class="dv">10</span>), <span class="dt">nbatch =</span> <span class="fl">1e5</span>, <span class="dt">x =</span> obs$x, <span class="dt">y =</span> obs$y)  
 )</code></pre>
 <pre><code>   user  system elapsed 
- 18.808   0.004  18.908 </code></pre>
+ 16.314   0.004  16.387 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">burnin &lt;-<span class="st"> </span><span class="fl">1e3</span>
 thin &lt;-<span class="st"> </span><span class="fl">1e2</span>
 df &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">index=</span><span class="dv">1</span>:out$nbatch, <span class="kw">as.data.frame</span>(<span class="kw">exp</span>(out$batch)))
