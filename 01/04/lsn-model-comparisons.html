@@ -121,8 +121,9 @@ opts_chunk$<span class="kw">set</span>(<span class="dt">dev =</span> <span class
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
 d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
 s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
-data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))
-<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
+data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))</code></pre>
+<pre><code>sigma.x not provided, attempting symbolic derivation.</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
 N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png" />
@@ -158,10 +159,12 @@ Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmode
 Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
+<pre><code>NULL</code></pre>
 <p>and examine results</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+<span class="kw">dim</span>(samples)</code></pre>
+<pre><code>[1] 5000  206</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
 long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
 <pre><code>            m       sigma_x       sigma_y         theta 
@@ -192,7 +195,7 @@ locale:
 [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
-[1] splines   stats4    methods   stats     graphics  grDevices
+[1] stats4    splines   methods   stats     graphics  grDevices
 [7] utils     datasets  base     
 
 other attached packages:
