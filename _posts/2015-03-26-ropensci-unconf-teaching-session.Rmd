@@ -1,4 +1,12 @@
-Effective teaching with R
+---
+category: teaching
+tags:
+  - ropensci
+  - conference
+---
+
+
+## Panel on Effective teaching with R
 
 
 Panel:
