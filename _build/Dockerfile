@@ -9,5 +9,7 @@ RUN sudo rm -rf /tmp/* && install2.r --error igraph sde MDPtoolbox mcmc \
     cboettig/earlywarning \
     cboettig/pdg_control \
     cboettig/knitcitations \
-    cboettig/regimeshifts 
+    cboettig/regimeshifts  \
+	&& rm -rf /tmp/downloaded_packages
+
 
