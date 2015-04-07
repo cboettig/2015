@@ -1,0 +1,47 @@
+---
+layout: post
+category: computing
+tags: 
+- docker
+---
+
+
+Docker recently released `docker-machine` to make managing multiple remote machines locally easier.
+Docker distributes binaries of `docker-machine` for most major architectures ready-to-go, potentially making it easier to get started on Windows and Mac as well. 
+
+Set credentials in environmental variables so we don't have to pass them
+on the command line each time:
+
+```bash
+DIGITALOCEAN_ACCESS_TOKEN = XXX
+```
+
+and create the docker-machine: 
+
+```
+docker-machine create --driver digitalocean --digitalocean-size "1gb" server-name
+```
+
+where `server-name` is any name you want to give your server and `DO_PAT` is your access token (say, saved as an environmental variable). Here we launch a 1GB instance, the default is 512MB on digitalocean.  Many other providers work just as well (including virtualbox). You need to set your terminal to use the active `docker-machine` for all `docker` commands, instead of the local `docker` installation:
+
+```bash
+eval "$(docker-machine env server-name)"
+```
+
+sets three environmental variables that point your `docker` commands to the new remote machine, `server-name`.  Wow.  We can now launch any service of interest:
+
+```bash
+docker run -d -p 8787:8787 -e PASSWORD=something rocker/hadleyverse
+```
+
+and it will run on the server.  Get the IP address of the active machine with `docker-machine ip`, e.g. open the server in the browser (from a Ubuntu-based client)
+
+```bash
+xdg-open http://`docker-machine ip`:8787
+```
+
+
+You can see a list of active machines with `docker-machine ls` and switch between machines with `docker-machine env` as shown above.  Remove a machine as you would a container, e.g. `docker-machine rm -f server-name`, which also shuts down the remote server so you will not be charged.
+
+
+This is a bit more overhead than launching a container on an existing local or remote server instance, but not much; and easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so.  
