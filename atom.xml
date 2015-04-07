@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-03-31T18:52:07+00:00</updated>
+  <updated>2015-04-07T18:11:17+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -92,6 +92,27 @@
 &lt;li&gt;dependencies &amp;amp; scaling&lt;/li&gt;
 &lt;/ol&gt;
 &lt;hr /&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Docker Machine Notes</title>
+	 <link href="//03/24/docker-machine-notes.html"/>
+   <updated>2015-03-24T00:00:00+00:00</updated>
+   <id>/03/24/docker-machine-notes</id>
+   <content type="html">&lt;p&gt;Docker recently released &lt;code&gt;docker-machine&lt;/code&gt; to make managing multiple remote machines locally easier. Docker distributes binaries of &lt;code&gt;docker-machine&lt;/code&gt; for most major architectures ready-to-go, potentially making it easier to get started on Windows and Mac as well.&lt;/p&gt;
+&lt;p&gt;Set credentials in environmental variables so we don’t have to pass them on the command line each time:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;kw&quot;&gt;DIGITALOCEAN_ACCESS_TOKEN&lt;/span&gt; = XXX&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and create the docker-machine:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;docker-machine create --driver digitalocean --digitalocean-size &amp;quot;1gb&amp;quot; server-name&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;where &lt;code&gt;server-name&lt;/code&gt; is any name you want to give your server and &lt;code&gt;DO_PAT&lt;/code&gt; is your access token (say, saved as an environmental variable). Here we launch a 1GB instance, the default is 512MB on digitalocean. Many other providers work just as well (including virtualbox). You need to set your terminal to use the active &lt;code&gt;docker-machine&lt;/code&gt; for all &lt;code&gt;docker&lt;/code&gt; commands, instead of the local &lt;code&gt;docker&lt;/code&gt; installation:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;kw&quot;&gt;eval&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;docker-machine&lt;/span&gt; env server-name&lt;span class=&quot;ot&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;sets three environmental variables that point your &lt;code&gt;docker&lt;/code&gt; commands to the new remote machine, &lt;code&gt;server-name&lt;/code&gt;. Wow. We can now launch any service of interest:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;kw&quot;&gt;docker&lt;/span&gt; run -d -p 8787:8787 -e PASSWORD=something rocker/hadleyverse&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and it will run on the server. Get the IP address of the active machine with &lt;code&gt;docker-machine ip&lt;/code&gt;, e.g. open the server in the browser (from a Ubuntu-based client)&lt;/p&gt;
+&lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;kw&quot;&gt;xdg-open&lt;/span&gt; http://&lt;span class=&quot;kw&quot;&gt;`docker-machine&lt;/span&gt; ip&lt;span class=&quot;kw&quot;&gt;`&lt;/span&gt;:8787&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can see a list of active machines with &lt;code&gt;docker-machine ls&lt;/code&gt; and switch between machines with &lt;code&gt;docker-machine env&lt;/code&gt; as shown above. Remove a machine as you would a container, e.g. &lt;code&gt;docker-machine rm -f server-name&lt;/code&gt;, which also shuts down the remote server so you will not be charged.&lt;/p&gt;
+&lt;p&gt;This is a bit more overhead than launching a container on an existing local or remote server instance, but not much; and easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so.&lt;/p&gt;
 </content>
  </entry>
  

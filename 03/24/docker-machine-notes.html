@@ -2,37 +2,37 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head prefix="dc: http://purl.org/dc/terms/ og: http://ogp.me/ns#"> <!-- namespaces used in metadata.html -->
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
-  <title>Sdp Reed Controls Comparisons</title>
+  <title>Docker Machine Notes</title>
   <meta name="author" content="Carl Boettiger" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- HTML5 metadata -->
-<meta name="keywords" content="pdg-control" />
+<meta name="keywords" content="docker" />
 <meta name="description" content="" />
 <!-- RDFa Metadata (in DublinCore) -->
-<meta property="dc:title" content="Sdp Reed Controls Comparisons" />
+<meta property="dc:title" content="Docker Machine Notes" />
 <meta property="dc:creator" content="Carl Boettiger" />
-<meta property="dc:date" content="2015-01-22 00:00:00 +0000" />
+<meta property="dc:date" content="2015-03-24 00:00:00 +0000" />
 <meta property="dc:format" content="text/html" />
 <meta property="dc:language" content="en" />
-<meta property="dc:identifier" content="/01/22/sdp-Reed-controls-comparisons.html" />
+<meta property="dc:identifier" content="/03/24/docker-machine-notes.html" />
 <meta property="dc:rights" content="CC0" />
 <meta property="dc:source" content="Lab Notebook" />
 <meta property="dc:subject" content="Ecology" /> 
 <meta property="dc:type" content="website" /> 
 <!-- RDFa Metadata (in OpenGraph) -->
-<meta property="og:title" content="Sdp Reed Controls Comparisons" />
+<meta property="og:title" content="Docker Machine Notes" />
 <meta property="og:author" content="http://www.carlboettiger.info/index.html#me" />  <!-- Should be Liquid? URI? -->
 <meta property="http://ogp.me/ns/profile#first_name" content="Carl"/>
 <meta property="http://ogp.me/ns/profile#last_name" content="Boettiger"/>
-<meta property="http://ogp.me/ns/article#published_time" content="2015-01-22 00:00:00 +0000" />
+<meta property="http://ogp.me/ns/article#published_time" content="2015-03-24 00:00:00 +0000" />
 <meta property="og:site_name" content="Lab Notebook" /> <!-- Same as dc:source? -->
-<meta property="og:url" content="http://www.carlboettiger.info/01/22/sdp-Reed-controls-comparisons.html" />
+<meta property="og:url" content="http://www.carlboettiger.info/03/24/docker-machine-notes.html" />
 <meta property="og:type" content="website" /> 
 <!-- Google Scholar Metadata -->
 <!--
 <meta name="citation_author" content="Carl Boettiger"/>
-<meta name="citation_date" content="2015-01-22 00:00:00 +0000"/>
-<meta name="citation_title" content="Sdp Reed Controls Comparisons"/>
+<meta name="citation_date" content="2015-03-24 00:00:00 +0000"/>
+<meta name="citation_title" content="Docker Machine Notes"/>
 <meta name="citation_journal_title" content="Lab Notebook"/>
 -->
 <!--NOTE: see also the COinS Metadata in span element in footer -->
@@ -100,52 +100,26 @@
 
     <div class="container"> <!-- Responsive grid layout, doesn't jump to full-width --> 
       <header>
-        <h1 class="entry-title">Sdp Reed Controls Comparisons</h1>
+        <h1 class="entry-title">Docker Machine Notes</h1>
         <h2></h2>
       </header>
 
       <div class="row">
   <div class="col-md-7 col-md-offset-1">
     <article>
-    <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
-opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">3</span>, <span class="dt">fig.height=</span><span class="dv">3</span>, <span class="dt">cache=</span><span class="ot">FALSE</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>, <span class="dt">fig.show=</span><span class="st">&#39;hold&#39;</span>)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;cboettig/pdg_control&quot;</span>)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pdgControl)
-<span class="kw">library</span>(ggplot2)</code></pre>
-<h2 id="reed-solution-harvest-control">Reed solution; harvest control</h2>
-<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x, h, p){ 
-  x &lt;-<span class="st"> </span><span class="kw">sapply</span>(x, function(x) <span class="kw">max</span>(x-h,<span class="dv">0</span>))
-  p[[<span class="dv">1</span>]] *<span class="st"> </span>x /<span class="st"> </span>{<span class="dv">1</span> +<span class="st"> </span>p[[<span class="dv">2</span>]] *<span class="st"> </span>x} 
-}
-p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">a =</span> <span class="dv">6</span>, <span class="dt">b =</span> <span class="fl">0.05</span>)
-profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</span>(x, min, h) <span class="co"># vectorized for x</span>
-x_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">150</span>, <span class="dt">length =</span> <span class="dv">100</span>)
-h_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">150</span>,<span class="dt">length =</span> <span class="dv">100</span>)
-delta &lt;-<span class="st"> </span><span class="fl">0.05</span>
-OptTime &lt;-<span class="st"> </span><span class="dv">1000</span>
-xT &lt;-<span class="st"> </span><span class="dv">0</span>
-sigma_g &lt;-<span class="st"> </span><span class="fl">0.1</span>
-z_g &lt;-<span class="st"> </span>function() <span class="dv">1</span> +<span class="st"> </span><span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_g)
-pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>(P, <span class="dv">0</span>, s)</code></pre>
-<p>Note that in <span class="math">\(f\)</span> we must define the harvesting take place before the population recruits.</p>
-<pre class="sourceCode r"><code class="sourceCode r">SDP_Mat &lt;-<span class="st"> </span><span class="kw">determine_SDP_matrix</span>(f, p, x_grid, h_grid, sigma_g, pdfn)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">opt &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(SDP_Mat, x_grid, h_grid, OptTime, xT, profit, delta)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(x_grid, h_grid[opt$D]) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Stock size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Harvest&quot;</span>)
-<span class="kw">qplot</span>(x_grid, x_grid -<span class="st"> </span>h_grid[opt$D]) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Stock size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Escapement&quot;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-4-1.png" /> <img src="/2015/assets/figures/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-4-2.png" /></p>
-<h2 id="reed-solution-with-effort-based-control">Reed solution with effort-based control</h2>
-<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x, h, p){
-  x &lt;-<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>h) *<span class="st"> </span>x
-  p[[<span class="dv">1</span>]] *<span class="st"> </span>x /<span class="st"> </span>{<span class="dv">1</span> +<span class="st"> </span>p[[<span class="dv">2</span>]] *<span class="st"> </span>x}
-  }
-p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">a =</span> <span class="dv">6</span>, <span class="dt">b =</span> <span class="fl">0.05</span>)
-h_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">length =</span> <span class="dv">100</span>)
-profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</span>(x, function(x) x *<span class="st"> </span>h) <span class="co"># vectorized for x</span></code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">SDP_Mat &lt;-<span class="st"> </span><span class="kw">determine_SDP_matrix</span>(f, p, x_grid, h_grid, sigma_g, pdfn)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">opt &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(SDP_Mat, x_grid, h_grid, OptTime, xT, profit, delta)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(x_grid, h_grid[opt$D]) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Stock size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Fishing Effort&quot;</span>)
-<span class="kw">qplot</span>(x_grid, x_grid -<span class="st"> </span>x_grid *<span class="st"> </span>h_grid[opt$D]) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Stock size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Escapement&quot;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-8-1.png" /> <img src="/2015/assets/figures/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-8-2.png" /></p>
+    <p>Docker recently released <code>docker-machine</code> to make managing multiple remote machines locally easier. Docker distributes binaries of <code>docker-machine</code> for most major architectures ready-to-go, potentially making it easier to get started on Windows and Mac as well.</p>
+<p>Set credentials in environmental variables so we don’t have to pass them on the command line each time:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">DIGITALOCEAN_ACCESS_TOKEN</span> = XXX</code></pre>
+<p>and create the docker-machine:</p>
+<pre><code>docker-machine create --driver digitalocean --digitalocean-size &quot;1gb&quot; server-name</code></pre>
+<p>where <code>server-name</code> is any name you want to give your server and <code>DO_PAT</code> is your access token (say, saved as an environmental variable). Here we launch a 1GB instance, the default is 512MB on digitalocean. Many other providers work just as well (including virtualbox). You need to set your terminal to use the active <code>docker-machine</code> for all <code>docker</code> commands, instead of the local <code>docker</code> installation:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">eval</span> <span class="st">&quot;</span><span class="ot">$(</span><span class="kw">docker-machine</span> env server-name<span class="ot">)</span><span class="st">&quot;</span></code></pre>
+<p>sets three environmental variables that point your <code>docker</code> commands to the new remote machine, <code>server-name</code>. Wow. We can now launch any service of interest:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker</span> run -d -p 8787:8787 -e PASSWORD=something rocker/hadleyverse</code></pre>
+<p>and it will run on the server. Get the IP address of the active machine with <code>docker-machine ip</code>, e.g. open the server in the browser (from a Ubuntu-based client)</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">xdg-open</span> http://<span class="kw">`docker-machine</span> ip<span class="kw">`</span>:8787</code></pre>
+<p>You can see a list of active machines with <code>docker-machine ls</code> and switch between machines with <code>docker-machine env</code> as shown above. Remove a machine as you would a container, e.g. <code>docker-machine rm -f server-name</code>, which also shuts down the remote server so you will not be charged.</p>
+<p>This is a bit more overhead than launching a container on an existing local or remote server instance, but not much; and easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so.</p>
 
     </article>
   </div>
@@ -154,17 +128,17 @@ profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</spa
       
 <aside prefix="og:http://ogp.me/ns/article#">
   <p> <i class="icon-calendar"></i>
-    <time datetime="2015-01-22 00:00:00 +0000" 
-    property="dc:created">22 Jan 2015</time></p>
+    <time datetime="2015-03-24 00:00:00 +0000" 
+    property="dc:created">24 Mar 2015</time></p>
    
 
  <br />
 
   
-	<p><a class="btn btn-default" rel="prev" href='/2015/01/22/invasives-sdp.html'><i class="icon-chevron-left"></i> prev</a>
+	<p><a class="btn btn-default" rel="prev" href='/2015/03/09/simpler-nimble-dai-model.html'><i class="icon-chevron-left"></i> prev</a>
   
   
-  <a class="btn btn-default" rel="next" href='/2015/01/23/mdptoolbox-ex.html'>next <i class="icon-chevron-right"></i></a></p>
+  <a class="btn btn-default" rel="next" href='/2015/03/26/ropensci-unconf-teaching-session.html'>next <i class="icon-chevron-right"></i></a></p>
   
 
   <br />
@@ -172,14 +146,14 @@ profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</spa
   <p> <a  onclick="recordOutboundLink(this, 'Outbound Links', 'history'); 
             return false;" 
           class="btn btn-default" 
-          href="https://github.com/cboettig/2015/commits/master/_posts/2015-01-22-sdp-Reed-controls-comparisons.Rmd"><i class="icon-time"></i> history</a></p>
+          href="https://github.com/cboettig/2015/commits/master/_posts/2015-03-24-docker-machine-notes.Rmd"><i class="icon-time"></i> history</a></p>
 
   <br />
 
   <p><i class="icon-list"></i> Posted in 
      
       <a rel="dc:subject" class="category" 
-         href="/2015/categories.html#ecology">ecology</a>
+         href="/2015/categories.html#computing">computing</a>
     
     </p>
 
@@ -187,7 +161,7 @@ profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</spa
     
     <!-- http://schema.org/BlogPosting/keywords -->
     <a rel="og:tag" class="tag" 
-			href="/2015/tags.html#pdg-control">#pdg-control</a>
+			href="/2015/tags.html#docker">#docker</a>
     </p>
 
   <br/>
@@ -195,12 +169,9 @@ profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</spa
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/09fb9a6a25c3577de55f0c8920ffdd4bd7c49bfc/_posts/2015-01-22-sdp-Reed-controls-comparisons.Rmd"> 09fb9a6a25c3577de55f0c8920ffdd4bd7c49bfc</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/075f56ec1de0834fa8e98b803bb4ef955ba3abfb/_posts/2015-03-24-docker-machine-notes.Rmd"> 075f56ec1de0834fa8e98b803bb4ef955ba3abfb</a></small></p>
     
   <br/>
-  
-     <script src="/assets/js/toggleR.js"></script>
-     <button class="btn btn-default" type="button" onclick="toggle_R();">Hide/Show Source</button>
   
 
 </aside>
@@ -290,12 +261,12 @@ profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</spa
       title="ctx_ver=Z39.88-2004
       &amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc
       &amp;rfr_id=info%3Asid%2Focoins.info%3Agenerator
-      &amp;rft.title=Sdp Reed Controls Comparisons
+      &amp;rft.title=Docker Machine Notes
       &amp;rft.creator=Carl Boettiger
-      &amp;rft.date=2015-01-22
+      &amp;rft.date=2015-03-24
       &amp;rft.language=EN
       &amp;rft.rights=CC0
-      &amp;rft_id=http://www.carlboettiger.info/01/22/sdp-Reed-controls-comparisons.html">
+      &amp;rft_id=http://www.carlboettiger.info/03/24/docker-machine-notes.html">
   </span>
 
 

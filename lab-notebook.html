@@ -208,6 +208,37 @@
         </div>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/03/24/docker-machine-notes.html">Docker Machine Notes</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 24 Mar 2015</p>
+
+<article>
+<div class="excerpt">
+<p>Docker recently released <code>docker-machine</code> to make managing multiple remote machines locally easier. Docker distributes binaries of <code>docker-machine</code> for most major architectures ready-to-go, potentially making it easier to get started on Windows and Mac as well.</p>
+<p>Set credentials in environmental variables so we don’t have to pass them on the command line each time:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">DIGITALOCEAN_ACCESS_TOKEN</span> = XXX</code></pre>
+<p>and create the docker-machine:</p>
+<pre><code>docker-machine create --driver digitalocean --digitalocean-size &quot;1gb&quot; server-name</code></pre>
+<p>where <code>server-name</code> is any name you want to give your server and <code>DO_PAT</code> is your access token (say, saved as an environmental variable). Here we launch a 1GB instance, the default is 512MB on digitalocean. Many other providers work just as well (including virtualbox). You need to set your terminal to use the active <code>docker-machine</code> for all <code>docker</code> commands, instead of the local <code>docker</code> installation:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">eval</span> <span class="st">&quot;</span><span class="ot">$(</span><span class="kw">docker-machine</span> env server-name<span class="ot">)</span><span class="st">&quot;</span></code></pre>
+<p>sets three environmental variables that point your <code>docker</code> commands to the new remote machine, <code>server-name</code>. Wow. We can now launch any service of interest:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker</span> run -d -p 8787:8787 -e PASSWORD=something rocker/hadleyverse</code></pre>
+<p>and it will run on the server. Get the IP address of the active machine with <code>docker-machine ip</code>, e.g. open the server in the browser (from a Ubuntu-based client)</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">xdg-open</span> http://<span class="kw">`docker-machine</span> ip<span class="kw">`</span>:8787</code></pre>
+<p>You can see a list of active machines with <code>docker-machine ls</code> and switch between machines with <code>docker-machine env</code> as shown above. Remove a machine as you would a container, e.g. <code>docker-machine rm -f server-name</code>, which also shuts down the remote server so you will not be charged.</p>
+<p>This is a bit more overhead than launching a container on an existing local or remote server instance, but not much; and easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so.</p>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/03/24/docker-machine-notes.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/03/09/simpler-nimble-dai-model.html">Simpler Nimble Dai Model</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 09 Mar 2015</p>
@@ -380,6 +411,10 @@ loaded via a namespace (and not attached):
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/03/04/GP-nimble-explore.html">Gp Nimble Explore</a></h4></header>
 <p><span></span></p>
@@ -514,10 +549,6 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/03/03/GP-nimble-setup.html">Gp Nimble Setup</a></h4></header>
@@ -732,6 +763,10 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/02/25/nimble-on-dai-model.html">Nimble On Dai Model</a></h4></header>
 <p><span></span></p>
@@ -943,10 +978,6 @@ loaded via a namespace (and not attached):
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/02/24/nimble-on-dai-model.html">Nimble On Dai Model</a></h4></header>
@@ -1221,211 +1252,6 @@ loaded via a namespace (and not attached):
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/02/24/docker-science-question-and-answer.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/02/12/dai-model.html">Dai Model</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 12 Feb 2015</p>
-
-<article>
-<div class="excerpt">
-<h2 id="a-first-go-at-implementing-the-dai-et-al-model">A first go at implementing the Dai et al model</h2>
-<p>From the supplement to Dai, Vorselen, Korolev, and Gore (2012), we have:</p>
-<p><span class="math">\[n_{t+1} = n_t g(n_t + \epsilon n_t, \theta)\]</span> <span class="math">\[g(n_t) = \frac{n_{t+1}}{n_t}\]</span></p>
-<blockquote>
-<p>This model is based on two phases of daily growth: a slow exponential growth phase at low cell densities, followed by a logistic growth phase with a higher per capita growth rate at intermediate cell densities. This model has 5 parameters: T lag is the lag time before yeast cells start to grow after being transferred into new media (the total time for daily growth is 23 hours). In the slow exponential phase, the population grows with a constant per capita growth rate γ low . After the population reaches a threshold density N c , the subsequent logistic growth is determined by γ high (γ high &gt;γ low ) and the carrying capacity K</p>
-</blockquote>
-<p><span class="math">\[\frac{1}{N}\frac{dN}{dt} = 
-    \left\{
-      \begin{array}{ll}
-        \gamma_{\textrm{low}} &amp; N &lt; N_c \\
-        \gamma_{\textrm{high}} \left(1 - \frac{N}{K}\right) &amp;  N_c &lt;= N &lt; K 
-      \end{array}
-    \right.\]</span></p>
-<hr />
-<p>A bit surprised by the model formulation here, particularly that a threshold response is built in at a critical density <span class="math">\(N_c\)</span>. Seems like this could emerge by explicitly modeling the positive density dependence due to the cooperative break-down of sugar, which should result in a smoother dependence between growth and density. A discontinuous growth model isn’t particularly satisfying as and cannot arise very directly from an individual-based description. Anyway, onwards.</p>
-<hr />
-<p>Okay, a bit of work is needed before we can simulate this from the description. Integrating this over time gives us exponential growth below <span class="math">\(N_c\)</span> and something Beverton-Holt-esque above <span class="math">\(N_c\)</span>,</p>
-<p>The ODE we can integrate analytically, <span class="math">\[x_t = K \exp(r t + K c_1) / (\exp(r t + K c_1) - 1)\]</span></p>
-<p>And solve for the constant if integration using the initial condition,</p>
-<p><span class="math">\[\begin{align*} 
-&amp; N_0 =  K \exp( K c_1) / (\exp( K c_1) - 1) \\
-&amp; N_0 (\exp( K c_1) - 1) =  K \exp( K c_1) \\
-&amp; K \exp( K c_1) - N_0 \exp( K c_1) + N_0 = 0 \\
-&amp; \exp( K c_1)( K  - N_0) + N_0 = 0 \\
-&amp; \exp(K c_1) = N_0 / (K - N_0) \\
-&amp; \exp(K c_1) = 1/(K/N_0 - 1) =: B
-\end{align*}\]</span></p>
-<p>So substituting for the IC we have,</p>
-<p><span class="math">\[\begin{align*} 
-x_t &amp; = K B \exp(r t )  / (B \exp(r t) - 1) \\
-    &amp; = K \exp(r t )  / (\exp(r t) - 1/B)  \\
-    &amp;  = K \exp(r t )  / (\exp(r t) - 1 + K/N_0) \\
-    &amp;  = K / (1 +   (K/N_0 - 1) \exp( - r t) ) 
-\end{align*}\]</span></p>
-<p>From here we define the function as described, using parameters from Table S1</p>
-<pre class="sourceCode r"><code class="sourceCode r">g &lt;-<span class="st"> </span>function(n_t, 
-              <span class="dt">t =</span> <span class="dv">23</span>, <span class="co"># Hours between serial dilutions</span>
-              <span class="dt">epsilon =</span> <span class="kw">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="fl">0.15</span>), 
-              <span class="dt">theta =</span> <span class="kw">c</span>(<span class="dt">gamma_high =</span> <span class="fl">0.439</span>, <span class="co"># hr^-1</span>
-                        <span class="dt">gamma_low =</span> <span class="fl">0.309</span>, <span class="co"># hr^-1</span>
-                        <span class="dt">T_lag =</span> <span class="fl">2.97</span>, <span class="co"># hr</span>
-                        <span class="dt">N_c =</span> <span class="fl">2.76e2</span>, <span class="co"># cells/μl</span>
-                        <span class="dt">K =</span> <span class="fl">1.76e5</span>),  <span class="co"># cells/μl</span>
-              <span class="dt">DF =</span> <span class="dv">600</span>)  <span class="co"># dilution factor</span>
-{
-  ## avoid referencing these repeatedly for readability and speed
-  gamma_high &lt;-<span class="st"> </span>theta[[<span class="st">&quot;gamma_high&quot;</span>]]
-  gamma_low &lt;-<span class="st"> </span>theta[[<span class="st">&quot;gamma_low&quot;</span>]]
-  T_lag &lt;-<span class="st"> </span>theta[[<span class="st">&quot;T_lag&quot;</span>]]
-  N_c &lt;-<span class="st"> </span>theta[[<span class="st">&quot;N_c&quot;</span>]]
-  K &lt;-<span class="st"> </span>theta[[<span class="st">&quot;K&quot;</span>]]
-  
-  
-  ## Dilute and start growing. (Stochasticity enters only via the dilution process)
-  n_t &lt;-<span class="st"> </span>n_t  *<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span>epsilon) /<span class="st"> </span>DF
-  
-  <span class="co"># Lag phase, could have been scaled out of the model</span>
-  if(t &lt;<span class="st"> </span>T_lag)
-    n_t1 &lt;-<span class="st"> </span>n_t
-  
-  ## Numerical happiness
-  if(n_t &lt;<span class="st"> </span><span class="fl">1e-20</span>)
-    n_t1 &lt;-<span class="st"> </span><span class="dv">0</span>
-  
-  ## Actual model
-  else {
-    
-    if(n_t &lt;<span class="st"> </span>N_c){ <span class="co"># Needs to switch once n &gt; N_c</span>
-      
-      ## Analytically find out how long before we leave the low-growth regime
-      t_c &lt;-<span class="st"> </span><span class="kw">log</span>(N_c /<span class="st"> </span>n_t) /<span class="st"> </span>gamma_low +<span class="st"> </span>T_lag
-      
-      ## Um, now this should just be equal to N_c
-      n_low &lt;-<span class="st"> </span>n_t *<span class="st"> </span><span class="kw">exp</span>((t_c -<span class="st"> </span>T_lag) *<span class="st"> </span>gamma_low) 
-      
-      ## Spend remaining time in &gt; N_c growth regime:      
-      tau &lt;-<span class="st"> </span>t -<span class="st"> </span>t_c        
-      n_t &lt;-<span class="st"> </span>n_low
-      n_t1 &lt;-<span class="st"> </span>K  /<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span>(K /<span class="st"> </span>n_t -<span class="st"> </span><span class="dv">1</span>) *<span class="st"> </span><span class="kw">exp</span>(-<span class="st"> </span>gamma_high *<span class="st"> </span>tau))
-    
-      
-    } else if(n_t &gt;=<span class="st"> </span>N_c){
-      ## simpler if we&#39;re always in the high-growth regime:
-      tau &lt;-<span class="st"> </span>t -<span class="st"> </span>T_lag
-      n_t1 &lt;-<span class="st"> </span>K /<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span>(K /<span class="st"> </span>n_t -<span class="st"> </span><span class="dv">1</span>) *<span class="st"> </span><span class="kw">exp</span>(-<span class="st"> </span>gamma_high *<span class="st"> </span>tau))
-      
-    }
-  }
-  <span class="co"># And now we can return n_{t+1}</span>
-  n_t1
-}</code></pre>
-<hr />
-<p>Aside from whether or not I’ve gotten the math right, there’s a bit of guesswork here as to whether this matches the author’s implementation of the model. Numerical issues worth thinking about include what form gives best floating-point stability, not just most consise, way to represent these; e.g. are these numerically identical:</p>
-<pre class="sourceCode r"><code class="sourceCode r">n_t1 &lt;-<span class="st"> </span>K /(<span class="dv">1</span> +<span class="st"> </span>(K /<span class="st"> </span>n_low -<span class="st"> </span><span class="dv">1</span>) *<span class="st"> </span><span class="kw">exp</span>(-<span class="st"> </span>gamma_high *<span class="st"> </span>tau))</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">n_t1 &lt;-<span class="st"> </span>n_t *<span class="st"> </span>K *<span class="st"> </span><span class="kw">exp</span>(gamma_high *<span class="st"> </span>tau )  /<span class="st"> </span>(n_t *<span class="st"> </span><span class="kw">exp</span>(gamma_high *<span class="st"> </span>tau) -<span class="st"> </span>n_t +<span class="st"> </span>K)</code></pre>
-<hr />
-<h2 id="model-simulations">Model simulations</h2>
-<p>We can demonstrate alternative stable states from this configuration, starting from similar initial densities:</p>
-<pre class="sourceCode r"><code class="sourceCode r">max_days &lt;-<span class="st"> </span><span class="dv">30</span>
-n &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
-x &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
-n[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1e3</span>
-x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">5e2</span>
-<span class="kw">set.seed</span>(<span class="dv">123</span>)
-for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
-  n[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(n[day])
-  x[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(x[day])
-}
-
-df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">t =</span> <span class="dv">1</span>:max_days, <span class="dt">n =</span> n, <span class="dt">x =</span> x)
-
-<span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(t, n), <span class="dt">col =</span> <span class="dv">1</span>) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(t, x), <span class="dt">col =</span> <span class="dv">2</span>) +
-<span class="st">  </span><span class="kw">scale_y_log10</span>()</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-3-1.png" />
-</figure>
-<h2 id="regime-shift">Regime Shift</h2>
-<p>We simulate the experiment presented in the orginal paper by gradually increasing the dilution factor over time:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Stepwise changes</span>
-DF &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">2000</span>, <span class="dt">length=</span><span class="dv">9</span>), rep, <span class="dv">40</span>))
-
-<span class="co"># continuous linear increase</span>
-DF &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">2000</span>, <span class="dt">length=</span><span class="fl">1e3</span>)
-
-max_days &lt;-<span class="st"> </span><span class="kw">length</span>(DF)
-y &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
-
-y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1.76e5</span>
-for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
-  y[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(y[day], <span class="dt">DF =</span> DF[day])
-}
-
-<span class="kw">qplot</span>(<span class="kw">seq_along</span>(y), y)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-4-1.png" />
-</figure>
-<p>Decreasing K should model decreasing sucrose I think?</p>
-<pre class="sourceCode r"><code class="sourceCode r">K_0 =<span class="st"> </span><span class="fl">1.76e5</span>
-<span class="co"># continuous linear increase</span>
-sucrose &lt;-<span class="st"> </span><span class="kw">seq</span>(K_0, <span class="dv">0</span>, <span class="dt">length=</span><span class="fl">1e3</span>)
-
-max_days &lt;-<span class="st"> </span><span class="kw">length</span>(sucrose)
-y &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
-
-y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1e5</span>
-for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
-  theta =<span class="st"> </span><span class="kw">c</span>(<span class="dt">gamma_high =</span> <span class="fl">0.4</span>, <span class="co"># hr^-1</span>
-            <span class="dt">gamma_low =</span> <span class="fl">0.3</span>, <span class="co"># hr^-1</span>
-            <span class="dt">T_lag =</span> <span class="fl">2.97</span>, <span class="co"># hr</span>
-            <span class="dt">N_c =</span> <span class="fl">2.76e2</span>, <span class="co"># cells/μl</span>
-            <span class="dt">K =</span> sucrose[day])
-  y[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(y[day], <span class="dt">theta=</span>theta)
-}
-
-<span class="kw">qplot</span>(<span class="kw">seq_along</span>(y), y) +<span class="st"> </span><span class="kw">geom_hline</span>(<span class="dt">yintercept=</span><span class="fl">2.76e2</span>, <span class="dt">lty=</span><span class="dv">3</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-5-1.png" />
-</figure>
-<p>Turn down the noise and increase <span class="math">\(N_c\)</span> for a slightly more visible critical transition:</p>
-<pre class="sourceCode r"><code class="sourceCode r">N_c &lt;-<span class="st"> </span><span class="fl">2e3</span>
-K_0 =<span class="st"> </span><span class="fl">1.76e5</span>
-<span class="co"># continuous linear increase</span>
-sucrose &lt;-<span class="st"> </span><span class="kw">seq</span>(K_0, .<span class="dv">8</span> *<span class="st"> </span>N_c, <span class="dt">length=</span><span class="fl">1e3</span>)
-
-max_days &lt;-<span class="st"> </span><span class="kw">length</span>(sucrose)
-y &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)
-
-y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1e5</span>
-for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
-  theta =<span class="st"> </span><span class="kw">c</span>(<span class="dt">gamma_high =</span> <span class="fl">0.4</span>, <span class="co"># hr^-1</span>
-            <span class="dt">gamma_low =</span> <span class="fl">0.3</span>, <span class="co"># hr^-1</span>
-            <span class="dt">T_lag =</span> <span class="fl">2.97</span>, <span class="co"># hr</span>
-            <span class="dt">N_c =</span> N_c, <span class="co"># cells/μl</span>
-            <span class="dt">K =</span> sucrose[day])
-  y[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">g</span>(y[day], <span class="dt">theta=</span>theta, <span class="dt">epsilon=</span><span class="kw">rnorm</span>(<span class="dv">1</span>,<span class="dv">0</span>,.<span class="dv">01</span>))
-}
-
-<span class="kw">qplot</span>(<span class="kw">seq_along</span>(y), y) +<span class="st"> </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> N_c, <span class="dt">lty=</span><span class="dv">3</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-12-dai-model/unnamed-chunk-6-1.png" />
-</figure>
-<p>Much more to do: Would be nice to add simulations of the computation of the bifucation using replicates run a different fixed dilution regimes.</p>
-<h1 id="references">References</h1>
-<p>[1] L. Dai, D. Vorselen, K. S. Korolev, et al. “Generic Indicators for Loss of Resilience Before a Tipping Point Leading to Population Collapse”. In: <em>Science</em> 336.6085 (May. 2012), pp. 1175-1177. DOI: 10.1126/science.1219805. <URL:
-http://dx.doi.org/10.1126/science.1219805>.</p>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/02/12/dai-model.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 

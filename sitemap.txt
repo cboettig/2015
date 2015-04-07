@@ -120,6 +120,7 @@ http://www.carlboettiger.info//tags.html
 
  
 http://www.carlboettiger.info//03/26/ropensci-unconf-teaching-session.html  
+http://www.carlboettiger.info//03/24/docker-machine-notes.html  
 http://www.carlboettiger.info//03/09/simpler-nimble-dai-model.html  
 http://www.carlboettiger.info//03/04/GP-nimble-explore.html  
 http://www.carlboettiger.info//03/03/GP-nimble-setup.html  
