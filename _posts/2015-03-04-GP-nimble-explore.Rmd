@@ -1,0 +1,187 @@
+---
+layout: post
+category: ecology
+tags: 
+- gp
+- nimble
+
+---
+
+```{r include=FALSE, cache=FALSE}
+library("nimble")
+library("ggplot2")
+library("tidyr")
+library("dplyr")
+library("MASS")
+library("mcmc")
+```
+
+
+## GP Model ##
+
+A successful specification looks like this:
+
+```{r}
+code <- nimbleCode({
+
+   l ~ dgamma(10, 1) 
+   sigma.n ~ dunif(0, 1e5)
+   Sigma[1:N, 1:N] <- exp(-0.5 * diff[1:N, 1:N] / l ^ 2) + sigma.n ^ 2 * I[1:N, 1:N]
+   y[1:N] ~ dmnorm(Mu[1:N], cov = Sigma[1:N, 1:N])  
+
+})
+```
+
+
+```{r}
+obs <- data.frame(x = c(-4, -3, -1,  0,  2),
+                   y = c(-2,  0,  1,  2, -1))
+
+N <- length(obs$x)
+diff <- outer(obs$x, obs$x, function(xi, xj) (xi-xj)^2)
+constants = list(N = N, x = obs$x, Mu = rep(0,N), diff = diff, I = diag(1,N))
+inits <- list(l = 1, sigma.n = 10)
+data <- data.frame(y = obs$y)
+
+
+```
+
+```{r}
+Rmodel <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
+```
+
+We can simulate parameters from the prior:
+
+```{r}
+Rmodel$l
+simulate(Rmodel, "l")
+Rmodel$l
+```
+
+Other nodes and likelihoods are updated to reflect the new value only after we run `calculate()`, so this is the logProb of `l` originally:
+
+
+```{r}
+Rmodel$logProb_l
+```
+
+After we run `calculate()`, the `logProb` is updated to reflect our simulated value of `l`, as are the dependent terms (like the Sigma matrix)
+
+```{r}
+Sigma <- Rmodel$Sigma
+calculate(Rmodel)
+identical(Sigma, Rmodel$Sigma)
+Rmodel$logProb_l
+```
+
+Interestingly, we don't seem to be able to simulate actual data from the model in this way:
+
+```{r}
+Rmodel$y
+simulate(Rmodel, "y")
+Rmodel$y
+identical(Rmodel$y, Rmodel$origData[["y"]])
+```
+
+Note that `y` remaines fixed to the original data values.  We have to do this manually:
+
+```{r}
+mvrnorm(mu = constants$Mu, Sigma = Rmodel$Sigma) 
+```
+
+Define our mcmc procedure in Nimble
+
+```{r }
+Cmodel <- compileNimble(Rmodel)
+mcmcspec <- configureMCMC(Rmodel, print=FALSE)
+Rmcmc <- buildMCMC(mcmcspec)
+Cmcmc <- compileNimble(Rmcmc, project = Rmodel)
+```
+
+```{r}
+system.time(
+Cmcmc$run(1e5)
+)
+```
+
+
+```{r}
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+df <- gather(samples)
+```
+
+
+#### Posteriors
+
+```{r , fig.show='hold'}
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+Note that `simulate` continues to draw from the prior, not the posterior:
+
+```{r}
+sigmas <- replicate(1e4, {
+  simulate(Rmodel, "sigma.n")
+  Rmodel$sigma.n
+  })
+hist(sigmas)
+```
+
+(Also note this isn't a particularly efficient way to simulate).  Conveniently drawing data, $y$, from the posterior is even less obvious.
+
+
+
+
+## Comparison
+
+```{r}
+
+ lpriors <- function(pars){
+      dgamma(pars[[1]], 10, 1, log = TRUE) +
+      dunif(pars[[2]], 0, 1e5, log = TRUE) 
+  }
+  
+  posterior <- function(pars, x, y){ 
+    l <- pars[1]
+    sigma.n <- pars[2]
+
+    SE <- function(Xi,Xj, l) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
+    cov <- function(X, Y) outer(X, Y, SE, l)
+    I <- diag(1, length(x))
+    K <- cov(x, x) 
+  
+    loglik <- - 0.5 * t(y) %*% solve(K + sigma.n ^ 2 * I) %*% y -
+      log(det(K + sigma.n ^ 2 * I)) -
+      length(y) * log(2 * pi) / 2
+    
+    loglik + lpriors(pars)
+  }
+```
+
+```{r}
+system.time(
+out <- metrop(posterior, initial = c(l = 1,sigma.n = 10), nbatch = 1e5, x = obs$x, y = obs$y)  
+)
+```
+
+```{r}
+burnin <- 1e3
+thin <- 1e2
+df <- cbind(index=1:out$nbatch, as.data.frame(exp(out$batch)))
+s <- seq(burnin+1, out$nbatch, by=thin)
+df <- df[s,]
+df <- df[-1] # drop index
+names(df) <- names(out$initial)
+df <- gather(df)
+```
+
+
+```{r}
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free') +
+  scale_x_log10()
+```
+

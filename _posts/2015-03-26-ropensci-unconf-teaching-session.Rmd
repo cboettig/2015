@@ -1,0 +1,116 @@
+---
+category: teaching
+tags:
+  - ropensci
+  - conference
+---
+
+
+## Panel on Effective teaching with R
+
+
+Panel:
+
+1. Tracy Teal - Data Carpentry
+2. Hadley Wickhan - undergrads at Rice, R master classes for RStudio
+3. Mine, Prof Stats, Duke, also MOOC
+4. Roger Peng Prof Biostats, John Hopkins
+5. Jenny Bryan, Prof Stats, UBC.  
+6. Ben Marwick, Prof Archaelogy
+
+How do you engage new users? (Or what doesn't work?) 
+
+Hadley: Start with visualization. +1 Jenny
+Jenny: Making an HTML page with .Rmd (+1 Mine), scaling/aggregation 
+Roger: these days, they come to me excited about R
+Mine: I have to convince social scientists to use computers at all.  Visualization, faceting etc helps, Rmd helps.  
+Ben: Reproducible scripts, not click trails (Excel).
+
+What's the worst way to start?
+
+- teaching data structures / programming first.  
+
+teach loops, control structures?  
+
+- later / no.  Mine teaches loops with index cards.
+- Hadley aims to to get people to re-invent lapply as a common pattern...
+
+Keeping people engaged?  (Break-out session to develop reading lists, user groups)
+
+- Mine data hack weekend.  (PhD students mentoring, undergrads doing).  
+- Roger: capstone project. Track alumni (via linked-in, other ideas?)
+- Tracy: Pointing people to courses like Roger's MOOC
+
+Engaging later-stage students?
+
+- Working with own data and problems.  
+
+R's horrible gotchas (recycling, NA stuff, factor stuff, dropping columns/names)
+
+- Hadley: 1) set the expectations that R has frustrations. 2) room / chance to fail safely, how to debug (google error).  
+- Roger: 10 examples of annoying things in R
+- Jenny: user str and fear factors.
+- Ben: getting help
+- Roger: students with programming experience need different kind of help.
+
+
+R & Github?
+
+- Hadley, Mine -- nope.  Hadley - I didn't commit to teaching it.  Don't try it at the end.
+- Roger -- it's better (though students think git == github).  Avoid why git is awesome, just teach it in a narrow sense!  
+- Jenny -- intensive use of Github whole time, starting with it up front.  
+- Ben: not with undergrads, yes with grads. takes time.  
+
+Markdown, Github -- if you're gonna do it, commit and do everything in it from the beginning.  
+
+
+Hadley: If something feels painful, do it more often.  (git, R CMD check).  
+
+Writing functions: need to learn eventually, but it's really hard to teach.  Hadley's book exercises for the reader.  Over time course gets simpler.  
+
+
+When do you teach data cleaning?
+
+Jenny: a data-cleaning script itself cannot be clean.  It's an advanced topic I teach it midway.  
+Jenny, Roger: includes teaching regex.
+
+Find outside dataset mid-way, sudo-messy data.  
+
+Hadley: Hardest part is that students don't know what the goal is, while I see it instantly.  Takes a super long time to learn how to do this and to articulate this.  
+
+Data shouldn't be too real, should be Disney-real (more real than reality).  individual/personal they put in the time, so do a kaggle competition to clean data, top 3 winners get automatic A's, opt out of final
+
+Starting with spreadsheets and data entry!  
+
+
+Infrastructure for package building:
+
+- takes time, possibly > 30 min 1:1. 
+- Mine: students run on cloud, I can replicate.  but cannot run on own computer.
+- Roger: Better to live through the cli bs, once it's done it's done. VM's not how the real world works.  Hosting service for 1000s of people too expensive.
+- Jenny: pain is only when we need build environment
+- Ben: Use *local* Docker, replicates his own research.  A slight taste of shell, but avoids CLI BS
+
+
+- install challenges is the opposite of a motivator / win.  Luckily doesn't bite early.  
+
+
+Evaluate: 
+
+- peer review 
+
+
+
+--------
+
+Breakouts / products:
+
+1. Listing follow-up resources 
+2. Iris data sets
+3. dependencies & scaling
+
+
+------------------
+
+
+

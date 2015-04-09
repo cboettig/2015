@@ -1,0 +1,164 @@
+---
+layout: post
+tags:
+- docker
+---
+
+
+### Dockerized MySQL background ###
+
+Figuring out using an external MySQL docker container for the in-development fishbase API.  
+
+```bash
+docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=mysecretpassword -d mysql
+docker run --rm -ti --link some-mysql:mysql ubuntu:latest bash
+```
+
+Now that we're inside the ubuntu container we can see linked environment:
+
+```bash
+env
+```
+shows
+
+```
+HOSTNAME=57fd2b08094a
+MYSQL_ENV_MYSQL_ROOT_PASSWORD=mysecretpassword
+TERM=xterm
+MYSQL_PORT_3306_TCP_PORT=3306
+MYSQL_PORT_3306_TCP=tcp://172.17.0.32:3306
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PWD=/
+MYSQL_ENV_MYSQL_VERSION=5.6.22
+SHLVL=1
+HOME=/root
+MYSQL_NAME=/some-app/mysql
+MYSQL_PORT_3306_TCP_PROTO=tcp
+MYSQL_PORT_3306_TCP_ADDR=172.17.0.32
+LESSOPEN=| /usr/bin/lesspipe %s
+MYSQL_ENV_MYSQL_MAJOR=5.6
+MYSQL_PORT=tcp://172.17.0.32:3306
+LESSCLOSE=/usr/bin/lesspipe %s %s
+_=/usr/bin/env
+```
+
+
+Great. Now we need a mysql client to access the host:
+
+```bash
+apt-get update && apt-get install -y mysql-client-core-5.6
+```
+
+Note that we cannot simply do:
+
+```bash
+mysql --password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD
+```
+which gives the error:
+
+```
+ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
+```
+
+Instead, we must also specify the protocol and port of the server:
+
+```bash
+mysql --host=$MYSQL_PORT_3306_TCP_ADDR --protocol=$MYSQL_PORT_3306_TCP_PROTO --password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD
+```
+
+**EDIT** It's much better to use the hostname provided by the linked container in `/etc/hosts`.  This automatically binds the name used in the link `mysql` to the linked container's IP address, so we can simply do: `mysql =--host=mysql --password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD` (protocol, like the port, is guessed implicitly from host).  Unlike the env var solution, the `/etc/hosts` file is updated if the `mysql` container restarts.
+
+and we're good to go:
+
+```
+Warning: Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 5
+Server version: 5.6.22 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> 
+```
+
+
+### Applying this in fishbaseapi ###
+
+Scott has put together a nice start to the fishbase API built on Ruby's `sinatra` gem.
+
+
+First step is to import the SQL database archive. 
+
+For our database to persist even if our container is destroyed, we link it to a local volume. So we start a `mysql` container with a local volume link, e.g. to `/opt/fishbase/data` on the server:
+
+```bash
+sudo mkdir -p /opt/fishbase/data
+docker run --name mysql -e MYSQL_ROOT_PASSWORD=mysecretpassword -d -v /opt/fishbase/data:/var/lib/mysql mysql
+```
+We now need to import the data from the `fbapp.sql` file as a one-off event. We'll use a temporary `mysql` container to do this, linked to the persistent image we just launched.  For this container, we'll start a bash container that is linked to the `fbapp.sql` file directly (note that docker volume linking works for files too):
+
+```bash
+docker run --rm -ti --link mysql:mysql -v /path/to/fbapp.sql:/data/fbapp.sql -w /data mysql bash
+```
+
+This drops us into a bash session on the container where we can launch a linked `mysql` session and import our tables:
+
+```bash
+mysql --host=$MYSQL_PORT_3306_TCP_ADDR --protocol=$MYSQL_PORT_3306_TCP_PROTO --password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD fbapp < fbapp.sql
+```
+
+Note: if this gives us an error about being unable to write the table, we may need to adjust the permissions of the linked file appropriately.
+
+```
+docker exec -ti mysql bash
+chown -R mysql:mysql /var/lib/mysql
+```
+
+From here, the database is set up and ready to be linked to our app.
+
+### Dockerizing the Sinatra app ###
+
+
+This is straight-forward, noting only that we need to again use the environmental variables shown for the `mysql` credentials inside our ruby script:
+
+```ruby
+  client = Mysql2::Client.new(:host => ENV['MYSQL_PORT_3306_TCP_ADDR'], 
+                             :port => ENV['MYSQL_PORT_3306_TCP_PORT'], 
+                             :password => ENV['MYSQL_ENV_MYSQL_ROOT_PASSWORD'],
+                             :username => "root", 
+                             :database => "fbapp")
+```
+and that we need to execute our ruby app with host `0.0.0.0` instead of the default `localhost` so that the port will be accessible outside the docker container, like so:
+
+```bash
+ruby api.rb -o 0.0.0.0
+```
+
+
+We could get away with just a 2-line Dockerfile using the
+`onbuild` flavor of the official Ruby containers,
+which has rather clever triggers for installing dependencies
+listed in the Gemfile when the image is built, see
+[DockerHub/ruby](https://registry.hub.docker.com/_/ruby/). 
+
+Since one still needs to build a new Docker image either way,
+I've opted for a slightly more explicit (and smaller)
+[Dockerfile](https://github.com/ropensci/fishbaseapi/blob/master/Dockerfile)
+based on Debian instead. This installs the ruby dependencies (including
+gems and associated libraries, which would all have been automated by
+the Ruby Dockerfile), and sets up a default run command to launch the app
+running the sinatra API.  
+
+Just run this container linked to the database and we're good to go:
+
+```bash
+docker run -d -p 4567:4567 --link mysql:mysql ropensci/rfishbase
+```
+
+

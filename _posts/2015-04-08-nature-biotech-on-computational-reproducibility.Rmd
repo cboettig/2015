@@ -1,0 +1,17 @@
+---
+layout: post
+category: open-science
+tags:
+  - blog
+published: false
+---
+
+Interesting editorial in Nature Biotech yesterday; [doi:10.1038/nbt.3202](http://doi.org/10.1038/nbt.3202) on increasing reproducibility requirements in light increasing complexity of computational analysis and big data.
+
+- computational reproducibility is hard.  
+
+- every bit helps, but reviewers can only accomplish so much.  cultural expectations in many fields are that an expert can conduct a review in a few hours.  still, this raises the bar and helps post-publication review. 
+
+- black box reproducibility is helpful but limited
+
+- lots of research uses computational tools but isn't scripted.  

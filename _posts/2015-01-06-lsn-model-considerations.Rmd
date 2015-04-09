@@ -1,0 +1,38 @@
+---
+published: false
+layout: post
+tags: 
+- early-warning
+code: true
+---
+
+
+Should we model the change in mean explicitly, or rely on detrending?
+
+One of the first things to deal with in the model setup is whether we
+'detrend' the data first or not.  As you know, in most saddle-node
+bifurcations the mean also moves since the stable node usually moves
+a bit to collide with the unstable node rather than just sitting there
+and waiting for the unstable node to hit it; which results in a gradual
+decrease of the mean prior to the actual catastrophe.  It's relatively
+typical to detrend any changes in the mean out (after all, sometimes
+this will also reflect things like seasonal variation etc., so it's not
+a trivial thing to build into the model in a general way). Modeling
+the rate of change in mean makes it possible for a mean-only change
+to be sufficient to prefer the model of change over the OU model...
+However, detrending needs rigorous definition to justify the approach.
+Transforming the data can distort the signal (particularly obvious with
+the case of interpolation). I don't really like detrending since it can
+be rather arbitrary in how you choose to go about it, but I suppose it's
+preferable to specific modeling assumptions that try and capture the
+trend as well.  There's an interesting comparison of detrending with
+just a Gaussian filter vs using the exact model in this paper really
+nice paper on warning signals in epidemiology that I've only recently
+come across; which also does some elegant van Kampen expansions en route:
+http://doi.org/10.1007/s12080-013-0185-5.
+
+<!--
+Consider the mean changes as a function $f(x(t),t)$, we would want an approach that claims to provide a non-parametric estimate of $f$ such that for our data, $x - f(x)$ approximates to the model we fit (e.g. OU model with time-dependent spring constant term alone).
+-->
+
+

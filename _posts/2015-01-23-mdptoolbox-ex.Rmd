@@ -1,0 +1,118 @@
+---
+layout: post
+category: ecology
+tags:
+- pdg-control
+---
+
+Testing this out using `MDPtoolbox`, but not working yet...
+
+
+```{r settings}
+library(knitr)
+opts_chunk$set(dev='svg', fig.width=4, fig.height=4, cache=FALSE,results='hide', fig.show='hold', error=TRUE)
+```
+
+
+
+```{r libs, cache=FALSE}
+library(MDPtoolbox)
+library(ggplot2)
+```
+
+
+
+
+```{r}
+f <- function(x, h, p){ 
+  x <- x - h
+  p[[1]] * x / {1 + p[[2]] * x}  
+}
+p <- c(a = 6, b = 0.05)
+
+profit <- function(x, h) min(x,h)  # vectorized for x
+x_grid <- seq(0, 150, length = 51)
+h_grid <- seq(0, 150,length = 51)
+delta <- 0.05
+sigma_g <- 0.0
+z_g <- function() 1 + rlnorm(1, 0, sigma_g)
+pdfn <- function(P, s) dlnorm(P, 0, s)
+```
+
+
+Building the transition probability matrix: 
+
+```{r}
+determine_SDP_matrix <- function(f, p, x_grid, h_grid, sigma_g,
+                                 pdfn=function(P, s) dlnorm(P, 0, s)){
+  gridsize <- length(x_grid)
+  SDP_Mat <- lapply(h_grid, function(h){
+    SDP_matrix <- matrix(0, nrow=gridsize, ncol=gridsize)
+    # Cycle over x values
+    for(i in 1:gridsize){ 
+      ## Calculate the expected transition  
+      x1 <- x_grid[i]
+      x2_expected <- f(x1, h, p)
+      ## If expected 0, go to 0 with probabilty 1
+      if( x2_expected == 0) 
+        SDP_matrix[i,1] <- 1  
+      else {
+        # relative probability of a transition to that state
+        ProportionalChance <- x_grid / x2_expected
+        Prob <- pdfn(ProportionalChance, sigma_g)
+        
+        if(sum(Prob) > 0)
+        # Store normalized probabilities in row
+          SDP_matrix[i,] <- Prob/sum(Prob)
+        else 
+          SDP_matrix[i,] <- c(1, numeric(gridsize-1))
+      }
+    }
+    t(SDP_matrix)
+  })
+  SDP_Mat
+}
+
+
+```
+Building the reward matrix: 
+
+```{r}
+# [S, A] array
+
+R <- t(sapply(x_grid, function(x)
+  sapply(h_grid, function(h)
+  profit(x,h)
+)))
+```
+
+Note that in $f$ we must define the harvesting take place before the population recruits.
+
+```{r}
+P <- determine_SDP_matrix(f, p, x_grid, h_grid, sigma_g, pdfn)
+```
+
+
+```{r}
+x0 <- (p[[1]]-1)/p[[2]]
+i <- which.min(abs(x_grid-x0))
+
+V0 <- R[i,]
+```
+
+```{r}
+mdp_check(P=P,R=R)
+
+testthat::expect_equal(sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))), 0)
+```
+
+```{r}
+out <- mdp_value_iteration(P, R, discount=delta, epsilon=0.001, max_iter = 1e4, V0=V0)
+```
+
+
+Whoops, this doesn't look right:
+
+```{r}
+plot(x_grid, h_grid[out$policy])
+```

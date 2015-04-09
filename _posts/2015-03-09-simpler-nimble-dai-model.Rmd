@@ -1,0 +1,183 @@
+---
+layout: post
+category: ecology
+tags: 
+- early-warning
+- regime-shifts
+- nimble
+---
+
+## A simpler Nimble model
+
+
+```{r include=FALSE, cache=FALSE}
+library("nimble")
+library("regimeshifts")
+library("tidyr")
+library("ggplot2")
+library("dplyr")
+```
+
+
+
+## LSN version ##
+
+A further simplified version:
+
+- fix `sigma_x` to unity and `theta` to zero, reflecting the detrending and scaling.
+- constrain `sigma_y` with a tight prior
+
+```{r , depends='detrend'}
+code <- nimbleCode({
+# sigma_x ~ dunif(1e-10, 1e2)
+  
+  ## highly constrained
+  sigma_y ~ dgamma(10, 1000)
+
+  ## Uninformative
+       m ~ dunif(-1e2, 1e2)
+    x[1] ~ dunif(-1e3, 1e3)
+    y[1] ~ dunif(-1e3, 1e3) 
+
+  for(i in 1:(N-1)){
+    mu_x[i] <- x[i] - y[i] * x[i]
+    x[i+1] ~ dnorm(mu_x[i], sd = 1) 
+    y[i+1] ~ dnorm(y[i] + m * t[i] / t[N], sd = sigma_y) 
+    
+  }
+})
+
+
+```
+
+
+
+
+Generate the test data:
+
+```{r}
+set.seed(1000)
+N <- 50
+DF <- seq(0, 2000, length=N) # schedule for env degredation (increased dilution)
+x <- numeric(N)   
+x[1] <- 1.76e5 # initial density
+   
+for(day in 1:(N-1)){
+ x[day+1] <- dai(x[day], DF = DF[day])
+}
+
+raw <- data.frame(t = 1:N, x = x)
+
+```
+
+
+Detrend: 
+
+```{r detrend, depends='data'}
+raw$t <- 1:N
+detrend <- loess(x ~ t, raw)
+sigma <- sqrt(var(detrend$residuals))
+data <- data.frame(x = detrend$residuals/sigma)
+qplot(raw$t, data$x, geom='line')
+```
+
+
+
+```{r}
+constants <- list(N = N, t = raw$t)
+inits <- list(m = 0, sigma_y = .01, y = rep(1,N))
+thin <- 1e2
+n_iter <- 1e6
+
+Rmodel <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
+Cmodel <- compileNimble(Rmodel)
+mcmcspec <- configureMCMC(Rmodel, print=FALSE, thin=thin)
+  
+Rmcmc <- buildMCMC(mcmcspec)
+Cmcmc <- compileNimble(Rmcmc, project = Cmodel)
+Cmcmc$run(n_iter)
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+samples <- samples[,1:(length(inits) - 1)]
+df <- gather(samples)
+
+```
+
+
+
+#### Summary statistics
+
+```{r, results='markup'}
+summarise(group_by(df, key), mean=mean(value), std=sqrt(var(value)))
+```
+
+#### Traces
+
+```{r, fig.show='hold'}
+ggplot(sample_n(df, 2e2)) + 
+  geom_line(aes(seq_along(value), value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+#### Posteriors
+
+```{r, fig.show='hold'}
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+
+
+#### Block sampler
+
+
+```{r}
+constants <- list(N = N, t = raw$t)
+inits <- list(m = 0, sigma_y = .01, y = rep(1,N))
+Rmodel <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
+Cmodel <- compileNimble(Rmodel)
+mcmcspec <- configureMCMC(Rmodel, print=FALSE,thin=thin)
+mcmcspec$addSampler("RW_block", list(targetNodes=c('m','sigma_y'), adaptInterval=100))
+Rmcmc <- buildMCMC(mcmcspec)
+Cmcmc <- compileNimble(Rmcmc, project = Cmodel)
+Cmcmc$run(n_iter)
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+samples <- samples[,1:(length(inits)-1)]
+df <- gather(samples)
+
+df <- my_mcmc(code=lsn, constants, data, inits)
+```
+
+#### Summary statistics
+
+```{r, results='markup'}
+summarise(group_by(df, key), mean=mean(value), std=sqrt(var(value)))
+```
+
+#### Traces
+
+```{r, fig.show='hold'}
+ggplot(sample_n(df, 1e3)) + 
+  geom_line(aes(seq_along(value), value)) + 
+  facet_wrap(~key, scale='free')
+```
+
+#### Posteriors
+
+```{r, fig.show='hold'}
+ggplot(df) + 
+  geom_density(aes(value)) + 
+	facet_wrap(~key, scale='free')
+```
+
+
+
+--------------
+
+
+```{r results='markup'}
+sessionInfo()
+```
+
+
+

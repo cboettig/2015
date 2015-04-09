@@ -22,11 +22,15 @@ local({
   knitr::opts_chunk$set(
     fig.path   = sprintf('assets/figures/%s/', d),
     cache.path = sprintf('_cache/%s/', d),
+    cache = TRUE,
 		comment = NA,
 	  message = FALSE,
     warning = FALSE,
 		dev = 'png',
-		fig.cap = ""
+		fig.cap = "",
+    fig.show="hold",
+    fig.width=6,
+    fig.height=4
   )
 
 	## Embed svgs directly

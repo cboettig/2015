@@ -5,3 +5,5 @@ google_analytics.json
 _cache
 assets/figures/posts
 .Rproj.user
+_posts/*.md
+*.swp
