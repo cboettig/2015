@@ -29,12 +29,17 @@ main <- as.tbl(gpdd_main)
 data <- as.tbl(gpdd_data)
 ```
 
+Working through `r citet("10.1111/j.1461-0248.2011.01702.x")` provides a nice way to play around with the GPDD data and Kalman filtering.  More interested in exploring the data and methods than in just replicating the results, which are important but also rather intuitive and thus I expect rather robust -- as we add (observational) uncertainty, or indeed, any additional parameters that must be ended, we should expect to have less power to pin down a particular parameter associated with density dependence, as the paper illustrates rather nicely.  
+
+
+
 ------------
+
+
 
 ## Data preparation
 
 
-Working from `r citet("10.1111/j.1461-0248.2011.01702.x")`: 
 
 > 627 time series with population indices obtained from the GPDD (NERC Centre for Population Biology 1999). Data sets were filtered out from the database by removing harvest and non-index based data, data sampled at non-annual intervals and time series taking less than 15 unique values.
 
@@ -237,11 +242,33 @@ fits
 
 Having defined a function that takes and returns a `data.frame`, `dplyr::do` gives us a consise syntax to apply this by group (recall `df` is already `group_by(MainID)`.)  
 
+
 ```{r message=FALSE}
 df %>% do(kalman(.)) -> fits
 ```
 
+## Side note on coding strategy
 
+`dplyr` makes the data filtering steps fast, consise, and clear.  Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it's own row.  The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.  
+
+[David Robinson](https://github.com/dgrtwo) has done an excellent job in starting to tackle this thorny problem in a package called `broom` with much the same elegance and care that Hadley has done with `dplyr`.  David argues very persuasively that it makes more sense to summarize parameter estimates from each model fit in two columns - a column for parameter names and a column for values.  He has now added support for `optim()` output to the `broom::tidy()` function, which does just that.  
+
+This doesn't translate immediately to my use case here, since I need to keep track of the likelihood and convergence which are not captured by `broom::tidy()`.  As these are scalar valued outputs of the model fit, instead of a vector like parameters, they are extracted and summarized in `broom::glance()` as a single row.  An easy generalization would just be to `cbind` the outputs of `glance()` and `tidy()`; though David argues for a different approach in which we defer any manipulation of model output. Instead, he suggests an `expand.grid` over the names of the groups (models and datasets):
+
+```r
+# not run
+
+expand.grid(model = names(models),
+            dataset = names(datasets)) %>%
+    group_by(model, dataset) %>%
+    do(o = optim_func(.$model, .$dataset)) -> david
+```
+
+Where `optim_func` uses the name of the model and name of the dataset to apply `optim()`, rather than passing the data explicitly.  We can then use `glance` and `tidy` on the resulting output, though we would need to `inner_join` the results instead of `cbind`.  
+
+This is indeed an elegant, more generic approach, though passing names instead of data and tidying & joining more complex aggregate data frames seems a bit less transparent to me.
+
+------------
 
 Note that BFGS is more problematic:
 
