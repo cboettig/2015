@@ -117,6 +117,28 @@ df$logN[i] <- min(df$logN[-i])-1
 ```
 
 
+## Gompertz model
+
+> We use the stochastic Gompertz population model to analyse the strength of density dependence in the data.The model is defined through
+
+$$N_{t+1} = N_t \exp(a - b \log N_t + \epsilon_t$$ 
+
+> where $N_t$ is population density or size in year $t$, $a$ is an intercept, $b$ is a measure of the strength of density dependence and $\eta$ is normally distributed process error with mean zero and standard deviation $\tau$.  By log transforming the population abundance and putting $x_t = \log N_t$ this simplifies to
+
+$$x_{t+1} = a _ c x_t + \epslion_t$$
+
+> where $c = 1 - b$ is the lag 1 autocorrelation of the log transformed population abundance when the process is stationary.
+
+and uncertainty in measurements, $y_t$ are simply normal random variates around $x_t$:
+
+$$y_t = x_t + \eta_t $$ 
+
+where $\eta_t \sim N(0,\sigma^2)$
+
+
+## Kalman Filtering
+
+Since the model is linear we can compute the likelihood directly by means of a Kalman filter. There are various ways of going about this, and the paper provides some general details:
 
 > The Kalman filter was initiated by assuming a wide prior distribution on the initial state centred around
 the first observation, $x_1 \sim N( y_1, 10)$. For each model and data set the numerical maximisation (using the BFGS algorithm implemented in the optim function) was repeated for 50 random starting values to ensure that we found the global optimum
@@ -139,7 +161,9 @@ both uncertainty about population abundance and density dependence denoted by SS
 This is both clear and straight forward, we define each of the models as described.  Note that we define the models here in the notation of FKF:
 
 $$\alpha_{t+1} = d_t + T_t \alpha_t H_t \eta_t$$
-$$\y_t = c_t Z_t \alpha_t + G_t \eta_t$$
+$$\y_t = c_t + Z_t \alpha_t + G_t \eta_t$$
+
+
 
 Where 
 
@@ -234,6 +258,8 @@ fits
 
 A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.  
 
+and here is our version then of Figure 1b:
+
 ```{r}
 fits %>% 
   group_by(MainID, model) %>% 
@@ -241,14 +267,44 @@ fits %>%
   spread(model, Tt) %>% 
   select(SSG, G) -> 
   c_values
-
+ggplot(c_values, aes(SSG, G)) + geom_point() + geom_abline(intercept=0, slope=1) + labs(title="c estimates")
 ```
-
-and here is our version of the 
 
 ```{r}
-ggplot(c_values, aes(SSG, G)) + geom_point() + geom_abline(intercept=0, slope=1) + labs(title="c values")
+fits %>% 
+  group_by(MainID, model) %>% 
+  select(Tt) %>%
+  filter(model %in% c("SSG", "G")) -> tmp
+ggplot(tmp) + geom_histogram(aes(Tt), binwidth=0.1)
 ```
+
+
+```{r}
+fits %>% 
+  group_by(MainID, model) %>% 
+  select(GGt) %>% 
+  spread(model, GGt) %>% 
+  select(SSG, SSRW) -> 
+  sigma2_values
+ggplot(sigma2_values, aes(SSG, SSRW)) + geom_point() + geom_abline(intercept=0, slope=1) + labs(title="sigma2 (observation error) estimates")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---------
 
