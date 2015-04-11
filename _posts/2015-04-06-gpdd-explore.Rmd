@@ -272,7 +272,7 @@ This is indeed an elegant, more generic approach, though passing names instead o
 
 Note that BFGS is more problematic:
 
-```{r, error=FALSE}
+```{r, error=TRUE}
 df %>% do(kalman(., method="BFGS")) -> fits_bfgs
 ```
 
