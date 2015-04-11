@@ -8,7 +8,7 @@ published: false
 
 Load libraries and data as before
 
-```{r}
+```{r cache=FALSE}
 library("ggplot2")
 library("dplyr")
 library("tidyr")
