@@ -1,0 +1,153 @@
+---
+layout: post
+published: false
+
+---
+
+
+## Agenda
+
+- Goal
+- Who & what we have
+- imagine and design the hub
+- engage, govern, sustain
+- structure a proposal
+
+## NSF overview
+
+- What does NSF mean by hub? Consortium/network with regional focus
+- why regional?  face time. regional issues
+- NSF thinking it will fund for 9-10 years (in 3 phases). next phase will be < 3 years after first
+  - phase 1: hub (executive director)
+  - phase 2: spokes (priority areas)
+  - phase 3: nodes (sustaining partner organizations)
+
+Volunteer steering council
+advises ED, executive staff 
+partner organizations (beyond steering council)
+(model like the CRA)
+
+
+Foundational Research example:
+  Berkeley AMPlab (NSF, DARPA, DOE, AWS, Google, SAP)
+  -> apache open source: spark, mesos, tachyon
+
+Education example:
+  Schmidt family foundation funds U Chicago run Data Science for Social Good
+  
+Applications:
+  Healthcare: industry using open clinicaltrials.gov data, tidy up/visual interface (Novartis, Pfizer, Eli Lillu)
+  
+NSF will fund the logistics, not the research (other NSF programs do that)
+
+  networking (meeting, staff)
+  dynamic: grow over time
+  Collaboration rather than competition: NSF prefers one proposal per region!!  Must represent the entire region. West is the largest geographic region.  
+  
+  spokes can be regional areas as well as topical.
+  
+  phase 1 somewhat of a planning grant
+  
+## Charratte outcome goals
+
+- priority applications
+- technical or research topics
+- societal big data issues
+
+Volunteer to organize next steps in coalescing regional stakeholders and advancing the region's proposal
+
+How will hubs interact?  2.5 day workshop at DC will talk about that after regionally focused hubs are created.  Successful pilot (e.g. education) can spread nationally.  
+
+Coordination between federal agencies.
+
+this group selected based on their white papers.  
+
+Networking
+
+Content for the proposal from the western region
+
+by hands, looks like 50% academic, 50% govt/non-profit (6)/for profit (6) in equal bit
+
+---- 
+
+
+table breakout. environmental science strong at my table:
+
+Mark Tompkins (Berkeley industry), Anne Wilson (Colorado), Jeremy Franklin, Philip Tarrant
+
+
+
+Brainstorm 2: listing 
+
+- Existing hubs and partnerships
+- Data Sources
+- Analysis Capabilities
+- User and Uses
+- Education & workforce development
+
+
+Breakout 2: Services the hub can provide
+
+see our sticky. i make case for demographic diversity (& geographic)
+
+--------------
+
+plenary
+
+staff, workshops.  Not funding for infrastructure, not funding research, not funding education.  
+
+Could fund a workshop to create an NSF call for infrastructure.
+
+structure: could rotate between campuses.  could be led by a .org.  
+
+(us-ignite.org spun off. hub could spin off into a .org)
+
+-------
+
+
+Breakout 3: discuss very different images for what hub would look like
+
+To encourage diversity of approaches, rooms were given different metaphors:
+
+how could the hub be like a:
+
+- weather
+  Goals: foster research; education
+  Matchmaking. tools + domains + data
+  Standards. data trust. metadata.
+  Buisness services: data management. sustainability
+  Functions: workshops. events/hackathons. forum for curriculum development. data carpentry boot camps. standardization, containers.
+  Governance: rotating board, transition to member funded
+  
+- brain
+  body does the work.  
+  Facilitate communication. 
+  Directory of resources. 
+  Advocacy of best practices 
+  they must come to you.
+  
+- building
+  modular
+  diversity
+  values: openness, collaboration, equality, agile
+  built on existing infrastructure
+
+- ecosystem
+  larger purpose/values.
+  activities: student fellows, matchmaking, workshops
+  spokes: natural resources, ag, natural hazards, healthcare, transportation 
+  leadership: ED. 18 person steering committee. spoke working groups
+  Select steering committee: via an interim steering committee from the proposal. 
+
+Feedback: plus, potential, critique, 
+
+---------
+
+Take volunteers for co pis (google doc)
+
+Take volunteers for host institution (5 volunteer: UCSD Supercomputing Center, USC (ISI), UC Berkeley (BIDS), Federation for Earth Systems, state of Utah)
+
+host institution volunteers meet to select host.  Agreement by consensus on Federation for Earth Systems.
+
+
+
