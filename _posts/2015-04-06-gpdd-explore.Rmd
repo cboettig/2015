@@ -2,7 +2,7 @@
 layout: post
 category: ecology
 
-#published: false
+published: false
 
 ---
 
@@ -126,11 +126,11 @@ df$logN[i] <- min(df$logN[-i])-1
 
 > We use the stochastic Gompertz population model to analyse the strength of density dependence in the data.The model is defined through
 
-$$N_{t+1} = N_t \exp(a - b \log N_t + \epsilon_t$$ 
+$$N_{t+1} = N_t \exp(a - b \log N_t + \epsilon_t)$$ 
 
 > where $N_t$ is population density or size in year $t$, $a$ is an intercept, $b$ is a measure of the strength of density dependence and $\eta$ is normally distributed process error with mean zero and standard deviation $\tau$.  By log transforming the population abundance and putting $x_t = \log N_t$ this simplifies to
 
-$$x_{t+1} = a _ c x_t + \epslion_t$$
+$$x_{t+1} = a _ c x_t + \epsilon_t$$
 
 > where $c = 1 - b$ is the lag 1 autocorrelation of the log transformed population abundance when the process is stationary.
 
@@ -166,6 +166,7 @@ both uncertainty about population abundance and density dependence denoted by SS
 This is both clear and straight forward, we define each of the models as described.  Note that we define the models here in the notation of FKF:
 
 $$\alpha_{t+1} = d_t + T_t \alpha_t H_t \eta_t$$
+
 $$\y_t = c_t + Z_t \alpha_t + G_t \eta_t$$
 
 
@@ -173,10 +174,10 @@ $$\y_t = c_t + Z_t \alpha_t + G_t \eta_t$$
 Where 
 
 $$\begin{multline}
-c \to T_t
-a \to d_t
-sigma^2 \to G_t'G_t
-\tau^2 \to H_t'H_t
+c \to T_t \\
+a \to d_t \\
+sigma^2 \to G_t'G_t \\
+\tau^2 \to H_t'H_t 
 \end{multline}$$
 
 ```{r}
