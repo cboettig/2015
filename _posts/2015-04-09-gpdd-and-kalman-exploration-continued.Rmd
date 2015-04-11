@@ -1,0 +1,216 @@
+---
+layout: post
+category: ecology
+published: false
+---
+
+
+
+Load libraries and data as before
+
+```{r}
+library("ggplot2")
+library("dplyr")
+library("tidyr")
+library("knitcitations")
+library("rgpdd")
+library("FKF")
+```
+
+
+```{r}
+gpdd_data %>% 
+  filter(MainID %in% filtered$MainID) %>%
+  select(MainID, Population, SampleYear) %>%
+  group_by(MainID) %>% 
+  mutate(logN = log(Population)) ->
+df
+```
+
+```{r}
+gpdd_main %>% 
+  filter(SamplingProtocol == "Count",
+         SourceDimension %in% c("Count", "Index"), 
+         SamplingFrequency == "1",
+         DatasetLength >= 15) %>%
+  select(MainID) %>%
+  arrange(MainID) ->
+filtered
+```
+
+Define functions for each model fit that take the data and return optim output (inc estimated parameters, minus log likelihood
+
+
+```{r}
+
+fit_ssg <- function(y){
+    o <- optim(c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2),
+                 fn =  function(par, ...)
+                   -fkf(dt = matrix(par[1]),
+                        Tt = matrix(par[2]),
+                        HHt = matrix(par[3]), 
+                        GGt = matrix(par[4]), 
+                        ...)$logLik,   
+                 a0 = y[1], 
+                 P0 = matrix(10), 
+                 ct = matrix(0),
+                 Zt = matrix(1), 
+                 yt = rbind(y), 
+                 check.input = FALSE, 
+                 ...)
+  c(o, list(a0 = y[1], n = length(y)))
+}
+
+fit_ssrw <- function(y){
+    o <- optim(c(dt=mean(y), HHt = var(y)/2, GGt = var(y)/2),
+                 fn =  function(par, ...)
+                   -fkf(dt = matrix(par[1]), HHt = matrix(par[2]), 
+                        GGt = matrix(par[3]), ...)$logLik,   
+                 a0 = y[1], P0 = matrix(10), ct = matrix(0), Tt = matrix(1),
+                 Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
+                 ...)
+  c(o, list(a0 = y[1], n = length(y)))
+}
+
+fit_g <- function(y){
+  o <- optim(c(dt = mean(y), Tt=1, HHt = var(y)),
+                 fn =  function(par, ...)
+                   -fkf(dt = matrix(par[1]), Tt = matrix(par[2]), 
+                        HHt = matrix(par[3]), ...)$logLik,   
+                 a0 = y[1], P0 = matrix(10), ct = matrix(0), GGt = matrix(0),
+                 Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
+                 ...)
+  c(o, list(a0 = y[1], n = length(y)))
+}
+
+fit_rw <- function(y){
+ o <-  optim(c(dt=mean(y), HHt = var(y)),
+                 fn =  function(par, ...)
+                   -fkf(dt = matrix(par[1]), HHt = matrix(par[2]), ...)$logLik,   
+                 a0 = y[1], P0 = matrix(10), ct = matrix(0), Tt = matrix(1),
+                 GGt = matrix(0), Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
+                 ...)
+  c(o, list(a0 = y[1], n = length(y)))
+}
+
+```
+
+
+## Simulating, bootstrapping
+
+FKF package doesn't bother to define a simulation method, so we can simply define one directly from the state equations; though a C implementation might be preferred. We will ignore the multi-variate definition for simplicity here.
+
+```{r}
+
+use <- function(vec, x, default){
+  if(! x %in% names(vec))
+    default
+  else
+    vec[[x]]
+}
+
+sim.fkf <- function(fit){
+  n <- fit$n
+  dt <- fit$par[["dt"]]
+  HHt <- fit$par[["HHt"]]
+  Tt <- use(fit$par, "Tt", 1)
+  GGt <- use(fit$par, "GGt", 0)
+  a0 <- fit$a0
+  ct <- 0
+  Zt <- 1
+  
+  a <- numeric(n)
+  y <- numeric(n)
+  eta <- rnorm(n, dt, sqrt(HHt))
+  epsilon <- rnorm(n, ct, sqrt(GGt))
+  a[1] <- a0
+		for(t in 1:(n-1)){
+		  a[t+1] <- Tt * a[t] + eta[t]
+		  y[t] <- Zt * a[t] + epsilon[t]
+		}
+		y[n] <- Zt * a[n] + epsilon[n]
+  y
+}
+
+```
+
+With fitting and simulating functions in place, defining the bootstrap is straight forward. We define these separately for the state-space Gompertz (ssg; i.e. the model with both density dependence and observational errors) and the Gompertz (g; density dependence, no observational error).  We compare in each case to the simulations of the corresponding model without density dependence.  
+
+
+```{r}
+bootstap_ssg <- function(df, N=100){
+  ssg <- fit_ssg(df$logN)
+  ssrw <- fit_ssrw(df$logN)
+  sims <- replicate(N, sim_fkf(ssrw)) 
+  null <- sapply(sims, function(y) fit_ssrw(y)$value)
+  
+  lr <- 2 * (ssrw$value - ssg$value)
+  null_dist <- 2 * (null - ssg$value) 
+  sum(which(null_dist < lr))/N
+}
+```
+
+```{r}
+bootstap_g <- function(df, N=100){
+  g <- fit_g(df$logN)
+  rw <- fit_rw(df$logN)
+  sims <- replicate(N, sim_fkf(rw)) 
+  null <- sapply(sims, function(y) fit_rw(y)$value)
+  
+  lr <- 2 * (rw$value - g$value)
+  null_dist <- 2 * (null - g$value) 
+  sum(which(null_dist < lr))/N
+}
+
+  
+```
+
+With these functions defined, we can perform the actual analysis:
+
+```{r}
+df %>% group_by(MainID) %>% do(bootstrap_ssg(.)) -> ssg_p_values
+```
+
+
+```{r}
+df %>% group_by(MainID) %>% do(bootstrap_g(.)) -> ssg_p_values
+```
+
+
+The study also creates simulated datasets based on the real data but explicitly making the assumption of either density independence (DI) or density dependence (DD).  For each dataset, a density-independent simulated dataset is created by simulating under the SSRW model that was fit. The density-dependent model is created by explicitly fixing the density dependent parameter ($c$ in the language of the paper, `Tt` in FKF notation) to 0.8 and estimating the other parameters of this modified SSG model:
+
+```{r}
+
+fit_dd <- function(y){
+    o <- optim(c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2),
+                 fn =  function(par, ...)
+                   -fkf(dt = matrix(par[1]),
+                        HHt = matrix(par[2]), 
+                        GGt = matrix(par[3]), 
+                        ...)$logLik,
+                 Tt = matrix(0.8),
+                 a0 = y[1], 
+                 P0 = matrix(10), 
+                 ct = matrix(0),
+                 Zt = matrix(1), 
+                 yt = rbind(y), 
+                 check.input = FALSE, 
+                 ...)
+    
+  c(list(par = c(dt=o$par[[1]], Tt = 0.8, HHt = o$par[[2]], GGt = o$par[[3]]),
+         value = o$value),
+  list(a0 = y[1], n = length(y)))
+}
+
+```
+
+
+
+```{r}
+
+df %>% group_by(MainID) %>% sim_fkf(fit_ssrw(.$logN)) -> DI
+df %>% group_by(MainID) %>% sim_fkf(fit_dd(.$logN)) -> DD
+
+
+```
+
