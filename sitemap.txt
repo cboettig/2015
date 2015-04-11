@@ -119,6 +119,7 @@ http://www.carlboettiger.info//sitemap.txt
 http://www.carlboettiger.info//tags.html 
 
  
+http://www.carlboettiger.info//04/06/gpdd-explore.html  
 http://www.carlboettiger.info//03/26/ropensci-unconf-teaching-session.html  
 http://www.carlboettiger.info//03/24/docker-machine-notes.html  
 http://www.carlboettiger.info//03/09/simpler-nimble-dai-model.html  
