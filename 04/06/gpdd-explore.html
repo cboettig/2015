@@ -6,7 +6,7 @@
   <meta name="author" content="Carl Boettiger" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- HTML5 metadata -->
-<meta name="keywords" content="" />
+<meta name="keywords" content="gpdd" />
 <meta name="description" content="" />
 <!-- RDFa Metadata (in DublinCore) -->
 <meta property="dc:title" content="Gpdd Explore" />
@@ -189,11 +189,11 @@ df$logN[i] &lt;-<span class="st"> </span><span class="kw">min</span>(df$logN[-i]
 <blockquote>
 <p>We use the stochastic Gompertz population model to analyse the strength of density dependence in the data.The model is defined through</p>
 </blockquote>
-<p><span class="math">\[N_{t+1} = N_t \exp(a - b \log N_t + \epsilon_t\]</span></p>
+<p><span class="math">\[N_{t+1} = N_t \exp(a - b \log N_t + \epsilon_t)\]</span></p>
 <blockquote>
 <p>where <span class="math">\(N_t\)</span> is population density or size in year <span class="math">\(t\)</span>, <span class="math">\(a\)</span> is an intercept, <span class="math">\(b\)</span> is a measure of the strength of density dependence and <span class="math">\(\eta\)</span> is normally distributed process error with mean zero and standard deviation <span class="math">\(\tau\)</span>. By log transforming the population abundance and putting <span class="math">\(x_t = \log N_t\)</span> this simplifies to</p>
 </blockquote>
-<p><span class="math">\[x_{t+1} = a _ c x_t + \epslion_t\]</span></p>
+<p><span class="math">\[x_{t+1} = a _ c x_t + \epsilon_t\]</span></p>
 <blockquote>
 <p>where <span class="math">\(c = 1 - b\)</span> is the lag 1 autocorrelation of the log transformed population abundance when the process is stationary.</p>
 </blockquote>
@@ -216,21 +216,17 @@ df$logN[i] &lt;-<span class="st"> </span><span class="kw">min</span>(df$logN[-i]
 <p>Four variants of the model defined by (1) and (2) were fitted to each data set; a full model with both uncertainty about population abundance and density dependence denoted by SSG (state space Gompertz), a model with uncertainty about population abundance, but no density dependence (c fixed to one) denoted SSRW (state space random walk), a model with density dependence, but no uncertainty about population abundance (r2 fixed to zero) denoted G (Gompertz) and a model with neither uncertainty about population abundance nor density dependence (c fixed to one and r2 fixed to zero) denoted RW (random walk)</p>
 </blockquote>
 <p>This is both clear and straight forward, we define each of the models as described. Note that we define the models here in the notation of FKF:</p>
-<p><span class="math">\[\alpha_{t+1} = d_t + T_t \alpha_t H_t \eta_t\]</span> <span class="math">\[\y_t = c_t + Z_t \alpha_t + G_t \eta_t\]</span></p>
+<p><span class="math">\[\alpha_{t+1} = d_t + T_t \alpha_t H_t \eta_t\]</span></p>
+<p><span class="math">\[\y_t = c_t + Z_t \alpha_t + G_t \eta_t\]</span></p>
 <p>Where</p>
 <p><span class="math">\[\begin{multline}
-c \to T_t
-a \to d_t
-sigma^2 \to G_t&#39;G_t
-\tau^2 \to H_t&#39;H_t
+c \to T_t \\
+a \to d_t \\
+sigma^2 \to G_t&#39;G_t \\
+\tau^2 \to H_t&#39;H_t 
 \end{multline}\]</span></p>
-<pre class="sourceCode r"><code class="sourceCode r">kalman &lt;-<span class="st"> </span>function(df, <span class="co"># data.frame</span>
-                   ... <span class="co"># additional arguments to optim</span>
-                   ){
-
-y &lt;-<span class="st"> </span>df$logN
-
-ssg &lt;-<span class="st"> </span><span class="kw">optim</span>(<span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">var</span>(y)/<span class="dv">2</span>, <span class="dt">GGt =</span> <span class="kw">var</span>(y)/<span class="dv">2</span>),
+<pre class="sourceCode r"><code class="sourceCode r">fit_ssg &lt;-<span class="st"> </span>function(y, ...){
+    o &lt;-<span class="st"> </span><span class="kw">optim</span>(<span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">var</span>(y)/<span class="dv">2</span>, <span class="dt">GGt =</span> <span class="kw">var</span>(y)/<span class="dv">2</span>),
                  <span class="dt">fn =</span>  function(par, ...)
                    -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]),
                         <span class="dt">Tt =</span> <span class="kw">matrix</span>(par[<span class="dv">2</span>]),
@@ -244,42 +240,67 @@ ssg &lt;-<span class="st"> </span><span class="kw">optim</span>(<span class="kw"
                  <span class="dt">yt =</span> <span class="kw">rbind</span>(y), 
                  <span class="dt">check.input =</span> <span class="ot">FALSE</span>, 
                  ...)
+  <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
+}
 
-ssrw &lt;-<span class="st"> </span><span class="kw">optim</span>(<span class="kw">c</span>(<span class="dt">dt=</span><span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">var</span>(y)/<span class="dv">2</span>, <span class="dt">GGt =</span> <span class="kw">var</span>(y)/<span class="dv">2</span>),
+fit_ssrw &lt;-<span class="st"> </span>function(y, ...){
+    o &lt;-<span class="st"> </span><span class="kw">optim</span>(<span class="kw">c</span>(<span class="dt">dt=</span><span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">var</span>(y)/<span class="dv">2</span>, <span class="dt">GGt =</span> <span class="kw">var</span>(y)/<span class="dv">2</span>),
                  <span class="dt">fn =</span>  function(par, ...)
                    -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), <span class="dt">HHt =</span> <span class="kw">matrix</span>(par[<span class="dv">2</span>]), 
                         <span class="dt">GGt =</span> <span class="kw">matrix</span>(par[<span class="dv">3</span>]), ...)$logLik,   
                  <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Tt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>),
                  <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, 
                  ...)
+  <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
+}
 
-g &lt;-<span class="st"> </span><span class="kw">optim</span>(<span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt=</span><span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">var</span>(y)),
+fit_g &lt;-<span class="st"> </span>function(y, ...){
+  o &lt;-<span class="st"> </span><span class="kw">optim</span>(<span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt=</span><span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">var</span>(y)),
                  <span class="dt">fn =</span>  function(par, ...)
                    -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), <span class="dt">Tt =</span> <span class="kw">matrix</span>(par[<span class="dv">2</span>]), 
                         <span class="dt">HHt =</span> <span class="kw">matrix</span>(par[<span class="dv">3</span>]), ...)$logLik,   
                  <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="dv">0</span>),
                  <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, 
                  ...)
+  <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
+}
 
-rw &lt;-<span class="st"> </span><span class="kw">optim</span>(<span class="kw">c</span>(<span class="dt">dt=</span><span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">var</span>(y)),
+fit_rw &lt;-<span class="st"> </span>function(y, ...){
+ o &lt;-<span class="st">  </span><span class="kw">optim</span>(<span class="kw">c</span>(<span class="dt">dt=</span><span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">var</span>(y)),
                  <span class="dt">fn =</span>  function(par, ...)
                    -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), <span class="dt">HHt =</span> <span class="kw">matrix</span>(par[<span class="dv">2</span>]), ...)$logLik,   
                  <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Tt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>),
                  <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, 
                  ...)
+  <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">kalman &lt;-<span class="st"> </span>function(df, <span class="co"># data.frame</span>
+                   ... <span class="co"># additional arguments to optim</span>
+                   ){
 
-fits &lt;-<span class="st"> </span>
-<span class="st">  </span><span class="kw">rbind</span>(<span class="dt">ssg =</span> <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(<span class="dt">model=</span><span class="st">&quot;SSG&quot;</span>, ssg$par, <span class="dt">mloglik =</span> ssg$value, <span class="dt">converge=</span>ssg$convergence))),
-        <span class="dt">ssrw =</span> <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(<span class="dt">model=</span><span class="st">&quot;SSRW&quot;</span>, ssrw$par, <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">mloglik =</span> ssrw$value, <span class="dt">converge=</span>ssrw$convergence))),
-        <span class="dt">g =</span> <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(<span class="dt">model=</span><span class="st">&quot;G&quot;</span>, g$par, <span class="dt">GGt =</span> <span class="dv">0</span>, <span class="dt">mloglik =</span> g$value, <span class="dt">converge=</span>g$convergence))),
-        <span class="dt">rw =</span> <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(<span class="dt">model=</span><span class="st">&quot;RW&quot;</span>, rw$par, <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">GGt =</span> <span class="dv">0</span>, <span class="dt">mloglik =</span> rw$value, <span class="dt">converge=</span>rw$convergence))))
-
+  y &lt;-<span class="st"> </span>df$logN
+  
+  ssg &lt;-<span class="st"> </span><span class="kw">fit_ssg</span>(y, ...) 
+  ssrw &lt;-<span class="st"> </span><span class="kw">fit_ssrw</span>(y, ...)
+  g  &lt;-<span class="st"> </span><span class="kw">fit_g</span>(y, ...)
+  rw &lt;-<span class="st"> </span><span class="kw">fit_rw</span>(y, ...)
+  
+  <span class="kw">options</span>(<span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>)
+  fits &lt;-<span class="st"> </span>
+<span class="st">  </span><span class="kw">rbind</span>(<span class="dt">ssg  =</span> <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(<span class="dt">model=</span><span class="st">&quot;SSG&quot;</span>, ssg$par, 
+                              <span class="dt">mloglik =</span> ssg$value, <span class="dt">converge =</span> <span class="kw">as.character</span>(ssg$convergence)))),
+        <span class="dt">ssrw =</span> <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(<span class="dt">model=</span><span class="st">&quot;SSRW&quot;</span>, ssrw$par, <span class="dt">Tt =</span> <span class="dv">1</span>, 
+                              <span class="dt">mloglik =</span> ssrw$value, <span class="dt">converge =</span> <span class="kw">as.character</span>(ssrw$convergence)))),
+        <span class="dt">g    =</span> <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(<span class="dt">model=</span><span class="st">&quot;G&quot;</span>, g$par, <span class="dt">GGt =</span> <span class="dv">0</span>, 
+                              <span class="dt">mloglik =</span> g$value, <span class="dt">converge =</span> <span class="kw">as.character</span>(g$convergence)))),
+        <span class="dt">rw   =</span> <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(<span class="dt">model=</span><span class="st">&quot;RW&quot;</span>, rw$par, <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">GGt =</span> <span class="dv">0</span>, 
+                              <span class="dt">mloglik =</span> rw$value, <span class="dt">converge =</span> <span class="kw">as.character</span>(rw$convergence)))))
+  
 <span class="co"># Not clear why classes are not being detected correctly.</span>
 for(i in <span class="kw">c</span>(<span class="st">&quot;dt&quot;</span>, <span class="st">&quot;Tt&quot;</span>, <span class="st">&quot;HHt&quot;</span>, <span class="st">&quot;GGt&quot;</span>, <span class="st">&quot;mloglik&quot;</span>)) 
  fits[[i]] &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(fits[[i]])
 
 fits
-
 }</code></pre>
 <p>Having defined a function that takes and returns a <code>data.frame</code>, <code>dplyr::do</code> gives us a consise syntax to apply this by group (recall <code>df</code> is already <code>group_by(MainID)</code>.)</p>
 <pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(.)) -&gt;<span class="st"> </span>fits</code></pre>
@@ -304,18 +325,19 @@ fits
 <pre><code>Source: local data frame [6,532 x 8]
 Groups: MainID
 
-   MainID model dt Tt HHt GGt mloglik converge
-1       3   SSG  1  1   1   1       1        0
-2       3  SSRW  2  2   2   2       2        1
-3       3     G  3  3   3   3       3        0
-4       3    RW  4  2   4   3       4        0
-5       4   SSG  1  1   1   1       1        0
-6       4  SSRW  2  2   2   2       2        0
-7       4     G  3  3   3   3       3        0
-8       4    RW  4  2   4   3       4        0
-9       5   SSG  1  1   1   1       1        0
-10      5  SSRW  2  2   2   2       2        0
-..    ...   ... .. .. ... ...     ...      ...</code></pre>
+   MainID model            dt          Tt          HHt       GGt
+1       3   SSG  3.3588236281 -0.09823449  0.061951999 0.1795487
+2       3  SSRW  0.0025184015  1.00000000 -0.006723911 0.4990427
+3       3     G  3.1261599136 -0.02130889  0.242121006 0.0000000
+4       3    RW  0.0113567816  1.00000000  0.504878002 0.0000000
+5       4   SSG  0.5489540256  0.72736412  0.067116392 0.1335068
+6       4  SSRW -0.0112125900  1.00000000  0.068533481 0.1345143
+7       4     G  1.0447091177  0.49692339  0.239420133 0.0000000
+8       4    RW -0.0000485108  1.00000000  0.319812139 0.0000000
+9       5   SSG  0.2957402645  0.74899670  1.510665666 2.9876618
+10      5  SSRW -0.0681207151  1.00000000  1.334954270 3.1634616
+..    ...   ...           ...         ...          ...       ...
+Variables not shown: mloglik (dbl), converge (chr)</code></pre>
 <p>A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.</p>
 <p>and here is our version then of Figure 1b:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
@@ -326,7 +348,7 @@ Groups: MainID
 <span class="st">  </span>c_values
 <span class="kw">ggplot</span>(c_values, <span class="kw">aes</span>(SSG, G)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;c estimates&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(MainID, model) %&gt;%<span class="st"> </span>
@@ -334,7 +356,7 @@ Groups: MainID
 <span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;SSG&quot;</span>, <span class="st">&quot;G&quot;</span>)) -&gt;<span class="st"> </span>tmp
 <span class="kw">ggplot</span>(tmp) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(Tt), <span class="dt">binwidth=</span><span class="fl">0.1</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-16-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(MainID, model) %&gt;%<span class="st"> </span>
@@ -344,7 +366,7 @@ Groups: MainID
 <span class="st">  </span>sigma2_values
 <span class="kw">ggplot</span>(sigma2_values, <span class="kw">aes</span>(SSG, SSRW)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;sigma2 (observation error) estimates&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-16-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-17-1.png" />
 </figure>
 
     </article>
@@ -384,6 +406,10 @@ Groups: MainID
     </p>
 
   <p> <i class="icon-tag"></i> tags: 
+    
+    <!-- http://schema.org/BlogPosting/keywords -->
+    <a rel="og:tag" class="tag" 
+			href="/2015/tags.html#gpdd">#gpdd</a>
     </p>
 
   <br/>
@@ -391,7 +417,7 @@ Groups: MainID
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/e5e0583622f96b8f7bd696e9a3d777fb59c469c1/_posts/2015-04-06-gpdd-explore.Rmd"> e5e0583622f96b8f7bd696e9a3d777fb59c469c1</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/c16011eee5340b1b291f283b052b1d4d932f971e/_posts/2015-04-06-gpdd-explore.Rmd"> c16011eee5340b1b291f283b052b1d4d932f971e</a></small></p>
     
   <br/>
   
