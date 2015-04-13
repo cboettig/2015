@@ -16,6 +16,7 @@ RUN install2.r --error -r http://cran.rstudio.com -r http://r-nimble.org \
     cboettig/pdg_control \
     cboettig/knitcitations \
     cboettig/regimeshifts  \
+    ropensci/rgpdd \
 	&& rm -rf /tmp/downloaded_packages
 
 

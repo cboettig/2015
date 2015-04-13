@@ -2,6 +2,8 @@
 layout: post
 category: ecology
 published: false
+tags:
+  - gpdd
 ---
 
 
@@ -42,8 +44,7 @@ Define functions for each model fit that take the data and return optim output (
 
 
 ```{r}
-
-fit_ssg <- function(y){
+fit_ssg <- function(y, ...){
     o <- optim(c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]),
@@ -61,7 +62,7 @@ fit_ssg <- function(y){
   c(o, list(a0 = y[1], n = length(y)))
 }
 
-fit_ssrw <- function(y){
+fit_ssrw <- function(y, ...){
     o <- optim(c(dt=mean(y), HHt = var(y)/2, GGt = var(y)/2),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]), HHt = matrix(par[2]), 
@@ -72,7 +73,7 @@ fit_ssrw <- function(y){
   c(o, list(a0 = y[1], n = length(y)))
 }
 
-fit_g <- function(y){
+fit_g <- function(y, ...){
   o <- optim(c(dt = mean(y), Tt=1, HHt = var(y)),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]), Tt = matrix(par[2]), 
@@ -83,7 +84,7 @@ fit_g <- function(y){
   c(o, list(a0 = y[1], n = length(y)))
 }
 
-fit_rw <- function(y){
+fit_rw <- function(y, ...){
  o <-  optim(c(dt=mean(y), HHt = var(y)),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]), HHt = matrix(par[2]), ...)$logLik,   
@@ -92,8 +93,8 @@ fit_rw <- function(y){
                  ...)
   c(o, list(a0 = y[1], n = length(y)))
 }
-
 ```
+
 
 
 ## Simulating, bootstrapping

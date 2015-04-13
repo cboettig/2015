@@ -1,8 +1,8 @@
 ---
 layout: post
 category: ecology
-
-published: false
+tags:
+  - gpdd
 
 ---
 
@@ -180,14 +180,12 @@ sigma^2 \to G_t'G_t \\
 \tau^2 \to H_t'H_t 
 \end{multline}$$
 
+
+
+
 ```{r}
-kalman <- function(df, # data.frame
-                   ... # additional arguments to optim
-                   ){
-
-y <- df$logN
-
-ssg <- optim(c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2),
+fit_ssg <- function(y, ...){
+    o <- optim(c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]),
                         Tt = matrix(par[2]),
@@ -201,44 +199,72 @@ ssg <- optim(c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2),
                  yt = rbind(y), 
                  check.input = FALSE, 
                  ...)
+  c(o, list(a0 = y[1], n = length(y)))
+}
 
-ssrw <- optim(c(dt=mean(y), HHt = var(y)/2, GGt = var(y)/2),
+fit_ssrw <- function(y, ...){
+    o <- optim(c(dt=mean(y), HHt = var(y)/2, GGt = var(y)/2),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]), HHt = matrix(par[2]), 
                         GGt = matrix(par[3]), ...)$logLik,   
                  a0 = y[1], P0 = matrix(10), ct = matrix(0), Tt = matrix(1),
                  Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
                  ...)
+  c(o, list(a0 = y[1], n = length(y)))
+}
 
-g <- optim(c(dt = mean(y), Tt=1, HHt = var(y)),
+fit_g <- function(y, ...){
+  o <- optim(c(dt = mean(y), Tt=1, HHt = var(y)),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]), Tt = matrix(par[2]), 
                         HHt = matrix(par[3]), ...)$logLik,   
                  a0 = y[1], P0 = matrix(10), ct = matrix(0), GGt = matrix(0),
                  Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
                  ...)
+  c(o, list(a0 = y[1], n = length(y)))
+}
 
-rw <- optim(c(dt=mean(y), HHt = var(y)),
+fit_rw <- function(y, ...){
+ o <-  optim(c(dt=mean(y), HHt = var(y)),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]), HHt = matrix(par[2]), ...)$logLik,   
                  a0 = y[1], P0 = matrix(10), ct = matrix(0), Tt = matrix(1),
                  GGt = matrix(0), Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
                  ...)
+  c(o, list(a0 = y[1], n = length(y)))
+}
+```
 
-fits <- 
-  rbind(ssg = data.frame(t(c(model="SSG", ssg$par, mloglik = ssg$value, converge=ssg$convergence))),
-        ssrw = data.frame(t(c(model="SSRW", ssrw$par, Tt = 1, mloglik = ssrw$value, converge=ssrw$convergence))),
-        g = data.frame(t(c(model="G", g$par, GGt = 0, mloglik = g$value, converge=g$convergence))),
-        rw = data.frame(t(c(model="RW", rw$par, Tt = 1, GGt = 0, mloglik = rw$value, converge=rw$convergence))))
 
+```{r}
+kalman <- function(df, # data.frame
+                   ... # additional arguments to optim
+                   ){
+
+  y <- df$logN
+  
+  ssg <- fit_ssg(y, ...) 
+  ssrw <- fit_ssrw(y, ...)
+  g  <- fit_g(y, ...)
+  rw <- fit_rw(y, ...)
+  
+  options(stringsAsFactors=FALSE)
+  fits <- 
+  rbind(ssg  = data.frame(t(c(model="SSG", ssg$par, 
+                              mloglik = ssg$value, converge = as.character(ssg$convergence)))),
+        ssrw = data.frame(t(c(model="SSRW", ssrw$par, Tt = 1, 
+                              mloglik = ssrw$value, converge = as.character(ssrw$convergence)))),
+        g    = data.frame(t(c(model="G", g$par, GGt = 0, 
+                              mloglik = g$value, converge = as.character(g$convergence)))),
+        rw   = data.frame(t(c(model="RW", rw$par, Tt = 1, GGt = 0, 
+                              mloglik = rw$value, converge = as.character(rw$convergence)))))
+  
 # Not clear why classes are not being detected correctly.
 for(i in c("dt", "Tt", "HHt", "GGt", "mloglik")) 
  fits[[i]] <- as.numeric(fits[[i]])
 
 fits
-
 }
-
 ```
 
 Having defined a function that takes and returns a `data.frame`, `dplyr::do` gives us a consise syntax to apply this by group (recall `df` is already `group_by(MainID)`.)  
