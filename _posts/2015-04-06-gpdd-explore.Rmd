@@ -9,7 +9,7 @@ tags:
 
 ### setup 
 
-```{r}
+```{r cache=FALSE}
 devtools::install_github("ropensci/rgpdd")
 ```
 
