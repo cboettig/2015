@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-14T20:37:06+00:00</updated>
+  <updated>2015-04-14T21:01:47+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -73,7 +73,7 @@ Count (estimated)        Mean Count             Index
          SamplingFrequency ==&lt;span class=&quot;st&quot;&gt; &amp;quot;1&amp;quot;&lt;/span&gt;,
          DatasetLength &amp;gt;=&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;15&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] 468  25&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The reason for this discrepancy isn’t clear, but we can proceed with our filtered data instead:&lt;/p&gt;
+&lt;p&gt;The reason for this discrepancy isn’t clear, but we can proceed with our filtered data instead.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;p&gt;Selecting the time-series identified by our filter, we also add a column for &lt;span class=&quot;math&quot;&gt;\(\log(N)\)&lt;/span&gt; population:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;gpdd_data %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -231,7 +231,7 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
   inits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(id) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(.)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ungroup&lt;/span&gt;() -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;output
   
   if(!all) ## drop unconverged, and select only the best scoring run
-    output %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(converge ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;slice&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;which.min&lt;/span&gt;(mloglik)) 
+    output %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(converge ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;slice&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;which.min&lt;/span&gt;(mloglik)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;output
   
   output
 }&lt;/code&gt;&lt;/pre&gt;
@@ -257,7 +257,7 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in rbind(deparse.level, ...): numbers of columns of arguments do not match&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Timing stopped at: 5328.669 157.296 5513.111 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Timing stopped at: 1000.26 28.408 1215.648 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;stop_cluster&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&quot;side-note-on-coding-strategy&quot;&gt;Side note on coding strategy&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;dplyr&lt;/code&gt; makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.&lt;/p&gt;

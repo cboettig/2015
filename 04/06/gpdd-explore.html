@@ -164,7 +164,7 @@ Count (estimated)        Mean Count             Index
          SamplingFrequency ==<span class="st"> &quot;1&quot;</span>,
          DatasetLength &gt;=<span class="st"> </span><span class="dv">15</span>) %&gt;%<span class="st"> </span><span class="kw">dim</span>()</code></pre>
 <pre><code>[1] 468  25</code></pre>
-<p>The reason for this discrepancy isn’t clear, but we can proceed with our filtered data instead:</p>
+<p>The reason for this discrepancy isn’t clear, but we can proceed with our filtered data instead.</p>
 <hr />
 <p>Selecting the time-series identified by our filter, we also add a column for <span class="math">\(\log(N)\)</span> population:</p>
 <pre class="sourceCode r"><code class="sourceCode r">gpdd_data %&gt;%<span class="st"> </span>
@@ -322,7 +322,7 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
   inits %&gt;%<span class="st"> </span><span class="kw">group_by</span>(id) %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">f</span>(.)) %&gt;%<span class="st"> </span><span class="kw">ungroup</span>() -&gt;<span class="st"> </span>output
   
   if(!all) ## drop unconverged, and select only the best scoring run
-    output %&gt;%<span class="st"> </span><span class="kw">filter</span>(converge ==<span class="st"> </span><span class="dv">0</span>) %&gt;%<span class="st"> </span><span class="kw">slice</span>(<span class="kw">which.min</span>(mloglik)) 
+    output %&gt;%<span class="st"> </span><span class="kw">filter</span>(converge ==<span class="st"> </span><span class="dv">0</span>) %&gt;%<span class="st"> </span><span class="kw">slice</span>(<span class="kw">which.min</span>(mloglik)) -&gt;<span class="st"> </span>output
   
   output
 }</code></pre>
@@ -348,7 +348,7 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 
 )</code></pre>
 <pre><code>Error in rbind(deparse.level, ...): numbers of columns of arguments do not match</code></pre>
-<pre><code>Timing stopped at: 5328.669 157.296 5513.111 </code></pre>
+<pre><code>Timing stopped at: 1000.26 28.408 1215.648 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stop_cluster</span>()</code></pre>
 <h2 id="side-note-on-coding-strategy">Side note on coding strategy</h2>
 <p><code>dplyr</code> makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.</p>
@@ -484,7 +484,7 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/9426eb11ba38f619e519ac59903c5a10a9831cf0/_posts/2015-04-06-gpdd-explore.Rmd"> 9426eb11ba38f619e519ac59903c5a10a9831cf0</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/056caaaa7f4798fdc63bf201cea62d6bbbe2b220/_posts/2015-04-06-gpdd-explore.Rmd"> 056caaaa7f4798fdc63bf201cea62d6bbbe2b220</a></small></p>
     
   <br/>
   
