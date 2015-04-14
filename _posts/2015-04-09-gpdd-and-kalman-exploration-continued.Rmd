@@ -20,14 +20,7 @@ library("FKF")
 ```
 
 
-```{r}
-gpdd_data %>% 
-  filter(MainID %in% filtered$MainID) %>%
-  select(MainID, Population, SampleYear) %>%
-  group_by(MainID) %>% 
-  mutate(logN = log(Population)) ->
-df
-```
+Prepare data, as before: we filter on the stated criteria
 
 ```{r}
 gpdd_main %>% 
@@ -40,17 +33,38 @@ gpdd_main %>%
 filtered
 ```
 
-Define functions for each model fit that take the data and return optim output (inc estimated parameters, minus log likelihood
+and select data matching this filter. We add a column for the log of the population size and group by data ID:
+
+```{r}
+gpdd_data %>% 
+  filter(MainID %in% filtered$MainID) %>%
+  select(MainID, Population, SampleYear) %>%
+  group_by(MainID) %>% 
+  mutate(logN = log(Population)) ->
+df
+```
+
+Lastly, we replace `-Inf` (introduced from `log(0)` terms) with smallest finite values observed. (arbitrary, authors do not specify how these values are handled.)
+
+
+```{r}
+i <- which(df$logN == -Inf)
+df$logN[i] <- min(df$logN[-i])-1
+```
+
+
+As before, we define functions for each model fit that take the data and return optim output (inc estimated parameters, negative log likelihood), using logs to ensure positive variance terms (again arbitrary, authors don't specify how that case is handled.  Theoretically should not matter, but may well in this case.)
+
 
 
 ```{r}
 fit_ssg <- function(y, ...){
-    o <- optim(c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2),
+    o <- optim(c(dt = mean(y), Tt = 1, HHt = log(var(y)/2), GGt = log(var(y)/2)),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]),
                         Tt = matrix(par[2]),
-                        HHt = matrix(par[3]), 
-                        GGt = matrix(par[4]), 
+                        HHt = matrix(exp(par[3])), 
+                        GGt = matrix(exp(par[4])), 
                         ...)$logLik,   
                  a0 = y[1], 
                  P0 = matrix(10), 
@@ -59,38 +73,44 @@ fit_ssg <- function(y, ...){
                  yt = rbind(y), 
                  check.input = FALSE, 
                  ...)
+  o$par[["HHt"]] <- exp(o$par[["HHt"]])
+  o$par[["GGt"]] <- exp(o$par[["GGt"]])
   c(o, list(a0 = y[1], n = length(y)))
 }
 
 fit_ssrw <- function(y, ...){
-    o <- optim(c(dt=mean(y), HHt = var(y)/2, GGt = var(y)/2),
+    o <- optim(c(dt=mean(y), HHt = log(var(y)/2), GGt = log(var(y)/2)),
                  fn =  function(par, ...)
-                   -fkf(dt = matrix(par[1]), HHt = matrix(par[2]), 
-                        GGt = matrix(par[3]), ...)$logLik,   
+                   -fkf(dt = matrix(par[1]), HHt = matrix(exp(par[2])), 
+                        GGt = matrix(exp(par[3])), ...)$logLik,   
                  a0 = y[1], P0 = matrix(10), ct = matrix(0), Tt = matrix(1),
                  Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
                  ...)
+  o$par[["HHt"]] <- exp(o$par[["HHt"]])
+  o$par[["GGt"]] <- exp(o$par[["GGt"]])
   c(o, list(a0 = y[1], n = length(y)))
 }
 
 fit_g <- function(y, ...){
-  o <- optim(c(dt = mean(y), Tt=1, HHt = var(y)),
+  o <- optim(c(dt = mean(y), Tt=1, HHt = log(var(y))),
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]), Tt = matrix(par[2]), 
-                        HHt = matrix(par[3]), ...)$logLik,   
+                        HHt = matrix(exp(par[3])), ...)$logLik,   
                  a0 = y[1], P0 = matrix(10), ct = matrix(0), GGt = matrix(0),
                  Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
                  ...)
+  o$par[["HHt"]] <- exp(o$par[["HHt"]])  
   c(o, list(a0 = y[1], n = length(y)))
 }
 
 fit_rw <- function(y, ...){
- o <-  optim(c(dt=mean(y), HHt = var(y)),
+ o <-  optim(c(dt=mean(y), HHt = log(var(y))),
                  fn =  function(par, ...)
-                   -fkf(dt = matrix(par[1]), HHt = matrix(par[2]), ...)$logLik,   
+                   -fkf(dt = matrix(par[1]), HHt = matrix(exp(par[2])), ...)$logLik,   
                  a0 = y[1], P0 = matrix(10), ct = matrix(0), Tt = matrix(1),
                  GGt = matrix(0), Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
                  ...)
+  o$par[["HHt"]] <- exp(o$par[["HHt"]])
   c(o, list(a0 = y[1], n = length(y)))
 }
 ```
@@ -110,7 +130,7 @@ use <- function(vec, x, default){
     vec[[x]]
 }
 
-sim.fkf <- function(fit){
+sim_fkf <- function(fit){
   n <- fit$n
   dt <- fit$par[["dt"]]
   HHt <- fit$par[["HHt"]]
@@ -139,7 +159,7 @@ With fitting and simulating functions in place, defining the bootstrap is straig
 
 
 ```{r}
-bootstap_ssg <- function(df, N=100){
+bootstrap_ssg <- function(df, N=100){
   ssg <- fit_ssg(df$logN)
   ssrw <- fit_ssrw(df$logN)
   sims <- replicate(N, sim_fkf(ssrw)) 
@@ -152,7 +172,7 @@ bootstap_ssg <- function(df, N=100){
 ```
 
 ```{r}
-bootstap_g <- function(df, N=100){
+bootstrap_g <- function(df, N=100){
   g <- fit_g(df$logN)
   rw <- fit_rw(df$logN)
   sims <- replicate(N, sim_fkf(rw)) 
@@ -180,25 +200,20 @@ df %>% group_by(MainID) %>% do(bootstrap_g(.)) -> ssg_p_values
 
 The study also creates simulated datasets based on the real data but explicitly making the assumption of either density independence (DI) or density dependence (DD).  For each dataset, a density-independent simulated dataset is created by simulating under the SSRW model that was fit. The density-dependent model is created by explicitly fixing the density dependent parameter ($c$ in the language of the paper, `Tt` in FKF notation) to 0.8 and estimating the other parameters of this modified SSG model:
 
-```{r}
 
-fit_dd <- function(y){
-    o <- optim(c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2),
-                 fn =  function(par, ...)
-                   -fkf(dt = matrix(par[1]),
-                        HHt = matrix(par[2]), 
-                        GGt = matrix(par[3]), 
-                        ...)$logLik,
-                 Tt = matrix(0.8),
-                 a0 = y[1], 
-                 P0 = matrix(10), 
-                 ct = matrix(0),
-                 Zt = matrix(1), 
-                 yt = rbind(y), 
-                 check.input = FALSE, 
-                 ...)
+
+```{r}
+fit_dd <- function(y, ...){
     
-  c(list(par = c(dt=o$par[[1]], Tt = 0.8, HHt = o$par[[2]], GGt = o$par[[3]]),
+    o <- optim(c(dt = mean(y), HHt = log(var(y)/2), GGt = log(var(y)/2)),
+                 fn =  function(par, ...)
+                   -fkf(dt = matrix(par[1]), HHt = matrix(exp(par[2])), 
+                        GGt = matrix(exp(par[3])), ...)$logLik,
+                 Tt = matrix(0.8), a0 = y[1], P0 = matrix(10), 
+                 ct = matrix(0), Zt = matrix(1), yt = rbind(y), 
+                 check.input = FALSE, ...)
+    
+  c(list(par = c(dt=o$par[[1]], Tt = 0.8, HHt = exp(o$par[[2]]), GGt = exp(o$par[[3]])),
          value = o$value),
   list(a0 = y[1], n = length(y)))
 }
@@ -208,10 +223,36 @@ fit_dd <- function(y){
 
 
 ```{r}
+sim_di <- function(df) data.frame(y = sim_fkf(fit_ssrw(df$logN, method="L-BFGS-B", lower=c(-Inf, 0, 0))))
+sim_dd <- function(df) data.frame(y = sim_fkf(fit_dd(df$logN, method="L-BFGS-B", lower=c(-Inf, 0, 0))))
 
-df %>% group_by(MainID) %>% sim_fkf(fit_ssrw(.$logN)) -> DI
-df %>% group_by(MainID) %>% sim_fkf(fit_dd(.$logN)) -> DD
-
+df %>% group_by(MainID) %>% do(sim_di(.)) -> DI
+df %>% group_by(MainID) %>% do(sim_dd(.)) -> DD
 
 ```
+
+
+
+
+
+-----
+
+## debugging
+
+Do any datasets fail to have finite log likelihoods for the initial values?
+
+```{r}
+test_inits <- function(y){  
+    par <- c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2)
+    o <- try(fkf(dt = matrix(par[1]), HHt = matrix(par[2]), GGt = matrix(par[3]),
+         Tt = matrix(0.8), a0 = y[1], P0 = matrix(10), 
+         ct = matrix(0), Zt = matrix(1), yt = rbind(y), 
+         check.input = FALSE))
+    data.frame(c(par, list(loglik = o$logLik)))
+}
+
+df %>% group_by(MainID) %>% do(test_inits(.$logN)) -> test
+test
+```
+
 
