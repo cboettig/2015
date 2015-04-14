@@ -324,7 +324,7 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(.)) -&gt;<span class="st"> </span>fits
 )</code></pre>
 <pre><code>Error in optim(init, fn = function(par, ...) -fkf(dt = matrix(par[1]), : function cannot be evaluated at initial parameters</code></pre>
-<pre><code>Timing stopped at: 132.467 4.099 273.16 </code></pre>
+<pre><code>Timing stopped at: 1112.298 30.918 1293.464 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stop_cluster</span>()</code></pre>
 <h2 id="side-note-on-coding-strategy">Side note on coding strategy</h2>
 <p><code>dplyr</code> makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.</p>
@@ -341,7 +341,7 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 <hr />
 <p>Note that BFGS is more problematic on some of the datasets:</p>
 <pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method=</span><span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits_bfgs</code></pre>
-<pre><code>Error in optim(init, fn = function(par, ...) -fkf(dt = matrix(par[1]), : non-finite finite-difference value [1]</code></pre>
+<pre><code>Error in optim(init, fn = function(par, ...) -fkf(dt = matrix(par[1]), : non-finite finite-difference value [3]</code></pre>
 <p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
 <pre><code>Error in eval(expr, envir, enclos): object &#39;fits&#39; not found</code></pre>
