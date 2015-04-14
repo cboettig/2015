@@ -53,90 +53,35 @@ df$logN[i] <- min(df$logN[-i])-1
 ```
 
 
-As before, we define functions for each model fit that take the data and return optim output (inc estimated parameters, negative log likelihood), using logs to ensure positive variance terms (again arbitrary, authors don't specify how that case is handled.  Theoretically should not matter, but may well in this case.)
-
-
+We import our previous model definitions:
 
 ```{r}
-fit_ssg <- function(y, ...){
-    o <- optim(c(dt = mean(y), Tt = 1, HHt = log(var(y)/2), GGt = log(var(y)/2)),
-                 fn =  function(par, ...)
-                   -fkf(dt = matrix(par[1]),
-                        Tt = matrix(par[2]),
-                        HHt = matrix(exp(par[3])), 
-                        GGt = matrix(exp(par[4])), 
-                        ...)$logLik,   
-                 a0 = y[1], 
-                 P0 = matrix(10), 
-                 ct = matrix(0),
-                 Zt = matrix(1), 
-                 yt = rbind(y), 
-                 check.input = FALSE, 
-                 ...)
-  o$par[["HHt"]] <- exp(o$par[["HHt"]])
-  o$par[["GGt"]] <- exp(o$par[["GGt"]])
-  c(o, list(a0 = y[1], n = length(y)))
-}
-
-fit_ssrw <- function(y, ...){
-    o <- optim(c(dt=mean(y), HHt = log(var(y)/2), GGt = log(var(y)/2)),
-                 fn =  function(par, ...)
-                   -fkf(dt = matrix(par[1]), HHt = matrix(exp(par[2])), 
-                        GGt = matrix(exp(par[3])), ...)$logLik,   
-                 a0 = y[1], P0 = matrix(10), ct = matrix(0), Tt = matrix(1),
-                 Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
-                 ...)
-  o$par[["HHt"]] <- exp(o$par[["HHt"]])
-  o$par[["GGt"]] <- exp(o$par[["GGt"]])
-  c(o, list(a0 = y[1], n = length(y)))
-}
-
-fit_g <- function(y, ...){
-  o <- optim(c(dt = mean(y), Tt=1, HHt = log(var(y))),
-                 fn =  function(par, ...)
-                   -fkf(dt = matrix(par[1]), Tt = matrix(par[2]), 
-                        HHt = matrix(exp(par[3])), ...)$logLik,   
-                 a0 = y[1], P0 = matrix(10), ct = matrix(0), GGt = matrix(0),
-                 Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
-                 ...)
-  o$par[["HHt"]] <- exp(o$par[["HHt"]])  
-  c(o, list(a0 = y[1], n = length(y)))
-}
-
-fit_rw <- function(y, ...){
- o <-  optim(c(dt=mean(y), HHt = log(var(y))),
-                 fn =  function(par, ...)
-                   -fkf(dt = matrix(par[1]), HHt = matrix(exp(par[2])), ...)$logLik,   
-                 a0 = y[1], P0 = matrix(10), ct = matrix(0), Tt = matrix(1),
-                 GGt = matrix(0), Zt = matrix(1), yt = rbind(y), check.input = FALSE, 
-                 ...)
-  o$par[["HHt"]] <- exp(o$par[["HHt"]])
-  c(o, list(a0 = y[1], n = length(y)))
-}
+downloader::download("https://github.com/ropensci/rgpdd/raw/master/inst/scripts/knape-de-valpine.R", "knape-de-valpine.R")
+source("knape-de-valpine.R")
+unlink("knape-de-valpine.R")
 ```
-
 
 
 ## Simulating, bootstrapping
 
-FKF package doesn't bother to define a simulation method, so we can simply define one directly from the state equations; though a C implementation might be preferred. We will ignore the multi-variate definition for simplicity here.
+FKF package doesn't bother to define a simulation method, so we can simply define one directly from the state equations. Though a C implementation would be preferrable, fitting will always be much more rate-limiting. (We will also ignore the multi-variate definition for simplicity here).
 
 ```{r}
 
-use <- function(vec, x, default){
-  if(! x %in% names(vec))
+use <- function(x, default){
+  if(is.null(x))
     default
   else
-    vec[[x]]
+    x
 }
 
 sim_fkf <- function(fit){
-  n <- fit$n
-  dt <- fit$par[["dt"]]
-  HHt <- fit$par[["HHt"]]
-  Tt <- use(fit$par, "Tt", 1)
-  GGt <- use(fit$par, "GGt", 0)
-  a0 <- fit$a0
+  n <- fit[["n"]]
+  dt <- fit[["dt"]]
+  HHt <- fit[["HHt"]]
+  Tt <- use(fit[["Tt"]], 1)
+  GGt <- use(fit[["GGt"]], 0)
+  a0 <- fit[["a0"]]
   ct <- 0
   Zt <- 1
   
@@ -145,10 +90,10 @@ sim_fkf <- function(fit){
   eta <- rnorm(n, dt, sqrt(HHt))
   epsilon <- rnorm(n, ct, sqrt(GGt))
   a[1] <- a0
-		for(t in 1:(n-1)){
-		  a[t+1] <- Tt * a[t] + eta[t]
-		  y[t] <- Zt * a[t] + epsilon[t]
-		}
+	for(t in 1:(n-1)){
+	  a[t+1] <- Tt * a[t] + eta[t]
+	  y[t] <- Zt * a[t] + epsilon[t]
+	}
 		y[n] <- Zt * a[n] + epsilon[n]
   y
 }
@@ -160,23 +105,28 @@ With fitting and simulating functions in place, defining the bootstrap is straig
 
 ```{r}
 bootstrap_ssg <- function(df, N=100){
-  ssg <- fit_ssg(df$logN)
-  ssrw <- fit_ssrw(df$logN)
-  sims <- replicate(N, sim_fkf(ssrw)) 
-  null <- sapply(sims, function(y) fit_ssrw(y)$value)
+  y <- df$logN
   
-  lr <- 2 * (ssrw$value - ssg$value)
-  null_dist <- 2 * (null - ssg$value) 
-  sum(which(null_dist < lr))/N
+  ssg <- robust_fit("ssg", y)
+  ssrw <- robust_fit("ssrw", y)
+  sims <- as.data.frame(t(replicate(N, sim_fkf(ssrw))))
+  
+  # We use a relaxed version of robust_fit, with N=3
+  sims %>% rowwise() %>% do(robust_fit("ssrw", y = as.numeric(.), N = 3)) %>% select(mloglik) -> null
+  
+  # compute p value of observed LR statistic relative to null distribution
+  lr <- 2 * (ssrw$mloglik - ssg$mloglik)
+  null_dist <- 2 * (null$mloglik - ssg$mloglik) 
+  sum(null_dist < lr)/N
 }
 ```
 
 ```{r}
 bootstrap_g <- function(df, N=100){
-  g <- fit_g(df$logN)
-  rw <- fit_rw(df$logN)
+  g <- robust_fit("g", df$logN)
+  rw <- robust_fit("rw", df$logN)
   sims <- replicate(N, sim_fkf(rw)) 
-  null <- sapply(sims, function(y) fit_rw(y)$value)
+  null <- sapply(sims, function(y) robust_fit("rw", y)$value)
   
   lr <- 2 * (rw$value - g$value)
   null_dist <- 2 * (null - g$value) 
@@ -223,7 +173,7 @@ fit_dd <- function(y, ...){
 
 
 ```{r}
-sim_di <- function(df) data.frame(y = sim_fkf(fit_ssrw(df$logN, method="L-BFGS-B", lower=c(-Inf, 0, 0))))
+sim_di <- function(df) data.frame(y = sim_fkf(robust_fit("ssrw", df$logN)))
 sim_dd <- function(df) data.frame(y = sim_fkf(fit_dd(df$logN, method="L-BFGS-B", lower=c(-Inf, 0, 0))))
 
 df %>% group_by(MainID) %>% do(sim_di(.)) -> DI
