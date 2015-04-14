@@ -240,8 +240,9 @@ a &amp;\to&amp; d_t \\
 \end{align*}\]</span></p>
 <p>So here we define these models in R code just as described above. Using the <code>FKF</code> package we define each model by an optimization routine that returns the parameters that maximize the likelihood for the given model.</p>
 <pre class="sourceCode r"><code class="sourceCode r">fit_ssg &lt;-<span class="st"> </span>function(y, 
-                    <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>)),
-                      ...){
+                    <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, 
+                             <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>)),
+                    ...){
     o &lt;-<span class="st"> </span><span class="kw">optim</span>(init,
                  <span class="dt">fn =</span>  function(par, ...)
                    -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]),
@@ -261,14 +262,16 @@ a &amp;\to&amp; d_t \\
   <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
 }
 
-fit_ssrw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt=</span><span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>)), ...){
+fit_ssrw &lt;-<span class="st"> </span>function(y, 
+                     <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt=</span><span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), 
+                              <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>)), 
+                     ...){
     o &lt;-<span class="st"> </span><span class="kw">optim</span>(init,
                  <span class="dt">fn =</span>  function(par, ...)
                    -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), <span class="dt">HHt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">2</span>])), 
                         <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">3</span>])), ...)$logLik,   
                  <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Tt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>),
-                 <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, 
-                 ...)
+                 <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, ...)
   o$par[[<span class="st">&quot;HHt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;HHt&quot;</span>]])
   o$par[[<span class="st">&quot;GGt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;GGt&quot;</span>]])
   <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
@@ -280,8 +283,7 @@ fit_g &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> <
                    -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), <span class="dt">Tt =</span> <span class="kw">matrix</span>(par[<span class="dv">2</span>]), 
                         <span class="dt">HHt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">3</span>])), ...)$logLik,   
                  <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="dv">0</span>),
-                 <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, 
-                 ...)
+                 <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, ...)
   o$par[[<span class="st">&quot;HHt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;HHt&quot;</span>]])  
   <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
 }
@@ -289,33 +291,53 @@ fit_g &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> <
 fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt=</span><span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y))), ...){
  o &lt;-<span class="st">  </span><span class="kw">optim</span>(init, 
                  <span class="dt">fn =</span>  function(par, ...)
-                   -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), <span class="dt">HHt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">2</span>])), ...)$logLik,   
-                 <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Tt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>),
-                 <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, 
-                 ...)
+                   -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), 
+                        <span class="dt">HHt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">2</span>])), ...)$logLik,   
+                 <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>),
+                 <span class="dt">Tt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>),
+                 <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, ...)
   o$par[[<span class="st">&quot;HHt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;HHt&quot;</span>]])
   <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
 }</code></pre>
 <p>Note that <code>fkf</code> will return finite (even “optimal”) log likelihoods for negative values of <code>HHt</code> and <code>GGt</code>, so we have log-transformed these parameters. Using <code>L-BFGS-B</code> with a <code>0</code> lower bound still causes <code>optim</code> to error with non-finite log-likelihoods. It isn’t clear how the authors dealt with this constraint, though <code>log</code>-transform trick has advantages and drawbacks.</p>
 <p>Once we have defined the optimization routines to fit each model, we can define a summary function that runs each model on a given data set and collects the results into a <code>data.frame</code>. This could be made a bit more general and elegant as discussed later. We will also define this function such that it will fit each model <span class="math">\(N = 50\)</span> times and take the best fit, as the authors suggest for having a better chance of finding the global optimum. (We’ll look at the variation in MLE estimates in these models as footnote as well).</p>
-<pre class="sourceCode r"><code class="sourceCode r">robust_fit &lt;-<span class="st"> </span>function(<span class="dt">model =</span> <span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;ssrw&quot;</span>, <span class="st">&quot;g&quot;</span>, <span class="st">&quot;rw&quot;</span>), y, <span class="dt">N =</span> <span class="dv">50</span>, ...){
+<pre class="sourceCode r"><code class="sourceCode r">robust_fit &lt;-<span class="st"> </span>function(<span class="dt">model =</span> <span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;ssrw&quot;</span>, <span class="st">&quot;g&quot;</span>, <span class="st">&quot;rw&quot;</span>), y, <span class="dt">N =</span> <span class="dv">50</span>, <span class="dt">all =</span> <span class="ot">FALSE</span>, ...){
   
+  ## Set the model and the mean initial condition
   m &lt;-<span class="st"> </span>switch(model,
-              <span class="dt">ssg =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_ssg, <span class="dt">init =</span><span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
-              <span class="dt">ssrw =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_ssrw, <span class="dt">init =</span><span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
-              <span class="dt">g =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_g, <span class="dt">init =</span><span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
-              <span class="dt">rw =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_rw, <span class="dt">init =</span><span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))))
+              <span class="dt">ssg =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_ssg, 
+                         <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, 
+                                 <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
+              <span class="dt">ssrw =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_ssrw, 
+                          <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), 
+                                   <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
+              <span class="dt">g =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_g, 
+                       <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
+              <span class="dt">rw =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_rw, 
+                        <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))))  
   
   
-  inits &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="dv">1</span>:N, 
-                      <span class="kw">sapply</span>(m$init, function(m) <span class="kw">rnorm</span>(N, m, <span class="kw">sqrt</span>(<span class="kw">abs</span>(m)))))  
+  ## Create the inital conditions
+  inits &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="dv">1</span>:N, <span class="kw">sapply</span>(m$init, 
+                      function(m) <span class="kw">rnorm</span>(N, m, <span class="kw">sqrt</span>(<span class="kw">abs</span>(m)))))  
+  
+  ## Attempt the requested fit or return NAs
   f &lt;-<span class="st"> </span>function(init){
-    o &lt;-<span class="st"> </span>m$<span class="kw">fit</span>(y, <span class="dt">init =</span> init[-<span class="dv">1</span>], ...)
-    <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(o$par, <span class="dt">mloglik =</span> o$value, <span class="dt">converge =</span> <span class="kw">as.numeric</span>(o$convergence), <span class="dt">n=</span>o$n, <span class="dt">a0=</span>o$a0)))
+    o &lt;-<span class="st"> </span><span class="kw">tryCatch</span>(
+      m$<span class="kw">fit</span>(y, <span class="dt">init =</span> init[-<span class="dv">1</span>]), 
+      <span class="dt">error =</span> function(e) <span class="kw">list</span>(<span class="dt">par =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="ot">NA</span>, <span class="dt">Tt=</span><span class="ot">NA</span>, <span class="dt">HHt =</span> <span class="ot">NA</span>, <span class="dt">GGt=</span> <span class="ot">NA</span>),
+                               <span class="dt">value=</span><span class="ot">NA</span>, <span class="dt">convergence=</span><span class="dv">1</span>, <span class="dt">n=</span><span class="kw">length</span>(y), <span class="dt">a0=</span>y[<span class="dv">1</span>]))
+    <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(o$par, <span class="dt">mloglik =</span> o$value, <span class="dt">converge =</span>
+                   <span class="kw">as.numeric</span>(o$convergence), <span class="dt">n=</span>o$n, <span class="dt">a0=</span>o$a0)))
   }
   
-  ## Apply the function to each initial condition, drop unconverged, and select only the best scoring run
-  inits %&gt;%<span class="st"> </span><span class="kw">group_by</span>(id) %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">f</span>(.)) %&gt;%<span class="st"> </span><span class="kw">ungroup</span>() %&gt;%<span class="st"> </span><span class="kw">filter</span>(converge ==<span class="st"> </span><span class="dv">0</span>) %&gt;%<span class="st"> </span><span class="kw">slice</span>(<span class="kw">which.min</span>(mloglik)) 
+  ## Apply the function to each initial condition, 
+  inits %&gt;%<span class="st"> </span><span class="kw">group_by</span>(id) %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">f</span>(.)) %&gt;%<span class="st"> </span><span class="kw">ungroup</span>() -&gt;<span class="st"> </span>output
+  
+  if(!all) ## drop unconverged, and select only the best scoring run
+    output %&gt;%<span class="st"> </span><span class="kw">filter</span>(converge ==<span class="st"> </span><span class="dv">0</span>) %&gt;%<span class="st"> </span><span class="kw">slice</span>(<span class="kw">which.min</span>(mloglik)) 
+  
+  output
 }</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">kalman &lt;-<span class="st"> </span>function(df, ...){
   y &lt;-<span class="st"> </span>df$logN
@@ -330,14 +352,16 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
         <span class="dt">rw   =</span> <span class="kw">cbind</span>(rw, <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">GGt =</span> <span class="dv">0</span>))
                               
 }</code></pre>
-<p>Having defined a function that takes and returns a <code>data.frame</code>, <code>dplyr::do</code> gives us a consise syntax to apply this by group (recall <code>df</code> is already <code>group_by(MainID)</code>.) As the authors note, the robust fitting procedure is computationally intensive.</p>
+<p>Having defined a function that takes and returns a <code>data.frame</code>, <code>dplyr::do</code> gives us a consise syntax to apply this by group (recall <code>df</code> is already <code>group_by(MainID)</code>.) As the authors note, the robust fitting procedure is computationally intensive, though easily parallelized.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">init_cluster</span>()</code></pre>
 <pre><code>Error: Single core computer. Parallelisation not available</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+  
 df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(.)) -&gt;<span class="st"> </span>fits
+
 )</code></pre>
-<pre><code>Error in optim(init, fn = function(par, ...) -fkf(dt = matrix(par[1]), : function cannot be evaluated at initial parameters</code></pre>
-<pre><code>Timing stopped at: 1112.298 30.918 1293.464 </code></pre>
+<pre><code>Error in rbind(deparse.level, ...): numbers of columns of arguments do not match</code></pre>
+<pre><code>Timing stopped at: 5328.669 157.296 5513.111 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stop_cluster</span>()</code></pre>
 <h2 id="side-note-on-coding-strategy">Side note on coding strategy</h2>
 <p><code>dplyr</code> makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.</p>
@@ -352,9 +376,9 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 <p>Where <code>optim_func</code> uses the name of the model and name of the dataset to apply <code>optim()</code>, rather than passing the data explicitly. We can then use <code>glance</code> and <code>tidy</code> on the resulting output, though we would need to <code>inner_join</code> the results instead of <code>cbind</code>.</p>
 <p>This is indeed an elegant, more generic approach, though passing names instead of data and tidying &amp; joining more complex aggregate data frames seems a bit less transparent to me.</p>
 <hr />
-<p>Note that BFGS is more problematic on some of the datasets:</p>
-<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method=</span><span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits_bfgs</code></pre>
-<pre><code>Error in optim(init, fn = function(par, ...) -fkf(dt = matrix(par[1]), : non-finite finite-difference value [3]</code></pre>
+<p>–Note that BFGS is more problematic on some of the datasets– by catching errors we are able to run this with BFGS algorithm as well:</p>
+<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits_bfgs</code></pre>
+<pre><code>Error in rbind(deparse.level, ...): numbers of columns of arguments do not match</code></pre>
 <p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
 <pre><code>Error in eval(expr, envir, enclos): object &#39;fits&#39; not found</code></pre>
@@ -394,41 +418,35 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 <span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;sigma2 (observation error) estimates&quot;</span>)</code></pre>
 <pre><code>Error in ggplot(sigma2_values, aes(SSG, SSRW)): object &#39;sigma2_values&#39; not found</code></pre>
-<h2 id="numerical-issues">Numerical issues</h2>
+<hr />
+<h2 id="aside-further-exploring-numerical-issues">Aside: further exploring numerical issues</h2>
 <p>Numerical optimization can be tricky, particularly in this unsupervised manner. The robust (multiple) fitting strategy goes some ways to addressing this; though ideally one would at least show that the resulting estimates change little if N is increased further.</p>
-<pre class="sourceCode r"><code class="sourceCode r">multiple_fits &lt;-<span class="st"> </span>function(<span class="dt">model =</span> <span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;ssrw&quot;</span>, <span class="st">&quot;g&quot;</span>, <span class="st">&quot;rw&quot;</span>), y, <span class="dt">N =</span> <span class="dv">50</span>, ...){
-  
-  m &lt;-<span class="st"> </span>switch(model,
-              <span class="dt">ssg =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_ssg, <span class="dt">init =</span><span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
-              <span class="dt">ssrw =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_ssrw, <span class="dt">init =</span><span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
-              <span class="dt">g =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_g, <span class="dt">init =</span><span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
-              <span class="dt">rw =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_rw, <span class="dt">init =</span><span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))))
-  
-  
-  inits &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="dv">1</span>:N, 
-                      <span class="kw">sapply</span>(m$init, function(m) <span class="kw">rnorm</span>(N, m, <span class="kw">sqrt</span>(<span class="kw">abs</span>(m)))))  
-  f &lt;-<span class="st"> </span>function(init){
-    o &lt;-<span class="st"> </span>m$<span class="kw">fit</span>(y, <span class="dt">init =</span> init[-<span class="dv">1</span>], ...)
-    <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(o$par, <span class="dt">mloglik =</span> o$value, <span class="dt">converge =</span> <span class="kw">as.numeric</span>(o$convergence), <span class="dt">n=</span>o$n, <span class="dt">a0=</span>o$a0)))
-  }
-  
-  ## Apply the function to each initial condition, drop unconverged, and select only the best scoring run
-  inits %&gt;%<span class="st"> </span><span class="kw">group_by</span>(id) %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">f</span>(.)) %&gt;%<span class="st"> </span><span class="kw">ungroup</span>() %&gt;%<span class="st"> </span><span class="kw">select</span>(-id) %&gt;%<span class="st"> </span><span class="kw">filter</span>(converge ==<span class="st"> </span><span class="dv">0</span>)
-}</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">filter</span>(MainID==<span class="dv">5</span>) %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">multiple_fits</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN)) %&gt;%<span class="st"> </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%<span class="st"> </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
+<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">filter</span>(MainID==<span class="dv">5</span>) %&gt;%
+<span class="st">  </span><span class="kw">do</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN, <span class="dt">all=</span><span class="ot">TRUE</span>)) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%
+<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
+
+<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-20-1.png" />
+</figure>
+<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(MainID==<span class="dv">1998</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">do</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN, <span class="dt">all=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%<span class="st"> </span>
+<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
+
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-21-1.png" />
 </figure>
-<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">filter</span>(MainID==<span class="dv">1998</span>) %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">multiple_fits</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN)) %&gt;%<span class="st"> </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%<span class="st"> </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
+<p>Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>Nile, <span class="dt">all=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%
+<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value) -&gt;<span class="st"> </span>all
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-22-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">multiple_fits</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>Nile) %&gt;%<span class="st"> </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%<span class="st"> </span>tidyr::<span class="kw">gather</span>(parameter, value) -&gt;<span class="st"> </span>all
-<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-23-1.png" />
 </figure>
  
 <!-- not that raw_content depends on custom generator, 
