@@ -361,8 +361,9 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 
 )</code></pre>
 <pre><code>Error in rbind(deparse.level, ...): numbers of columns of arguments do not match</code></pre>
-<pre><code>Timing stopped at: 1000.26 28.408 1215.648 </code></pre>
+<pre><code>Timing stopped at: 5782.322 188.486 5999.184 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stop_cluster</span>()</code></pre>
+<hr />
 <h2 id="side-note-on-coding-strategy">Side note on coding strategy</h2>
 <p><code>dplyr</code> makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.</p>
 <p><a href="https://github.com/dgrtwo">David Robinson</a> has done an excellent job in starting to tackle this thorny problem in a package called <code>broom</code> with much the same elegance and care that Hadley has done with <code>dplyr</code>. David argues very persuasively that it makes more sense to summarize parameter estimates from each model fit in two columns - a column for parameter names and a column for values. He has now added support for <code>optim()</code> output to the <code>broom::tidy()</code> function, which does just that.</p>
@@ -378,7 +379,6 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 <hr />
 <p>–Note that BFGS is more problematic on some of the datasets– by catching errors we are able to run this with BFGS algorithm as well:</p>
 <pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits_bfgs</code></pre>
-<pre><code>Error in rbind(deparse.level, ...): numbers of columns of arguments do not match</code></pre>
 <p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
 <pre><code>Error in eval(expr, envir, enclos): object &#39;fits&#39; not found</code></pre>
@@ -428,7 +428,7 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-20-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-19-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(MainID==<span class="dv">1998</span>) %&gt;%<span class="st"> </span>
@@ -438,7 +438,7 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-21-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-20-1.png" />
 </figure>
 <p>Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>Nile, <span class="dt">all=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
@@ -446,7 +446,7 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 <span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value) -&gt;<span class="st"> </span>all
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-22-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-21-1.png" />
 </figure>
  
 <!-- not that raw_content depends on custom generator, 

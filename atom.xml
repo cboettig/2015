@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-14T21:01:47+00:00</updated>
+  <updated>2015-04-15T02:51:19+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -257,8 +257,9 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in rbind(deparse.level, ...): numbers of columns of arguments do not match&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Timing stopped at: 1000.26 28.408 1215.648 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Timing stopped at: 5782.322 188.486 5999.184 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;stop_cluster&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
 &lt;h2 id=&quot;side-note-on-coding-strategy&quot;&gt;Side note on coding strategy&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;dplyr&lt;/code&gt; makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.&lt;/p&gt;
 &lt;p&gt;&lt;a href=&quot;https://github.com/dgrtwo&quot;&gt;David Robinson&lt;/a&gt; has done an excellent job in starting to tackle this thorny problem in a package called &lt;code&gt;broom&lt;/code&gt; with much the same elegance and care that Hadley has done with &lt;code&gt;dplyr&lt;/code&gt;. David argues very persuasively that it makes more sense to summarize parameter estimates from each model fit in two columns - a column for parameter names and a column for values. He has now added support for &lt;code&gt;optim()&lt;/code&gt; output to the &lt;code&gt;broom::tidy()&lt;/code&gt; function, which does just that.&lt;/p&gt;
@@ -274,7 +275,6 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 &lt;hr /&gt;
 &lt;p&gt;–Note that BFGS is more problematic on some of the datasets– by catching errors we are able to run this with BFGS algorithm as well:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;kalman&lt;/span&gt;(., &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits_bfgs&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in rbind(deparse.level, ...): numbers of columns of arguments do not match&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We now have a nice table of parameter estimates and likelihoods by model for each data set:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
@@ -324,7 +324,7 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-20-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-19-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(MainID==&lt;span class=&quot;dv&quot;&gt;1998&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -334,7 +334,7 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-21-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-20-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;p&gt;Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;,  &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;Nile, &lt;span class=&quot;dt&quot;&gt;all=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -342,7 +342,7 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(parameter, value) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;all
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-22-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-21-1.png&quot; /&gt;
 &lt;/figure&gt;
 </content>
  </entry>
