@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-15T02:51:19+00:00</updated>
+  <updated>2015-04-15T04:05:30+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -17,7 +17,6 @@
    <updated>2015-04-06T00:00:00+00:00</updated>
    <id>/04/06/gpdd-explore</id>
    <content type="html">&lt;h3 id=&quot;setup&quot;&gt;setup&lt;/h3&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ropensci/rgpdd&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ggplot2&amp;quot;&lt;/span&gt;)
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;tidyr&amp;quot;&lt;/span&gt;)
@@ -253,12 +252,19 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
 &lt;pre&gt;&lt;code&gt;Error: Single core computer. Parallelisation not available&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
   
-df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;kalman&lt;/span&gt;(.)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits
+df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;kalman&lt;/span&gt;(., &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits
 
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in rbind(deparse.level, ...): numbers of columns of arguments do not match&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Timing stopped at: 5782.322 188.486 5999.184 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Timing stopped at: 99.503 2.969 206.536 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;stop_cluster&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;p&gt;Unfortunately &lt;code&gt;dplyr&lt;/code&gt; does not as yet directly support parallelization. Most parallelization packages for R wrap around &lt;code&gt;apply&lt;/code&gt; functions, and thus are not trivially adapted to the &lt;code&gt;dplyr&lt;/code&gt; grammar. If many cores are available it may still be faster to devolve the &lt;code&gt;group_by()&lt;/code&gt; &lt;code&gt;data.frame&lt;/code&gt; into a list of data frames and then apply in parallel; e.g.:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# not run&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(parallel)
+&lt;span class=&quot;kw&quot;&gt;options&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;mc.cores =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;detectCores&lt;/span&gt;())
+list_data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mclapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;unique&lt;/span&gt;(df$MainID), function(id) &lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(df, &lt;span class=&quot;dt&quot;&gt;.dots =&lt;/span&gt; ~MainID==id))
+fits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mclapply&lt;/span&gt;(list_data, kalman)&lt;span class=&quot;er&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;side-note-on-coding-strategy&quot;&gt;Side note on coding strategy&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;dplyr&lt;/code&gt; makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.&lt;/p&gt;
@@ -273,8 +279,6 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 &lt;p&gt;Where &lt;code&gt;optim_func&lt;/code&gt; uses the name of the model and name of the dataset to apply &lt;code&gt;optim()&lt;/code&gt;, rather than passing the data explicitly. We can then use &lt;code&gt;glance&lt;/code&gt; and &lt;code&gt;tidy&lt;/code&gt; on the resulting output, though we would need to &lt;code&gt;inner_join&lt;/code&gt; the results instead of &lt;code&gt;cbind&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;This is indeed an elegant, more generic approach, though passing names instead of data and tidying &amp;amp; joining more complex aggregate data frames seems a bit less transparent to me.&lt;/p&gt;
 &lt;hr /&gt;
-&lt;p&gt;–Note that BFGS is more problematic on some of the datasets– by catching errors we are able to run this with BFGS algorithm as well:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;kalman&lt;/span&gt;(., &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits_bfgs&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We now have a nice table of parameter estimates and likelihoods by model for each data set:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
@@ -324,7 +328,7 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-19-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-17-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(MainID==&lt;span class=&quot;dv&quot;&gt;1998&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -334,7 +338,7 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-20-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-18-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;p&gt;Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;,  &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;Nile, &lt;span class=&quot;dt&quot;&gt;all=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -342,7 +346,7 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(parameter, value) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;all
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-21-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-19-1.png&quot; /&gt;
 &lt;/figure&gt;
 </content>
  </entry>
@@ -447,8 +451,22 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 &lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;kw&quot;&gt;docker&lt;/span&gt; run -d -p 8787:8787 -e PASSWORD=something rocker/hadleyverse&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and it will run on the server. Get the IP address of the active machine with &lt;code&gt;docker-machine ip&lt;/code&gt;, e.g. open the server in the browser (from a Ubuntu-based client)&lt;/p&gt;
 &lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;kw&quot;&gt;xdg-open&lt;/span&gt; http://&lt;span class=&quot;kw&quot;&gt;`docker-machine&lt;/span&gt; ip&lt;span class=&quot;kw&quot;&gt;`&lt;/span&gt;:8787&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;You can see a list of active machines with &lt;code&gt;docker-machine ls&lt;/code&gt; and switch between machines with &lt;code&gt;docker-machine env&lt;/code&gt; as shown above. Remove a machine as you would a container, e.g. &lt;code&gt;docker-machine rm -f server-name&lt;/code&gt;, which also shuts down the remote server so you will not be charged.&lt;/p&gt;
-&lt;p&gt;This is a bit more overhead than launching a container on an existing local or remote server instance, but not much; and easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so.&lt;/p&gt;
+&lt;p&gt;When we’re finished with the instance, we can destroy the machine so we will no longer be billed, using the same syntax as we would for a container:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;kw&quot;&gt;docker-machine&lt;/span&gt; rm -f server-name&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we have a locally installed docker instance, we may also want to unset the environmental variables set by machine:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode bash&quot;&gt;&lt;code class=&quot;sourceCode bash&quot;&gt;&lt;span class=&quot;kw&quot;&gt;unset&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;DOCKER_TLS_VERIFY&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;unset&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;DOCKER_CERT_PATH&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;unset&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;DOCKER_HOST&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can see a list of active machines with &lt;code&gt;docker-machine ls&lt;/code&gt; and switch between machines with &lt;code&gt;docker-machine env&lt;/code&gt; as shown above.&lt;/p&gt;
+&lt;p&gt;Spawning a new machine adds a bit more overhead than launching a container on an existing local or remote server instance, but not much; and is easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so. &lt;code&gt;docker-machine&lt;/code&gt; actually prints the start-up time in seconds as it brings up the machine, in case you want to compare between services.&lt;/p&gt;
+&lt;h2 id=&quot;docker-compose&quot;&gt;Docker Compose&lt;/h2&gt;
+&lt;p&gt;Docker compose is just fig, which is just a yaml config file / wrapper for (some of) the &lt;code&gt;docker run&lt;/code&gt; command-line options. As with &lt;code&gt;docker-machine&lt;/code&gt;, this simplicity is definitely a strength. Rather intuitively, &lt;code&gt;docker-machine&lt;/code&gt; respects &lt;code&gt;docker-compose&lt;/code&gt;, in that after setting the environmental variables as described above, &lt;code&gt;docker-compose up&lt;/code&gt; runs on the remote machine, just like &lt;code&gt;docker run&lt;/code&gt; does.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;docker-swarm&quot;&gt;Docker swarm&lt;/h2&gt;
+&lt;p&gt;Docker swarm is rather analogous to CoreOS; it’s essential feature being a discovery service that allows the cluster to form. Swarm is mostly easily set up using docker-machine, though in my googling most tutorials fail to mention this. The &lt;a href=&quot;https://docs.docker.com/machine/#using-docker-machine-with-docker-swarm&quot;&gt;official docker-machine docs&lt;/a&gt; are probably the best reference on this.&lt;/p&gt;
+&lt;p&gt;Docker swarm provides rather limited functionality so far. A nice &lt;a href=&quot;http://blog.docker.com/2015/02/scaling-docker-with-swarm/&quot;&gt;docker blog post on swarm&lt;/a&gt; In particular, it doesn’t yet support two key features found in CoreOS scheduling: fault-tolerant scheduling; which can move a container to another host if a machine goes down; nor does it yet support Master election; so the swarm breaks if the master goes down.&lt;/p&gt;
+&lt;p&gt;It currently provides only relatively obvious scheduling – a bin-packing algorithm if you put constraints on resources a container can use, affinities to make sure &lt;code&gt;--link&lt;/code&gt;, &lt;code&gt;--volumes-from&lt;/code&gt; and other such containers end up on the same instance. Instances can be annotated with labels that can be used as constraints, such as &lt;code&gt;storage=ssd&lt;/code&gt;, though it’s &lt;a href=&quot;https://github.com/docker/machine/issues/1002&quot;&gt;not clear&lt;/a&gt; how to add these from docker-machine. As long as swarm does not support fault-tolerant scheduling and master election though, these features are not as essential. Dynamically moving a container when a machine has failed means that no human is around to consider what resources the swarm has and where to schedule the container. But for merely adding a new container to an existing swarm, it’s not particularly hard for a human to look at the existing resources and just pick manually where to stick the container without the help of swarm’s algorithms.&lt;/p&gt;
+&lt;p&gt;Swarm doesn’t really understand docker-compose yet either, in that compose is essentially written as a single-host tool.&lt;/p&gt;
 </content>
  </entry>
  
