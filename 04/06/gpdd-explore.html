@@ -347,7 +347,7 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 
 )</code></pre>
 <pre><code>Error in rbind(deparse.level, ...): numbers of columns of arguments do not match</code></pre>
-<pre><code>Timing stopped at: 99.503 2.969 206.536 </code></pre>
+<pre><code>Timing stopped at: 4133.791 144.854 6238.734 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stop_cluster</span>()</code></pre>
 <hr />
 <p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization. Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
