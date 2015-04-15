@@ -6,8 +6,7 @@ tags:
 ---
 
 
-Docker recently released `docker-machine` to make managing multiple remote machines locally easier.
-Docker distributes binaries of `docker-machine` for most major architectures ready-to-go, potentially making it easier to get started on Windows and Mac as well. 
+Docker recently released `docker-machine` to make managing multiple remote machines locally easier. Docker distributes binaries of `docker-machine` for most major architectures ready-to-go, potentially making it easier to get started on Windows and Mac as well. 
 
 Set credentials in environmental variables so we don't have to pass them
 on the command line each time:
@@ -40,8 +39,44 @@ and it will run on the server.  Get the IP address of the active machine with `d
 xdg-open http://`docker-machine ip`:8787
 ```
 
+When we're finished with the instance, we can destroy the machine so we will no longer be billed, using the same syntax as we would for a container: 
 
-You can see a list of active machines with `docker-machine ls` and switch between machines with `docker-machine env` as shown above.  Remove a machine as you would a container, e.g. `docker-machine rm -f server-name`, which also shuts down the remote server so you will not be charged.
+```bash
+docker-machine rm -f server-name
+```
+
+If we have a locally installed docker instance, we may also want to unset the environmental variables set by machine:
+
+```bash
+unset DOCKER_TLS_VERIFY
+unset DOCKER_CERT_PATH
+unset DOCKER_HOST
+```
+
+You can see a list of active machines with `docker-machine ls` and switch between machines with `docker-machine env` as shown above. 
+
+Spawning a new machine adds a bit more overhead than launching a container on an existing local or remote server instance, but not much; and is easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so.  `docker-machine` actually prints the start-up time in seconds as it brings up the machine, in case you want to compare between services. 
 
 
-This is a bit more overhead than launching a container on an existing local or remote server instance, but not much; and easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so.  
+## Docker Compose
+
+Docker compose is just fig, which is just a yaml config file / wrapper for (some of) the `docker run` command-line options. As with `docker-machine`, this simplicity is definitely a strength.  Rather intuitively, `docker-machine` respects `docker-compose`, in that after setting the environmental variables as described above, `docker-compose up` runs on the remote machine, just like `docker run` does.  
+
+
+-------------
+
+## Docker swarm
+
+Docker swarm is rather analogous to CoreOS; it's essential feature being a discovery service that allows the cluster to form.  Swarm is mostly easily set up using docker-machine, though in my googling most tutorials fail to mention this. The [official docker-machine docs](https://docs.docker.com/machine/#using-docker-machine-with-docker-swarm) are probably the best reference on this.
+
+Docker swarm provides rather limited functionality so far. A nice [docker blog post on swarm](http://blog.docker.com/2015/02/scaling-docker-with-swarm/)  In particular, it doesn't yet support two key features found in CoreOS scheduling: fault-tolerant scheduling; which can move a container to another host if a machine goes down; nor does it yet support Master election; so the swarm breaks if the master goes down.
+
+It currently provides only relatively obvious scheduling -- a bin-packing algorithm if you put constraints on resources a container can use, affinities to make sure `--link`, `--volumes-from` and other such containers end up on the same instance.  Instances can be annotated with labels that can be used as constraints, such as `storage=ssd`, though it's [not clear](https://github.com/docker/machine/issues/1002) how to add these from docker-machine.  As long as swarm does not support fault-tolerant scheduling and master election though, these features are not as essential. Dynamically moving a container when a machine has failed means that no human is around to consider what resources the swarm has and where to schedule the container.  But for merely adding a new container to an existing swarm, it's not particularly hard for a human to look at the existing resources and just pick manually where to stick the container without the help of swarm's algorithms. 
+
+Swarm doesn't really understand docker-compose yet either, in that compose is essentially written as a single-host tool.
+
+
+
+
+
+
