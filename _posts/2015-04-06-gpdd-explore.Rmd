@@ -19,12 +19,6 @@ library("FKF")
 ```
 
 
-```{r}
-# For some tidy printing
-main <- as.tbl(gpdd_main) 
-data <- as.tbl(gpdd_data)
-```
-
 Working through `r citet("10.1111/j.1461-0248.2011.01702.x")` provides a nice way to play around with the GPDD data and Kalman filtering.  More interested in exploring the data and methods than in just replicating the results, which are important but also rather intuitive and thus I expect rather robust -- as we add (observational) uncertainty, or indeed, any additional parameters that must be ended, we should expect to have less power to pin down a particular parameter associated with density dependence, as the paper illustrates rather nicely.  
 
 
@@ -267,13 +261,13 @@ robust_fit <- function(model = c("ssg", "ssrw", "g", "rw"), y, N = 50, all = FAL
   
   
   ## Create the inital conditions
-  inits <- data.frame(id = 1:N, sapply(m$init, 
-                      function(m) rnorm(N, m, sqrt(abs(m)))))  
+  inits <- data.frame(sapply(m$init, 
+                      function(m) rnorm(N, m, sqrt(abs(m)) ) ))
   
   ## Attempt the requested fit or return NAs
   f <- function(init){
     o <- tryCatch(
-      m$fit(y, init = init[-1]), 
+      m$fit(y, init = init), 
       error = function(e) list(par = c(dt = NA, Tt=NA, HHt = NA, GGt= NA),
                                value=NA, convergence=1, n=length(y), a0=y[1]))
     data.frame(t(c(o$par, mloglik = o$value, converge =
@@ -281,7 +275,7 @@ robust_fit <- function(model = c("ssg", "ssrw", "g", "rw"), y, N = 50, all = FAL
   }
   
   ## Apply the function to each initial condition, 
-  inits %>% group_by(id) %>% do(f(.)) %>% ungroup() -> output
+  inits %>% rowwise() %>% do(f(.)) -> output
   
   if(!all) ## drop unconverged, and select only the best scoring run
     output %>% filter(converge == 0) %>% slice(which.min(mloglik)) -> output
@@ -294,15 +288,15 @@ robust_fit <- function(model = c("ssg", "ssrw", "g", "rw"), y, N = 50, all = FAL
 ```{r kalman}
 kalman <- function(df, ...){
   y <- df$logN
-  ssg <- robust_fit("ssg", y, ...) 
-  ssrw <- robust_fit("ssrw", y, ...) 
-  g <- robust_fit("g", y, ...) 
-  rw <- robust_fit("rw", y, ...)
+  ssg <- robust_fit("ssg", y, method='BFGS') 
+  ssrw <- robust_fit("ssrw", y, method='BFGS') 
+  g <- robust_fit("g", y, method='BFGS') 
+  rw <- robust_fit("rw", y, method='BFGS')
   options(stringsAsFactors=FALSE)
-  rbind(ssg  = ssg,
-        ssrw = cbind(ssrw, Tt = 1),
-        g    = cbind(g, GGt = 0), 
-        rw   = cbind(rw, Tt = 1, GGt = 0))
+  rbind(data.frame(model ="ssg", gather(ssg, parameter, value)),
+        data.frame(model = "ssrw", gather(ssrw, parameter, value)),
+        data.frame(model = "g", gather(g, parameter, value)),
+        data.frame(model = "rw", gather(rw, parameter, value)))
                               
 }
 ```
@@ -312,52 +306,33 @@ Having defined a function that takes and returns a `data.frame`, `dplyr::do` giv
 
 
 ```{r message=FALSE}
-init_cluster()
-system.time(
-  
-df %>% do(kalman(., method = "BFGS")) -> fits
 
+system.time(
+df %>% do(kalman(., method = "BFGS")) -> fits
 )
-stop_cluster()
+
 ```
 
 ---------------------------
 
-Unfortunately `dplyr` does not as yet directly support parallelization.  Most parallelization packages for R wrap around `apply` functions, and thus are not trivially adapted to the `dplyr` grammar.  If many cores are available it may still be faster to devolve the `group_by()` `data.frame` into a list of data frames and then apply in parallel; e.g.: 
+Unfortunately `dplyr` does not as yet directly support parallelization (despite the documentation of `dplyr::init_cluster()` describing parallel `dplyr::do()` use, this feature is not actually implemented yet).  Most parallelization packages for R wrap around `apply` functions, and thus are not trivially adapted to the `dplyr` grammar.  If many cores are available it may still be faster to devolve the `group_by()` `data.frame` into a list of data frames and then apply in parallel; e.g.: 
 
 
 ```r
 # not run
 library(parallel)
 options(mc.cores = detectCores())
+
+## turn grouped data.frame to a list of data.frames by MainID
 list_data <- mclapply(unique(df$MainID), function(id) filter_(df, .dots = ~MainID==id))
-fits <- mclapply(list_data, kalman))
 
+## Actually do the fitting in parallel
+fits_list <- mclapply(list_data, kalman, method="BFGS")
+
+## reshape outputs back to a data.frame
+fits <- reshape2::melt(fits_list, id=names(fits[[1]])) %>% rename(MainID = L1) %>% as_data_frame()
 ```
 
-
--------------------------------------------------------
-
-## Side note on coding strategy
-
-`dplyr` makes the data filtering steps fast, consise, and clear.  Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it's own row.  The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.  
-
-[David Robinson](https://github.com/dgrtwo) has done an excellent job in starting to tackle this thorny problem in a package called `broom` with much the same elegance and care that Hadley has done with `dplyr`.  David argues very persuasively that it makes more sense to summarize parameter estimates from each model fit in two columns - a column for parameter names and a column for values.  He has now added support for `optim()` output to the `broom::tidy()` function, which does just that.  
-
-This doesn't translate immediately to my use case here, since I need to keep track of the likelihood and convergence which are not captured by `broom::tidy()`.  As these are scalar valued outputs of the model fit, instead of a vector like parameters, they are extracted and summarized in `broom::glance()` as a single row.  An easy generalization would just be to `cbind` the outputs of `glance()` and `tidy()`; though David argues for a different approach in which we defer any manipulation of model output. Instead, he suggests an `expand.grid` over the names of the groups (models and datasets):
-
-```r
-# not run
-
-expand.grid(model = names(models),
-            dataset = names(datasets)) %>%
-    group_by(model, dataset) %>%
-    do(o = optim_func(.$model, .$dataset)) -> david
-```
-
-Where `optim_func` uses the name of the model and name of the dataset to apply `optim()`, rather than passing the data explicitly.  We can then use `glance` and `tidy` on the resulting output, though we would need to `inner_join` the results instead of `cbind`.  
-
-This is indeed an elegant, more generic approach, though passing names instead of data and tidying & joining more complex aggregate data frames seems a bit less transparent to me.
 
 ------------
 
@@ -371,51 +346,27 @@ A bit worrying that one of our simpler models sometimes have better (smaller) mi
 
 and here is our version then of Figure 1b:
 
-```{r, warning=TRUE}
+```{r}
 fits %>% 
-  group_by(MainID, model) %>% 
-  filter(converge == "0") %>%
-  select(Tt) %>% 
-  spread(model, Tt) %>% 
-  select(SSG, G) -> 
-  c_values
-ggplot(c_values, aes(SSG, G)) + geom_point() + 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>%
+  spread(model, value) %>%
+  ggplot(aes(ssg, g)) +
+  geom_point() + 
   geom_abline(intercept=0, slope=1) + labs(title="c estimates")
 ```
 
-Note the warning from dropping those points where the parameter value could not be estimated under one of the models.  Not surprisingly, it's almost always the full (SSG) model where convergence issues have arisen:
-
-
-```{r}
-fits %>% filter(converge != "0") %>% group_by(model) %>% summarize(count = n())
-```
-
 
 
 ```{r}
 fits %>% 
-  group_by(MainID, model) %>% 
-  filter(converge == "0") %>%
-  select(Tt) %>%
-  filter(model %in% c("SSG", "G")) -> tmp
-ggplot(tmp) + geom_histogram(aes(Tt), binwidth=0.1)
-```
-
-
-```{r}
-fits %>% 
-  group_by(MainID, model) %>% 
-  select(GGt) %>% 
-  spread(model, GGt) %>% 
-  select(SSG, SSRW) -> 
-  sigma2_values
-ggplot(sigma2_values, aes(SSG, SSRW)) + 
+  filter(model %in% c("ssg", "ssrw"), parameter == "GGt") %>%
+  select(model, value, MainID) %>%
+  spread(model, value) %>%
+  ggplot(aes(ssg, ssrw)) +
   geom_point() + 
-  geom_abline(intercept=0, slope=1) + 
-  labs(title="sigma2 (observation error) estimates")
+  geom_abline(intercept=0, slope=1) + labs(title="sigma^2 (obs error)")
 ```
-
-
 
 -------------
 
@@ -456,3 +407,31 @@ robust_fit("ssg",  y=Nile, all=TRUE) %>%
   tidyr::gather(parameter, value) -> all
 ggplot(all) + geom_histogram(aes(value)) + facet_wrap(~parameter, scales="free")
 ```
+
+
+
+
+-------------------------------------------------------
+
+## Side note on coding strategy
+
+`dplyr` makes the data filtering steps fast, consise, and clear.  Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it's own row.  The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.  
+
+[David Robinson](https://github.com/dgrtwo) has done an excellent job in starting to tackle this thorny problem in a package called `broom` with much the same elegance and care that Hadley has done with `dplyr`.  David argues very persuasively that it makes more sense to summarize parameter estimates from each model fit in two columns - a column for parameter names and a column for values.  He has now added support for `optim()` output to the `broom::tidy()` function, which does just that.  
+
+This doesn't translate immediately to my use case here, since I need to keep track of the likelihood and convergence which are not captured by `broom::tidy()`.  As these are scalar valued outputs of the model fit, instead of a vector like parameters, they are extracted and summarized in `broom::glance()` as a single row.  An easy generalization would just be to `cbind` the outputs of `glance()` and `tidy()`; though David argues for a different approach in which we defer any manipulation of model output. Instead, he suggests an `expand.grid` over the names of the groups (models and datasets):
+
+```r
+# not run
+
+expand.grid(model = names(models),
+            dataset = names(datasets)) %>%
+    group_by(model, dataset) %>%
+    do(o = optim_func(.$model, .$dataset)) -> david
+```
+
+Where `optim_func` uses the name of the model and name of the dataset to apply `optim()`, rather than passing the data explicitly.  We can then use `glance` and `tidy` on the resulting output, though we would need to `inner_join` the results instead of `cbind`.  
+
+This is indeed an elegant, more generic approach, though passing names instead of data and tidying & joining more complex aggregate data frames seems a bit less transparent to me.
+
+
