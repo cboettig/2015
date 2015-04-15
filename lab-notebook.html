@@ -360,7 +360,7 @@ df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">ka
 
 )</code></pre>
 <pre><code>Error in rbind(deparse.level, ...): numbers of columns of arguments do not match</code></pre>
-<pre><code>Timing stopped at: 4133.791 144.854 6238.734 </code></pre>
+<pre><code>Timing stopped at: 99.503 2.969 206.536 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stop_cluster</span>()</code></pre>
 <hr />
 <p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization. Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
@@ -575,8 +575,22 @@ fits &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, k
 <pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker</span> run -d -p 8787:8787 -e PASSWORD=something rocker/hadleyverse</code></pre>
 <p>and it will run on the server. Get the IP address of the active machine with <code>docker-machine ip</code>, e.g. open the server in the browser (from a Ubuntu-based client)</p>
 <pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">xdg-open</span> http://<span class="kw">`docker-machine</span> ip<span class="kw">`</span>:8787</code></pre>
-<p>You can see a list of active machines with <code>docker-machine ls</code> and switch between machines with <code>docker-machine env</code> as shown above. Remove a machine as you would a container, e.g. <code>docker-machine rm -f server-name</code>, which also shuts down the remote server so you will not be charged.</p>
-<p>This is a bit more overhead than launching a container on an existing local or remote server instance, but not much; and easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so.</p>
+<p>When we’re finished with the instance, we can destroy the machine so we will no longer be billed, using the same syntax as we would for a container:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker-machine</span> rm -f server-name</code></pre>
+<p>If we have a locally installed docker instance, we may also want to unset the environmental variables set by machine:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">unset</span> <span class="ot">DOCKER_TLS_VERIFY</span>
+<span class="kw">unset</span> <span class="ot">DOCKER_CERT_PATH</span>
+<span class="kw">unset</span> <span class="ot">DOCKER_HOST</span></code></pre>
+<p>You can see a list of active machines with <code>docker-machine ls</code> and switch between machines with <code>docker-machine env</code> as shown above.</p>
+<p>Spawning a new machine adds a bit more overhead than launching a container on an existing local or remote server instance, but not much; and is easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so. <code>docker-machine</code> actually prints the start-up time in seconds as it brings up the machine, in case you want to compare between services.</p>
+<h2 id="docker-compose">Docker Compose</h2>
+<p>Docker compose is just fig, which is just a yaml config file / wrapper for (some of) the <code>docker run</code> command-line options. As with <code>docker-machine</code>, this simplicity is definitely a strength. Rather intuitively, <code>docker-machine</code> respects <code>docker-compose</code>, in that after setting the environmental variables as described above, <code>docker-compose up</code> runs on the remote machine, just like <code>docker run</code> does.</p>
+<hr />
+<h2 id="docker-swarm">Docker swarm</h2>
+<p>Docker swarm is rather analogous to CoreOS; it’s essential feature being a discovery service that allows the cluster to form. Swarm is mostly easily set up using docker-machine, though in my googling most tutorials fail to mention this. The <a href="https://docs.docker.com/machine/#using-docker-machine-with-docker-swarm">official docker-machine docs</a> are probably the best reference on this.</p>
+<p>Docker swarm provides rather limited functionality so far. A nice <a href="http://blog.docker.com/2015/02/scaling-docker-with-swarm/">docker blog post on swarm</a> In particular, it doesn’t yet support two key features found in CoreOS scheduling: fault-tolerant scheduling; which can move a container to another host if a machine goes down; nor does it yet support Master election; so the swarm breaks if the master goes down.</p>
+<p>It currently provides only relatively obvious scheduling – a bin-packing algorithm if you put constraints on resources a container can use, affinities to make sure <code>--link</code>, <code>--volumes-from</code> and other such containers end up on the same instance. Instances can be annotated with labels that can be used as constraints, such as <code>storage=ssd</code>, though it’s <a href="https://github.com/docker/machine/issues/1002">not clear</a> how to add these from docker-machine. As long as swarm does not support fault-tolerant scheduling and master election though, these features are not as essential. Dynamically moving a container when a machine has failed means that no human is around to consider what resources the swarm has and where to schedule the container. But for merely adding a new container to an existing swarm, it’s not particularly hard for a human to look at the existing resources and just pick manually where to stick the container without the help of swarm’s algorithms.</p>
+<p>Swarm doesn’t really understand docker-compose yet either, in that compose is essentially written as a single-host tool.</p>
  
 <!-- not that raw_content depends on custom generator, 
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
