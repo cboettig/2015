@@ -10,10 +10,6 @@ tags:
 ### setup 
 
 ```{r cache=FALSE}
-devtools::install_github("ropensci/rgpdd")
-```
-
-```{r cache=FALSE}
 library("ggplot2")
 library("dplyr")
 library("tidyr")
@@ -319,11 +315,26 @@ Having defined a function that takes and returns a `data.frame`, `dplyr::do` giv
 init_cluster()
 system.time(
   
-df %>% do(kalman(.)) -> fits
+df %>% do(kalman(., method = "BFGS")) -> fits
 
 )
 stop_cluster()
 ```
+
+---------------------------
+
+Unfortunately `dplyr` does not as yet directly support parallelization.  Most parallelization packages for R wrap around `apply` functions, and thus are not trivially adapted to the `dplyr` grammar.  If many cores are available it may still be faster to devolve the `group_by()` `data.frame` into a list of data frames and then apply in parallel; e.g.: 
+
+
+```r
+# not run
+library(parallel)
+options(mc.cores = detectCores())
+list_data <- mclapply(unique(df$MainID), function(id) filter_(df, .dots = ~MainID==id))
+fits <- mclapply(list_data, kalman))
+
+```
+
 
 -------------------------------------------------------
 
@@ -349,13 +360,6 @@ Where `optim_func` uses the name of the model and name of the dataset to apply `
 This is indeed an elegant, more generic approach, though passing names instead of data and tidying & joining more complex aggregate data frames seems a bit less transparent to me.
 
 ------------
-
---Note that BFGS is more problematic on some of the datasets-- by catching errors we are able to run this with BFGS algorithm as well: 
-
-```{r, error=TRUE}
-df %>% do(kalman(., method = "BFGS")) -> fits_bfgs
-```
-
 
 We now have a nice table of parameter estimates and likelihoods by model for each data set:
 
