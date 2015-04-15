@@ -17,6 +17,7 @@ library("tidyr")
 library("knitcitations")
 library("rgpdd")
 library("FKF")
+knitr::opts_chunk$set(cache=FALSE)
 ```
 
 
@@ -148,61 +149,55 @@ df %>% group_by(MainID) %>% do(bootstrap_g(.)) -> ssg_p_values
 ```
 
 
-The study also creates simulated datasets based on the real data but explicitly making the assumption of either density independence (DI) or density dependence (DD).  For each dataset, a density-independent simulated dataset is created by simulating under the SSRW model that was fit. The density-dependent model is created by explicitly fixing the density dependent parameter ($c$ in the language of the paper, `Tt` in FKF notation) to 0.8 and estimating the other parameters of this modified SSG model:
+The study also creates simulated datasets based on the real data but explicitly making the assumption of either density independence (DI) or density dependence (DD).  For each dataset, a density-independent simulated dataset is created by simulating under the SSRW model that was fit. The density-dependent model is created by explicitly fixing the density dependent parameter ($c$ in the language of the paper, `Tt` in FKF notation) to 0.8 and estimating the other parameters of this modified SSG model.  We can define this model analgously to the others, only this time fixing `Tt = 0.8`:
 
 
 
 ```{r}
-fit_dd <- function(y, ...){
+fit_dd <- function(y, 
+                   init = c(dt = mean(y), HHt = log(var(y)/2), GGt = log(var(y)/2)),
+                   ...){
     
-    o <- optim(c(dt = mean(y), HHt = log(var(y)/2), GGt = log(var(y)/2)),
+    o <- optim(init,
                  fn =  function(par, ...)
                    -fkf(dt = matrix(par[1]), HHt = matrix(exp(par[2])), 
                         GGt = matrix(exp(par[3])), ...)$logLik,
                  Tt = matrix(0.8), a0 = y[1], P0 = matrix(10), 
                  ct = matrix(0), Zt = matrix(1), yt = rbind(y), 
                  check.input = FALSE, ...)
-    
-  c(list(par = c(dt=o$par[[1]], Tt = 0.8, HHt = exp(o$par[[2]]), GGt = exp(o$par[[3]])),
-         value = o$value),
-  list(a0 = y[1], n = length(y)))
+  o$par[["HHt"]] <- exp(o$par[["HHt"]])
+  o$par[["GGt"]] <- exp(o$par[["GGt"]])
+  c(o, list(a0 = y[1], n = length(y)))
+   
 }
 
 ```
 
 
+The script adds a method for this to `robust_fit()` as well; though given the computational cost it is not clear if a robust fit is actually used in generating the data.
+
 
 ```{r}
-sim_di <- function(df) data.frame(y = sim_fkf(robust_fit("ssrw", df$logN)))
-sim_dd <- function(df) data.frame(y = sim_fkf(fit_dd(df$logN, method="L-BFGS-B", lower=c(-Inf, 0, 0))))
-
+sim_di <- function(df) data.frame(logN = sim_fkf(robust_fit("ssrw", df$logN, N=3)))
 df %>% group_by(MainID) %>% do(sim_di(.)) -> DI
-df %>% group_by(MainID) %>% do(sim_dd(.)) -> DD
-
 ```
-
-
-
-
-
------
-
-## debugging
-
-Do any datasets fail to have finite log likelihoods for the initial values?
 
 ```{r}
-test_inits <- function(y){  
-    par <- c(dt = mean(y), Tt = 1, HHt = var(y)/2, GGt = var(y)/2)
-    o <- try(fkf(dt = matrix(par[1]), HHt = matrix(par[2]), GGt = matrix(par[3]),
-         Tt = matrix(0.8), a0 = y[1], P0 = matrix(10), 
-         ct = matrix(0), Zt = matrix(1), yt = rbind(y), 
-         check.input = FALSE))
-    data.frame(c(par, list(loglik = o$logLik)))
-}
-
-df %>% group_by(MainID) %>% do(test_inits(.$logN)) -> test
-test
+sim_dd <- function(df) data.frame(logN = sim_fkf(robust_fit("dd", df$logN, N=3)))
+df %>% group_by(MainID) %>% do(sim_dd(.)) -> DD
 ```
+
+
+With a little patience, we can then use these two collections of datasets just as before:
+
+```{r}
+DD %>% do(kalman(.)) -> DD_fits
+```
+
+```{r}
+DI %>% do(kalman(.)) -> DI_fits
+```
+
+
 
 
