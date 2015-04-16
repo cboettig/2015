@@ -288,10 +288,10 @@ robust_fit <- function(model = c("ssg", "ssrw", "g", "rw"), y, N = 50, all = FAL
 ```{r kalman}
 kalman <- function(df, ...){
   y <- df$logN
-  ssg <- robust_fit("ssg", y, method='BFGS') 
-  ssrw <- robust_fit("ssrw", y, method='BFGS') 
-  g <- robust_fit("g", y, method='BFGS') 
-  rw <- robust_fit("rw", y, method='BFGS')
+  ssg <- robust_fit("ssg", y, ...) 
+  ssrw <- robust_fit("ssrw", y, ...) 
+  g <- robust_fit("g", y, ...) 
+  rw <- robust_fit("rw", y, ...)
   options(stringsAsFactors=FALSE)
   rbind(data.frame(model ="ssg", gather(ssg, parameter, value)),
         data.frame(model = "ssrw", gather(ssrw, parameter, value)),
@@ -306,11 +306,9 @@ Having defined a function that takes and returns a `data.frame`, `dplyr::do` giv
 
 
 ```{r message=FALSE}
-
 system.time(
 df %>% do(kalman(., method = "BFGS")) -> fits
 )
-
 ```
 
 ---------------------------
@@ -330,7 +328,7 @@ list_data <- mclapply(unique(df$MainID), function(id) filter_(df, .dots = ~MainI
 fits_list <- mclapply(list_data, kalman, method="BFGS")
 
 ## reshape outputs back to a data.frame
-fits <- reshape2::melt(fits_list, id=names(fits[[1]])) %>% rename(MainID = L1) %>% as_data_frame()
+fits <- reshape2::melt(fits_list, id=names(fits_list[[1]])) %>% rename(MainID = L1) %>% as_data_frame()
 ```
 
 
@@ -430,8 +428,12 @@ expand.grid(model = names(models),
     do(o = optim_func(.$model, .$dataset)) -> david
 ```
 
-Where `optim_func` uses the name of the model and name of the dataset to apply `optim()`, rather than passing the data explicitly.  We can then use `glance` and `tidy` on the resulting output, though we would need to `inner_join` the results instead of `cbind`.  
+Where `optim_func` uses the name of the model and name of the dataset to apply `optim()`, rather than passing the data explicitly.  We can then use `glance` and `tidy` on the resulting output, though we would need to `inner_join` the results instead of `cbind`.  This is indeed an elegant, more generic approach.  Still, neither of us much like the need to defer the tidy step to the complex object at the end.
 
-This is indeed an elegant, more generic approach, though passing names instead of data and tidying & joining more complex aggregate data frames seems a bit less transparent to me.
+Here, I have ended up adopting the column-wise parameter, value, approach, though for a reason not just related to elegance.  My `robust_fit()` error-handling seems to end up very occassionally with some kind of race conditions[^1] that cause some of the sub-models to report an NA for one of their fixed parameters, instead of ommitting the parameter entirely.  When adding the fixed value back in to keep rows of a uniform length, this meant I might get some rows with a duplicated column, such as a `GGt` column with value `NA` and another, appended column with the fixed value `0` in the `g` or `rw` models.  The columnwise structure avoids this and prevents the code execution from failing.  
+
+[^1]: I could only ever reproduce this by re-running large batch jobs -- isolating the examples where error occurred and re-running had no effect, hence my worry about some race conditions between the error reporting.  However, the stochastic initial conditions might also contribute to this, as I didn't standardize seed over the parallelization; though in priciple any unusual initial conditions should only generate fit failures that are already handled in the error handling.  
+
+
 
 
