@@ -17,7 +17,6 @@ library("tidyr")
 library("knitcitations")
 library("rgpdd")
 library("FKF")
-knitr::opts_chunk$set(cache=FALSE)
 ```
 
 
@@ -105,15 +104,15 @@ With fitting and simulating functions in place, defining the bootstrap is straig
 
 
 ```{r}
-bootstrap_ssg <- function(df, N=100){
+bootstrap <- function(df, null_model = "ssrw", test_model = "ssg", N=100){
   y <- df$logN
   
-  ssg <- robust_fit("ssg", y)
-  ssrw <- robust_fit("ssrw", y)
+  ssg <- robust_fit(test_model, y)
+  ssrw <- robust_fit(null_model, y)
   sims <- as.data.frame(t(replicate(N, sim_fkf(ssrw))))
   
   # We use a relaxed version of robust_fit, with N=3
-  sims %>% rowwise() %>% do(robust_fit("ssrw", y = as.numeric(.), N = 3)) %>% select(mloglik) -> null
+  sims %>% rowwise() %>% do(robust_fit(null_model, y = as.numeric(.), N = 3)) %>% select(mloglik) -> null
   
   # compute p value of observed LR statistic relative to null distribution
   lr <- 2 * (ssrw$mloglik - ssg$mloglik)
@@ -122,31 +121,82 @@ bootstrap_ssg <- function(df, N=100){
 }
 ```
 
+
+
+With these functions defined, we can perform the actual analysis.  
+
+We may test on a subset of the data first:
+
+```{r }
+#not run
+some <- sample(unique(df$MainID), 10)
+df %>% filter(MainID %in% some) -> df
+```
+
+```{r }
+system.time(
+  df %>% group_by(MainID) %>% do(bootstrap(., "ssrw", "ssg")) -> ssg_p_values
+)
+```
+
+```{r }
+system.time(
+  df %>% group_by(MainID) %>% do(bootstrap(., "rw", "g")) -> g_p_values
+  )
+```
+
+
+------
+
+Or working around the current lack of parallelization in `dplyr::do()` for now:
+
 ```{r}
-bootstrap_g <- function(df, N=100){
-  g <- robust_fit("g", df$logN)
-  rw <- robust_fit("rw", df$logN)
-  sims <- replicate(N, sim_fkf(rw)) 
-  null <- sapply(sims, function(y) robust_fit("rw", y)$value)
+do_parallel <- function(df, f, ...){
+    
+  # supports only one group for now
   
-  lr <- 2 * (rw$value - g$value)
-  null_dist <- 2 * (null - g$value) 
-  sum(which(null_dist < lr))/N
+  require("parallel")
+  require("lazyeval")
+  require("reshape2")
+  options(mc.cores = detectCores())
+  
+  grps <- groups(df)
+  ids <- sapply(grps, function(i) unique(df[[as.character(i)]]))
+  names(ids) <- as.character(ids)
+  ## turn grouped data.frame to a list of data.frames by MainID
+  list_data <- lapply(ids, 
+                      function(id){ 
+                        .dots <- list(interp(~y == x, .values = list(y = grps[[1]], x = id)))
+                        filter_(df, .dots = .dots)
+                      })
+  
+  ## Actually do the fitting in parallel
+  list_out <- mclapply(list_data, f, ...)
+
+  ## reshape outputs back to a data.frame
+  melt(list_out, id=names(list_out[[1]])) %>% 
+    rename_(.dots = setNames(list("L1"), as.character(grps[[1]])) ) %>%
+              as_data_frame()
 }
-
   
 ```
 
-With these functions defined, we can perform the actual analysis:
+
 
 ```{r}
-df %>% group_by(MainID) %>% do(bootstrap_ssg(.)) -> ssg_p_values
+system.time(
+  df %>% group_by(MainID) %>% do_parallel(bootstrap, "ssrw", "ssg") -> ssg_p_values
+  )
 ```
 
 
 ```{r}
-df %>% group_by(MainID) %>% do(bootstrap_g(.)) -> ssg_p_values
+system.time(
+  df %>% group_by(MainID) %>% do_parallel(bootstrap, "rw", "g") -> g_p_values
+  )
 ```
+
+
 
 
 The study also creates simulated datasets based on the real data but explicitly making the assumption of either density independence (DI) or density dependence (DD).  For each dataset, a density-independent simulated dataset is created by simulating under the SSRW model that was fit. The density-dependent model is created by explicitly fixing the density dependent parameter ($c$ in the language of the paper, `Tt` in FKF notation) to 0.8 and estimating the other parameters of this modified SSG model.  We can define this model analgously to the others, only this time fixing `Tt = 0.8`:
@@ -178,26 +228,50 @@ The script adds a method for this to `robust_fit()` as well; though given the co
 
 
 ```{r}
-sim_di <- function(df) data.frame(logN = sim_fkf(robust_fit("ssrw", df$logN, N=3)))
-df %>% group_by(MainID) %>% do(sim_di(.)) -> DI
+sim_di <- function(df) data.frame(logN = sim_fkf(robust_fit("ssrw", df$logN, N = 3)))
+sim_dd <- function(df) data.frame(logN = sim_fkf(robust_fit("dd", df$logN, N = 3)))
 ```
 
 ```{r}
-sim_dd <- function(df) data.frame(logN = sim_fkf(robust_fit("dd", df$logN, N=3)))
-df %>% group_by(MainID) %>% do(sim_dd(.)) -> DD
-```
-
-
-With a little patience, we can then use these two collections of datasets just as before:
-
-```{r}
-DD %>% do(kalman(.)) -> DD_fits
+system.time(
+df %>% group_by(MainID) %>% do_parallel(sim_di) -> DI
+)
 ```
 
 ```{r}
-DI %>% do(kalman(.)) -> DI_fits
+system.time(
+  df %>% group_by(MainID) %>% do_parallel(sim_dd) -> DD
+)
 ```
 
+
+We can then use these two collections of datasets just as before:
+
+```{r}
+system.time(
+  DD %>% group_by(MainID) %>% do_parallel(kalman) -> DD_fits
+)
+```
+
+```{r}
+system.time(
+  DI %>% group_by(MainID) %>% do_parallel(kalman) -> DI_fits
+)
+```
+
+
+
+```{r}
+system.time(
+ DD %>% group_by(MainID) %>% do_parallel(bootstrap, "ssrw", "ssg") -> dd_ssg_p_values
+)
+```
+
+```{r}
+system.time(
+  DI %>% group_by(MainID) %>% do_parallel(bootstrap, "rw", "g") -> di_g_p_values
+)
+```
 
 
 
