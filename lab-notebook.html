@@ -127,9 +127,6 @@
 <span class="kw">library</span>(<span class="st">&quot;knitcitations&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;rgpdd&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;FKF&quot;</span>)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># For some tidy printing</span>
-main &lt;-<span class="st"> </span><span class="kw">as.tbl</span>(gpdd_main) 
-data &lt;-<span class="st"> </span><span class="kw">as.tbl</span>(gpdd_data)</code></pre>
 <p>Working through Knape and de Valpine (2011) provides a nice way to play around with the GPDD data and Kalman filtering. More interested in exploring the data and methods than in just replicating the results, which are important but also rather intuitive and thus I expect rather robust – as we add (observational) uncertainty, or indeed, any additional parameters that must be ended, we should expect to have less power to pin down a particular parameter associated with density dependence, as the paper illustrates rather nicely.</p>
 <hr />
 <h2 id="data-preparation">Data preparation</h2>
@@ -317,13 +314,13 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
   
   
   ## Create the inital conditions
-  inits &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="dv">1</span>:N, <span class="kw">sapply</span>(m$init, 
-                      function(m) <span class="kw">rnorm</span>(N, m, <span class="kw">sqrt</span>(<span class="kw">abs</span>(m)))))  
+  inits &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">sapply</span>(m$init, 
+                      function(m) <span class="kw">rnorm</span>(N, m, <span class="kw">sqrt</span>(<span class="kw">abs</span>(m)) ) ))
   
   ## Attempt the requested fit or return NAs
   f &lt;-<span class="st"> </span>function(init){
     o &lt;-<span class="st"> </span><span class="kw">tryCatch</span>(
-      m$<span class="kw">fit</span>(y, <span class="dt">init =</span> init[-<span class="dv">1</span>]), 
+      m$<span class="kw">fit</span>(y, <span class="dt">init =</span> init), 
       <span class="dt">error =</span> function(e) <span class="kw">list</span>(<span class="dt">par =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="ot">NA</span>, <span class="dt">Tt=</span><span class="ot">NA</span>, <span class="dt">HHt =</span> <span class="ot">NA</span>, <span class="dt">GGt=</span> <span class="ot">NA</span>),
                                <span class="dt">value=</span><span class="ot">NA</span>, <span class="dt">convergence=</span><span class="dv">1</span>, <span class="dt">n=</span><span class="kw">length</span>(y), <span class="dt">a0=</span>y[<span class="dv">1</span>]))
     <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(o$par, <span class="dt">mloglik =</span> o$value, <span class="dt">converge =</span>
@@ -331,7 +328,7 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
   }
   
   ## Apply the function to each initial condition, 
-  inits %&gt;%<span class="st"> </span><span class="kw">group_by</span>(id) %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">f</span>(.)) %&gt;%<span class="st"> </span><span class="kw">ungroup</span>() -&gt;<span class="st"> </span>output
+  inits %&gt;%<span class="st"> </span><span class="kw">rowwise</span>() %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">f</span>(.)) -&gt;<span class="st"> </span>output
   
   if(!all) ## drop unconverged, and select only the best scoring run
     output %&gt;%<span class="st"> </span><span class="kw">filter</span>(converge ==<span class="st"> </span><span class="dv">0</span>) %&gt;%<span class="st"> </span><span class="kw">slice</span>(<span class="kw">which.min</span>(mloglik)) -&gt;<span class="st"> </span>output
@@ -340,35 +337,107 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 }</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">kalman &lt;-<span class="st"> </span>function(df, ...){
   y &lt;-<span class="st"> </span>df$logN
-  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, ...) 
-  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, ...) 
-  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, ...) 
-  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, ...)
+  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
+  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
+  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
+  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>)
   <span class="kw">options</span>(<span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>)
-  <span class="kw">rbind</span>(<span class="dt">ssg  =</span> ssg,
-        <span class="dt">ssrw =</span> <span class="kw">cbind</span>(ssrw, <span class="dt">Tt =</span> <span class="dv">1</span>),
-        <span class="dt">g    =</span> <span class="kw">cbind</span>(g, <span class="dt">GGt =</span> <span class="dv">0</span>), 
-        <span class="dt">rw   =</span> <span class="kw">cbind</span>(rw, <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">GGt =</span> <span class="dv">0</span>))
+  <span class="kw">rbind</span>(<span class="kw">data.frame</span>(<span class="dt">model =</span><span class="st">&quot;ssg&quot;</span>, <span class="kw">gather</span>(ssg, parameter, value)),
+        <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;ssrw&quot;</span>, <span class="kw">gather</span>(ssrw, parameter, value)),
+        <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;g&quot;</span>, <span class="kw">gather</span>(g, parameter, value)),
+        <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;rw&quot;</span>, <span class="kw">gather</span>(rw, parameter, value)))
                               
 }</code></pre>
 <p>Having defined a function that takes and returns a <code>data.frame</code>, <code>dplyr::do</code> gives us a consise syntax to apply this by group (recall <code>df</code> is already <code>group_by(MainID)</code>.) As the authors note, the robust fitting procedure is computationally intensive, though easily parallelized.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">init_cluster</span>()</code></pre>
-<pre><code>Error: Single core computer. Parallelisation not available</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
-  
 df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits
-
 )</code></pre>
-<pre><code>Error in rbind(deparse.level, ...): numbers of columns of arguments do not match</code></pre>
-<pre><code>Timing stopped at: 99.503 2.969 206.536 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stop_cluster</span>()</code></pre>
+<pre><code>    user   system  elapsed 
+6453.943  205.823 6699.553 </code></pre>
 <hr />
-<p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization. Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
+<p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization (despite the documentation of <code>dplyr::init_cluster()</code> describing parallel <code>dplyr::do()</code> use, this feature is not actually implemented yet). Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># not run</span>
 <span class="kw">library</span>(parallel)
 <span class="kw">options</span>(<span class="dt">mc.cores =</span> <span class="kw">detectCores</span>())
+
+## turn grouped data.frame to a list of data.frames by MainID
 list_data &lt;-<span class="st"> </span><span class="kw">mclapply</span>(<span class="kw">unique</span>(df$MainID), function(id) <span class="kw">filter_</span>(df, <span class="dt">.dots =</span> ~MainID==id))
-fits &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, kalman)<span class="er">)</span></code></pre>
+
+## Actually do the fitting in parallel
+fits_list &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, kalman, <span class="dt">method=</span><span class="st">&quot;BFGS&quot;</span>)
+
+## reshape outputs back to a data.frame
+fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
+<hr />
+<p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
+<pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
+<pre><code>Source: local data frame [45,736 x 4]
+Groups: MainID
+
+   MainID model parameter         value
+1       3   ssg        dt  3.468316e+00
+2       3   ssg        Tt -1.338692e-01
+3       3   ssg       HHt  6.386584e-02
+4       3   ssg       GGt  1.766446e-01
+5       3   ssg   mloglik  2.050357e+01
+6       3   ssg  converge  0.000000e+00
+7       3   ssg         n  2.700000e+01
+8       3   ssg        a0  2.484907e+00
+9       3  ssrw        dt  7.432519e-04
+10      3  ssrw       HHt  1.973089e-09
+..    ...   ...       ...           ...</code></pre>
+<p>A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.</p>
+<p>and here is our version then of Figure 1b:</p>
+<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(model, value) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssg, g)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;c estimates&quot;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-12-1.png" />
+</figure>
+<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;ssrw&quot;</span>), parameter ==<span class="st"> &quot;GGt&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(model, value) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssg, ssrw)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;sigma^2 (obs error)&quot;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-13-1.png" />
+</figure>
+<hr />
+<h2 id="aside-further-exploring-numerical-issues">Aside: further exploring numerical issues</h2>
+<p>Numerical optimization can be tricky, particularly in this unsupervised manner. The robust (multiple) fitting strategy goes some ways to addressing this; though ideally one would at least show that the resulting estimates change little if N is increased further.</p>
+<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">filter</span>(MainID==<span class="dv">5</span>) %&gt;%
+<span class="st">  </span><span class="kw">do</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN, <span class="dt">all=</span><span class="ot">TRUE</span>)) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%
+<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
+
+<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png" />
+</figure>
+<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(MainID==<span class="dv">1998</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">do</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN, <span class="dt">all=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%<span class="st"> </span>
+<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
+
+<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png" />
+</figure>
+<p>Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>Nile, <span class="dt">all=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%
+<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value) -&gt;<span class="st"> </span>all
+<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-16-1.png" />
+</figure>
 <hr />
 <h2 id="side-note-on-coding-strategy">Side note on coding strategy</h2>
 <p><code>dplyr</code> makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.</p>
@@ -382,76 +451,6 @@ fits &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, k
 <span class="st">    </span><span class="kw">do</span>(<span class="dt">o =</span> <span class="kw">optim_func</span>(.$model, .$dataset)) -&gt;<span class="st"> </span>david</code></pre>
 <p>Where <code>optim_func</code> uses the name of the model and name of the dataset to apply <code>optim()</code>, rather than passing the data explicitly. We can then use <code>glance</code> and <code>tidy</code> on the resulting output, though we would need to <code>inner_join</code> the results instead of <code>cbind</code>.</p>
 <p>This is indeed an elegant, more generic approach, though passing names instead of data and tidying &amp; joining more complex aggregate data frames seems a bit less transparent to me.</p>
-<hr />
-<p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
-<pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;fits&#39; not found</code></pre>
-<p>A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.</p>
-<p>and here is our version then of Figure 1b:</p>
-<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(MainID, model) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(converge ==<span class="st"> &quot;0&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(Tt) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">spread</span>(model, Tt) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(SSG, G) -&gt;<span class="st"> </span>
-<span class="st">  </span>c_values</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;fits&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(c_values, <span class="kw">aes</span>(SSG, G)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;c estimates&quot;</span>)</code></pre>
-<pre><code>Error in ggplot(c_values, aes(SSG, G)): object &#39;c_values&#39; not found</code></pre>
-<p>Note the warning from dropping those points where the parameter value could not be estimated under one of the models. Not surprisingly, it’s almost always the full (SSG) model where convergence issues have arisen:</p>
-<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span><span class="kw">filter</span>(converge !=<span class="st"> &quot;0&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">group_by</span>(model) %&gt;%<span class="st"> </span><span class="kw">summarize</span>(<span class="dt">count =</span> <span class="kw">n</span>())</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;fits&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(MainID, model) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(converge ==<span class="st"> &quot;0&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(Tt) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;SSG&quot;</span>, <span class="st">&quot;G&quot;</span>)) -&gt;<span class="st"> </span>tmp</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;fits&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(tmp) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(Tt), <span class="dt">binwidth=</span><span class="fl">0.1</span>)</code></pre>
-<pre><code>Error in ggplot(tmp): object &#39;tmp&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(MainID, model) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(GGt) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">spread</span>(model, GGt) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(SSG, SSRW) -&gt;<span class="st"> </span>
-<span class="st">  </span>sigma2_values</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;fits&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sigma2_values, <span class="kw">aes</span>(SSG, SSRW)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;sigma2 (observation error) estimates&quot;</span>)</code></pre>
-<pre><code>Error in ggplot(sigma2_values, aes(SSG, SSRW)): object &#39;sigma2_values&#39; not found</code></pre>
-<hr />
-<h2 id="aside-further-exploring-numerical-issues">Aside: further exploring numerical issues</h2>
-<p>Numerical optimization can be tricky, particularly in this unsupervised manner. The robust (multiple) fitting strategy goes some ways to addressing this; though ideally one would at least show that the resulting estimates change little if N is increased further.</p>
-<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">filter</span>(MainID==<span class="dv">5</span>) %&gt;%
-<span class="st">  </span><span class="kw">do</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN, <span class="dt">all=</span><span class="ot">TRUE</span>)) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%
-<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
-
-<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-17-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(MainID==<span class="dv">1998</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">do</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN, <span class="dt">all=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%<span class="st"> </span>
-<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
-
-<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-18-1.png" />
-</figure>
-<p>Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>Nile, <span class="dt">all=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%
-<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value) -&gt;<span class="st"> </span>all
-<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-19-1.png" />
-</figure>
  
 <!-- not that raw_content depends on custom generator, 
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 

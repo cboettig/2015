@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-15T09:39:59+00:00</updated>
+  <updated>2015-04-16T05:46:40+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -23,9 +23,6 @@
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;knitcitations&amp;quot;&lt;/span&gt;)
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rgpdd&amp;quot;&lt;/span&gt;)
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;FKF&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# For some tidy printing&lt;/span&gt;
-main &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.tbl&lt;/span&gt;(gpdd_main) 
-data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.tbl&lt;/span&gt;(gpdd_data)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Working through Knape and de Valpine (2011) provides a nice way to play around with the GPDD data and Kalman filtering. More interested in exploring the data and methods than in just replicating the results, which are important but also rather intuitive and thus I expect rather robust – as we add (observational) uncertainty, or indeed, any additional parameters that must be ended, we should expect to have less power to pin down a particular parameter associated with density dependence, as the paper illustrates rather nicely.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;data-preparation&quot;&gt;Data preparation&lt;/h2&gt;
@@ -213,13 +210,13 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
   
   
   ## Create the inital conditions
-  inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;id =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(m$init, 
-                      function(m) &lt;span class=&quot;kw&quot;&gt;rnorm&lt;/span&gt;(N, m, &lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;abs&lt;/span&gt;(m)))))  
+  inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(m$init, 
+                      function(m) &lt;span class=&quot;kw&quot;&gt;rnorm&lt;/span&gt;(N, m, &lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;abs&lt;/span&gt;(m)) ) ))
   
   ## Attempt the requested fit or return NAs
   f &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(init){
     o &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;tryCatch&lt;/span&gt;(
-      m$&lt;span class=&quot;kw&quot;&gt;fit&lt;/span&gt;(y, &lt;span class=&quot;dt&quot;&gt;init =&lt;/span&gt; init[-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]), 
+      m$&lt;span class=&quot;kw&quot;&gt;fit&lt;/span&gt;(y, &lt;span class=&quot;dt&quot;&gt;init =&lt;/span&gt; init), 
       &lt;span class=&quot;dt&quot;&gt;error =&lt;/span&gt; function(e) &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;par =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dt =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;NA&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;Tt=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;NA&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;HHt =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;NA&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;GGt=&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;NA&lt;/span&gt;),
                                &lt;span class=&quot;dt&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;NA&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;convergence=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;n=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(y), &lt;span class=&quot;dt&quot;&gt;a0=&lt;/span&gt;y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]))
     &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;t&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(o$par, &lt;span class=&quot;dt&quot;&gt;mloglik =&lt;/span&gt; o$value, &lt;span class=&quot;dt&quot;&gt;converge =&lt;/span&gt;
@@ -227,7 +224,7 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
   }
   
   ## Apply the function to each initial condition, 
-  inits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(id) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(.)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ungroup&lt;/span&gt;() -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;output
+  inits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rowwise&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(.)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;output
   
   if(!all) ## drop unconverged, and select only the best scoring run
     output %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(converge ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;slice&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;which.min&lt;/span&gt;(mloglik)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;output
@@ -236,35 +233,107 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
 }&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;kalman &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(df, ...){
   y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;df$logN
-  ssg &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, y, ...) 
-  ssrw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, y, ...) 
-  g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;, y, ...) 
-  rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, y, ...)
+  ssg &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;) 
+  ssrw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;) 
+  g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;) 
+  rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;)
   &lt;span class=&quot;kw&quot;&gt;options&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;stringsAsFactors=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
-  &lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;ssg  =&lt;/span&gt; ssg,
-        &lt;span class=&quot;dt&quot;&gt;ssrw =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;cbind&lt;/span&gt;(ssrw, &lt;span class=&quot;dt&quot;&gt;Tt =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;),
-        &lt;span class=&quot;dt&quot;&gt;g    =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;cbind&lt;/span&gt;(g, &lt;span class=&quot;dt&quot;&gt;GGt =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;), 
-        &lt;span class=&quot;dt&quot;&gt;rw   =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;cbind&lt;/span&gt;(rw, &lt;span class=&quot;dt&quot;&gt;Tt =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;GGt =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;))
+  &lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(ssg, parameter, value)),
+        &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(ssrw, parameter, value)),
+        &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(g, parameter, value)),
+        &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(rw, parameter, value)))
                               
 }&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Having defined a function that takes and returns a &lt;code&gt;data.frame&lt;/code&gt;, &lt;code&gt;dplyr::do&lt;/code&gt; gives us a consise syntax to apply this by group (recall &lt;code&gt;df&lt;/code&gt; is already &lt;code&gt;group_by(MainID)&lt;/code&gt;.) As the authors note, the robust fitting procedure is computationally intensive, though easily parallelized.&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;init_cluster&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error: Single core computer. Parallelisation not available&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
-  
 df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;kalman&lt;/span&gt;(., &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits
-
 )&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in rbind(deparse.level, ...): numbers of columns of arguments do not match&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Timing stopped at: 99.503 2.969 206.536 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;stop_cluster&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;    user   system  elapsed 
+6453.943  205.823 6699.553 &lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
-&lt;p&gt;Unfortunately &lt;code&gt;dplyr&lt;/code&gt; does not as yet directly support parallelization. Most parallelization packages for R wrap around &lt;code&gt;apply&lt;/code&gt; functions, and thus are not trivially adapted to the &lt;code&gt;dplyr&lt;/code&gt; grammar. If many cores are available it may still be faster to devolve the &lt;code&gt;group_by()&lt;/code&gt; &lt;code&gt;data.frame&lt;/code&gt; into a list of data frames and then apply in parallel; e.g.:&lt;/p&gt;
+&lt;p&gt;Unfortunately &lt;code&gt;dplyr&lt;/code&gt; does not as yet directly support parallelization (despite the documentation of &lt;code&gt;dplyr::init_cluster()&lt;/code&gt; describing parallel &lt;code&gt;dplyr::do()&lt;/code&gt; use, this feature is not actually implemented yet). Most parallelization packages for R wrap around &lt;code&gt;apply&lt;/code&gt; functions, and thus are not trivially adapted to the &lt;code&gt;dplyr&lt;/code&gt; grammar. If many cores are available it may still be faster to devolve the &lt;code&gt;group_by()&lt;/code&gt; &lt;code&gt;data.frame&lt;/code&gt; into a list of data frames and then apply in parallel; e.g.:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# not run&lt;/span&gt;
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(parallel)
 &lt;span class=&quot;kw&quot;&gt;options&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;mc.cores =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;detectCores&lt;/span&gt;())
+
+## turn grouped data.frame to a list of data.frames by MainID
 list_data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mclapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;unique&lt;/span&gt;(df$MainID), function(id) &lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(df, &lt;span class=&quot;dt&quot;&gt;.dots =&lt;/span&gt; ~MainID==id))
-fits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mclapply&lt;/span&gt;(list_data, kalman)&lt;span class=&quot;er&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+
+## Actually do the fitting in parallel
+fits_list &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mclapply&lt;/span&gt;(list_data, kalman, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)
+
+## reshape outputs back to a data.frame
+fits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;reshape2::&lt;span class=&quot;kw&quot;&gt;melt&lt;/span&gt;(fits_list, &lt;span class=&quot;dt&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(fits[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]])) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;MainID =&lt;/span&gt; L1) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as_data_frame&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;p&gt;We now have a nice table of parameter estimates and likelihoods by model for each data set:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [45,736 x 4]
+Groups: MainID
+
+   MainID model parameter         value
+1       3   ssg        dt  3.468316e+00
+2       3   ssg        Tt -1.338692e-01
+3       3   ssg       HHt  6.386584e-02
+4       3   ssg       GGt  1.766446e-01
+5       3   ssg   mloglik  2.050357e+01
+6       3   ssg  converge  0.000000e+00
+7       3   ssg         n  2.700000e+01
+8       3   ssg        a0  2.484907e+00
+9       3  ssrw        dt  7.432519e-04
+10      3  ssrw       HHt  1.973089e-09
+..    ...   ...       ...           ...&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.&lt;/p&gt;
+&lt;p&gt;and here is our version then of Figure 1b:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;spread&lt;/span&gt;(model, value) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(ssg, g)) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_abline&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;intercept=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;slope=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;labs&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;title=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;c estimates&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-12-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;GGt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;spread&lt;/span&gt;(model, value) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(ssg, ssrw)) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_abline&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;intercept=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;slope=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;labs&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;title=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;sigma^2 (obs error)&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-13-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;aside-further-exploring-numerical-issues&quot;&gt;Aside: further exploring numerical issues&lt;/h2&gt;
+&lt;p&gt;Numerical optimization can be tricky, particularly in this unsupervised manner. The robust (multiple) fitting strategy goes some ways to addressing this; though ideally one would at least show that the resulting estimates change little if N is increased further.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(MainID==&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;,  &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;.$logN, &lt;span class=&quot;dt&quot;&gt;all=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(dt, Tt, HHt, GGt, mloglik) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(parameter, value, -MainID) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;all
+
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(MainID==&lt;span class=&quot;dv&quot;&gt;1998&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;,  &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;.$logN, &lt;span class=&quot;dt&quot;&gt;all=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(dt, Tt, HHt, GGt, mloglik) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(parameter, value, -MainID) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;all
+
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;p&gt;Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;,  &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;Nile, &lt;span class=&quot;dt&quot;&gt;all=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(dt, Tt, HHt, GGt, mloglik) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(parameter, value) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;all
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-16-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;side-note-on-coding-strategy&quot;&gt;Side note on coding strategy&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;dplyr&lt;/code&gt; makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.&lt;/p&gt;
@@ -278,76 +347,6 @@ fits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;o =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;optim_func&lt;/span&gt;(.$model, .$dataset)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;david&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Where &lt;code&gt;optim_func&lt;/code&gt; uses the name of the model and name of the dataset to apply &lt;code&gt;optim()&lt;/code&gt;, rather than passing the data explicitly. We can then use &lt;code&gt;glance&lt;/code&gt; and &lt;code&gt;tidy&lt;/code&gt; on the resulting output, though we would need to &lt;code&gt;inner_join&lt;/code&gt; the results instead of &lt;code&gt;cbind&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;This is indeed an elegant, more generic approach, though passing names instead of data and tidying &amp;amp; joining more complex aggregate data frames seems a bit less transparent to me.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;p&gt;We now have a nice table of parameter estimates and likelihoods by model for each data set:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.&lt;/p&gt;
-&lt;p&gt;and here is our version then of Figure 1b:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID, model) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(converge ==&lt;span class=&quot;st&quot;&gt; &amp;quot;0&amp;quot;&lt;/span&gt;) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(Tt) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;spread&lt;/span&gt;(model, Tt) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(SSG, G) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;c_values&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(c_values, &lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(SSG, G)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_abline&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;intercept=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;slope=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;labs&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;title=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;c estimates&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot(c_values, aes(SSG, G)): object &amp;#39;c_values&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Note the warning from dropping those points where the parameter value could not be estimated under one of the models. Not surprisingly, it’s almost always the full (SSG) model where convergence issues have arisen:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(converge !=&lt;span class=&quot;st&quot;&gt; &amp;quot;0&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(model) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;summarize&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;count =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;n&lt;/span&gt;())&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID, model) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(converge ==&lt;span class=&quot;st&quot;&gt; &amp;quot;0&amp;quot;&lt;/span&gt;) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(Tt) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SSG&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;G&amp;quot;&lt;/span&gt;)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tmp&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(tmp) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(Tt), &lt;span class=&quot;dt&quot;&gt;binwidth=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot(tmp): object &amp;#39;tmp&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID, model) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(GGt) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;spread&lt;/span&gt;(model, GGt) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(SSG, SSRW) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sigma2_values&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sigma2_values, &lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(SSG, SSRW)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_abline&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;intercept=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;slope=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;labs&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;title=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;sigma2 (observation error) estimates&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot(sigma2_values, aes(SSG, SSRW)): object &amp;#39;sigma2_values&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id=&quot;aside-further-exploring-numerical-issues&quot;&gt;Aside: further exploring numerical issues&lt;/h2&gt;
-&lt;p&gt;Numerical optimization can be tricky, particularly in this unsupervised manner. The robust (multiple) fitting strategy goes some ways to addressing this; though ideally one would at least show that the resulting estimates change little if N is increased further.&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(MainID==&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;,  &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;.$logN, &lt;span class=&quot;dt&quot;&gt;all=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(dt, Tt, HHt, GGt, mloglik) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(parameter, value, -MainID) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;all
-
-&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-17-1.png&quot; /&gt;
-&lt;/figure&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(MainID==&lt;span class=&quot;dv&quot;&gt;1998&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;,  &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;.$logN, &lt;span class=&quot;dt&quot;&gt;all=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(dt, Tt, HHt, GGt, mloglik) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(parameter, value, -MainID) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;all
-
-&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-18-1.png&quot; /&gt;
-&lt;/figure&gt;
-&lt;p&gt;Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;,  &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;Nile, &lt;span class=&quot;dt&quot;&gt;all=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(dt, Tt, HHt, GGt, mloglik) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(parameter, value) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;all
-&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-19-1.png&quot; /&gt;
-&lt;/figure&gt;
 </content>
  </entry>
  
