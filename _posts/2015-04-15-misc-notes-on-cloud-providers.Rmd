@@ -1,0 +1,53 @@
+---
+published: false
+category: computing
+
+---
+
+
+
+Comparing compute resources:
+
+- AWS EC2, DigitalOcean, and Google Compute Engine look significantly
+  cheaper than Rackspace, Azure, etc. (The Economist has estimated that AWS
+  EC2 prices are roughly 3% _below_ cost).
+
+- DigitalOcean tends to have the lowest price point for on-demand use of a
+  given set of resources; usually comparable to the Amazon or EC2 persistent
+  (e.g. monthly) use.  All-inclusive pricing (storage, networking etc) and
+  limited options make choices simple and total costs easy to anticipate,
+  though lack the flexibility to fine-tune a configuration to pay for
+  exactly what you need.
+
+- Google offers the best rate for higher-cpu instances, (e.g. 16 cores);
+  primarily by provisioning them with less memory (0.9 GB/core) than DO
+  or EC2.
+
+- Google configures disk space separately from instance type.  Cost of
+  $0.04 per GB for spinning disk storage, is quite a bit cheaper than
+  the ~ $0.10/GB for AWS EBS, and in fact nearly S3 price ~ $0.03.
+  This makes it a potentially compelling platform for high storage, low
+  compute instances.  
+  
+  Presumably this is non-local storage like EBS, since they also offer a
+  (very expensive) local SSD  option (limited to 375 GB increments, each inc at $81.75 / mo). 
+  Though if the non-local nature creates a significant latency, it isn't clear
+  why one would buy non-local SSD option for $0.17/GB. 
+
+docker-machine with docker save: after committing the container, this
+saves the container locally rather than on the host. With even reasonable
+download speeds ~ 0.5MB/s this is quite slow.  DigitalOcean download
+speeds are ~ 680 Mb/s, and upload about half that.  Better yet, pushing
+the container back to the Hub only pushes the changed layers anyway,
+so is nearly instantaneous. The Hub also provides a private repo for free.
+
+This provides a pretty compelling workflow of 
+
+- `docker-machine create ...` 
+- `docker run <...> user/private` and do stuff
+- `docker commit container user/private`, `docker push user/private`, `docker-machine rm -f ...`
+
+in order to deploy one's work on temporary machine with appropriate power,
+and then save the work and close the machine.  Using docker instead of
+the standard image 'snapshots' is probably faster and nicely independent of the machine
+and provider; and in this case the snapshot storage is free of cost as well.
