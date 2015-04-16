@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-16T05:46:40+00:00</updated>
+  <updated>2015-04-16T06:50:47+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -233,10 +233,10 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
 }&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;kalman &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(df, ...){
   y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;df$logN
-  ssg &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;) 
-  ssrw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;) 
-  g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;) 
-  rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;)
+  ssg &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, y, ...) 
+  ssrw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, y, ...) 
+  g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;, y, ...) 
+  rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, y, ...)
   &lt;span class=&quot;kw&quot;&gt;options&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;stringsAsFactors=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
   &lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(ssg, parameter, value)),
         &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(ssrw, parameter, value)),
@@ -248,8 +248,8 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
 df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;kalman&lt;/span&gt;(., &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits
 )&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;    user   system  elapsed 
-6453.943  205.823 6699.553 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;     user    system   elapsed 
+ 6618.833   192.256 10377.893 &lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 &lt;p&gt;Unfortunately &lt;code&gt;dplyr&lt;/code&gt; does not as yet directly support parallelization (despite the documentation of &lt;code&gt;dplyr::init_cluster()&lt;/code&gt; describing parallel &lt;code&gt;dplyr::do()&lt;/code&gt; use, this feature is not actually implemented yet). Most parallelization packages for R wrap around &lt;code&gt;apply&lt;/code&gt; functions, and thus are not trivially adapted to the &lt;code&gt;dplyr&lt;/code&gt; grammar. If many cores are available it may still be faster to devolve the &lt;code&gt;group_by()&lt;/code&gt; &lt;code&gt;data.frame&lt;/code&gt; into a list of data frames and then apply in parallel; e.g.:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# not run&lt;/span&gt;
@@ -263,24 +263,24 @@ list_data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class
 fits_list &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mclapply&lt;/span&gt;(list_data, kalman, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)
 
 ## reshape outputs back to a data.frame
-fits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;reshape2::&lt;span class=&quot;kw&quot;&gt;melt&lt;/span&gt;(fits_list, &lt;span class=&quot;dt&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(fits[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]])) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;MainID =&lt;/span&gt; L1) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as_data_frame&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+fits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;reshape2::&lt;span class=&quot;kw&quot;&gt;melt&lt;/span&gt;(fits_list, &lt;span class=&quot;dt&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(fits_list[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]])) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;MainID =&lt;/span&gt; L1) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as_data_frame&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 &lt;p&gt;We now have a nice table of parameter estimates and likelihoods by model for each data set:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Source: local data frame [45,736 x 4]
+&lt;pre&gt;&lt;code&gt;Source: local data frame [45,732 x 4]
 Groups: MainID
 
    MainID model parameter         value
-1       3   ssg        dt  3.468316e+00
-2       3   ssg        Tt -1.338692e-01
-3       3   ssg       HHt  6.386584e-02
-4       3   ssg       GGt  1.766446e-01
+1       3   ssg        dt  3.467772e+00
+2       3   ssg        Tt -1.336804e-01
+3       3   ssg       HHt  6.396327e-02
+4       3   ssg       GGt  1.765060e-01
 5       3   ssg   mloglik  2.050357e+01
 6       3   ssg  converge  0.000000e+00
 7       3   ssg         n  2.700000e+01
 8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.432519e-04
-10      3  ssrw       HHt  1.973089e-09
+9       3  ssrw        dt  7.398405e-04
+10      3  ssrw       HHt  1.380725e-11
 ..    ...   ...       ...           ...&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.&lt;/p&gt;
 &lt;p&gt;and here is our version then of Figure 1b:&lt;/p&gt;
@@ -345,8 +345,14 @@ Groups: MainID
             &lt;span class=&quot;dt&quot;&gt;dataset =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(datasets)) %&amp;gt;%
 &lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(model, dataset) %&amp;gt;%
 &lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;o =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;optim_func&lt;/span&gt;(.$model, .$dataset)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;david&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Where &lt;code&gt;optim_func&lt;/code&gt; uses the name of the model and name of the dataset to apply &lt;code&gt;optim()&lt;/code&gt;, rather than passing the data explicitly. We can then use &lt;code&gt;glance&lt;/code&gt; and &lt;code&gt;tidy&lt;/code&gt; on the resulting output, though we would need to &lt;code&gt;inner_join&lt;/code&gt; the results instead of &lt;code&gt;cbind&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;This is indeed an elegant, more generic approach, though passing names instead of data and tidying &amp;amp; joining more complex aggregate data frames seems a bit less transparent to me.&lt;/p&gt;
+&lt;p&gt;Where &lt;code&gt;optim_func&lt;/code&gt; uses the name of the model and name of the dataset to apply &lt;code&gt;optim()&lt;/code&gt;, rather than passing the data explicitly. We can then use &lt;code&gt;glance&lt;/code&gt; and &lt;code&gt;tidy&lt;/code&gt; on the resulting output, though we would need to &lt;code&gt;inner_join&lt;/code&gt; the results instead of &lt;code&gt;cbind&lt;/code&gt;. This is indeed an elegant, more generic approach. Still, neither of us much like the need to defer the tidy step to the complex object at the end.&lt;/p&gt;
+&lt;p&gt;Here, I have ended up adopting the column-wise parameter, value, approach, though for a reason not just related to elegance. My &lt;code&gt;robust_fit()&lt;/code&gt; error-handling seems to end up very occassionally with some kind of race conditions&lt;a href=&quot;#fn1&quot; class=&quot;footnoteRef&quot; id=&quot;fnref1&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/a&gt; that cause some of the sub-models to report an NA for one of their fixed parameters, instead of ommitting the parameter entirely. When adding the fixed value back in to keep rows of a uniform length, this meant I might get some rows with a duplicated column, such as a &lt;code&gt;GGt&lt;/code&gt; column with value &lt;code&gt;NA&lt;/code&gt; and another, appended column with the fixed value &lt;code&gt;0&lt;/code&gt; in the &lt;code&gt;g&lt;/code&gt; or &lt;code&gt;rw&lt;/code&gt; models. The columnwise structure avoids this and prevents the code execution from failing.&lt;/p&gt;
+&lt;section class=&quot;footnotes&quot;&gt;
+&lt;hr /&gt;
+&lt;ol&gt;
+&lt;li id=&quot;fn1&quot;&gt;&lt;p&gt;I could only ever reproduce this by re-running large batch jobs – isolating the examples where error occurred and re-running had no effect, hence my worry about some race conditions between the error reporting. However, the stochastic initial conditions might also contribute to this, as I didn’t standardize seed over the parallelization; though in priciple any unusual initial conditions should only generate fit failures that are already handled in the error handling.&lt;a href=&quot;#fnref1&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/section&gt;
 </content>
  </entry>
  

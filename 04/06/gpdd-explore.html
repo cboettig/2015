@@ -324,10 +324,10 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 }</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">kalman &lt;-<span class="st"> </span>function(df, ...){
   y &lt;-<span class="st"> </span>df$logN
-  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
-  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
-  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
-  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>)
+  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, ...) 
+  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, ...) 
+  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, ...) 
+  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, ...)
   <span class="kw">options</span>(<span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>)
   <span class="kw">rbind</span>(<span class="kw">data.frame</span>(<span class="dt">model =</span><span class="st">&quot;ssg&quot;</span>, <span class="kw">gather</span>(ssg, parameter, value)),
         <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;ssrw&quot;</span>, <span class="kw">gather</span>(ssrw, parameter, value)),
@@ -339,8 +339,8 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
 df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits
 )</code></pre>
-<pre><code>    user   system  elapsed 
-6453.943  205.823 6699.553 </code></pre>
+<pre><code>     user    system   elapsed 
+ 6618.833   192.256 10377.893 </code></pre>
 <hr />
 <p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization (despite the documentation of <code>dplyr::init_cluster()</code> describing parallel <code>dplyr::do()</code> use, this feature is not actually implemented yet). Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># not run</span>
@@ -354,24 +354,24 @@ list_data &lt;-<span class="st"> </span><span class="kw">mclapply</span>(<span c
 fits_list &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, kalman, <span class="dt">method=</span><span class="st">&quot;BFGS&quot;</span>)
 
 ## reshape outputs back to a data.frame
-fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
+fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits_list[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
 <hr />
 <p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
-<pre><code>Source: local data frame [45,736 x 4]
+<pre><code>Source: local data frame [45,732 x 4]
 Groups: MainID
 
    MainID model parameter         value
-1       3   ssg        dt  3.468316e+00
-2       3   ssg        Tt -1.338692e-01
-3       3   ssg       HHt  6.386584e-02
-4       3   ssg       GGt  1.766446e-01
+1       3   ssg        dt  3.467772e+00
+2       3   ssg        Tt -1.336804e-01
+3       3   ssg       HHt  6.396327e-02
+4       3   ssg       GGt  1.765060e-01
 5       3   ssg   mloglik  2.050357e+01
 6       3   ssg  converge  0.000000e+00
 7       3   ssg         n  2.700000e+01
 8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.432519e-04
-10      3  ssrw       HHt  1.973089e-09
+9       3  ssrw        dt  7.398405e-04
+10      3  ssrw       HHt  1.380725e-11
 ..    ...   ...       ...           ...</code></pre>
 <p>A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.</p>
 <p>and here is our version then of Figure 1b:</p>
@@ -436,8 +436,14 @@ Groups: MainID
             <span class="dt">dataset =</span> <span class="kw">names</span>(datasets)) %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(model, dataset) %&gt;%
 <span class="st">    </span><span class="kw">do</span>(<span class="dt">o =</span> <span class="kw">optim_func</span>(.$model, .$dataset)) -&gt;<span class="st"> </span>david</code></pre>
-<p>Where <code>optim_func</code> uses the name of the model and name of the dataset to apply <code>optim()</code>, rather than passing the data explicitly. We can then use <code>glance</code> and <code>tidy</code> on the resulting output, though we would need to <code>inner_join</code> the results instead of <code>cbind</code>.</p>
-<p>This is indeed an elegant, more generic approach, though passing names instead of data and tidying &amp; joining more complex aggregate data frames seems a bit less transparent to me.</p>
+<p>Where <code>optim_func</code> uses the name of the model and name of the dataset to apply <code>optim()</code>, rather than passing the data explicitly. We can then use <code>glance</code> and <code>tidy</code> on the resulting output, though we would need to <code>inner_join</code> the results instead of <code>cbind</code>. This is indeed an elegant, more generic approach. Still, neither of us much like the need to defer the tidy step to the complex object at the end.</p>
+<p>Here, I have ended up adopting the column-wise parameter, value, approach, though for a reason not just related to elegance. My <code>robust_fit()</code> error-handling seems to end up very occassionally with some kind of race conditions<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> that cause some of the sub-models to report an NA for one of their fixed parameters, instead of ommitting the parameter entirely. When adding the fixed value back in to keep rows of a uniform length, this meant I might get some rows with a duplicated column, such as a <code>GGt</code> column with value <code>NA</code> and another, appended column with the fixed value <code>0</code> in the <code>g</code> or <code>rw</code> models. The columnwise structure avoids this and prevents the code execution from failing.</p>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>I could only ever reproduce this by re-running large batch jobs – isolating the examples where error occurred and re-running had no effect, hence my worry about some race conditions between the error reporting. However, the stochastic initial conditions might also contribute to this, as I didn’t standardize seed over the parallelization; though in priciple any unusual initial conditions should only generate fit failures that are already handled in the error handling.<a href="#fnref1">↩</a></p></li>
+</ol>
+</section>
 
     </article>
   </div>
@@ -487,7 +493,7 @@ Groups: MainID
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/8fc865a2a8b114cd83701a8b8848af1249db9d7c/_posts/2015-04-06-gpdd-explore.Rmd"> 8fc865a2a8b114cd83701a8b8848af1249db9d7c</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/c9e6a9dbbe018c3e19820d77f88d2da80f5b646b/_posts/2015-04-06-gpdd-explore.Rmd"> c9e6a9dbbe018c3e19820d77f88d2da80f5b646b</a></small></p>
     
   <br/>
   
