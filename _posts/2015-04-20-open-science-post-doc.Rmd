@@ -1,0 +1,68 @@
+---
+category: open-science
+tags: blog
+---
+
+
+This post is a response to the query posted by Titus Brown on [advice
+for doing an Open Science Post doc](http://ivory.idyll.org/blog/2015-how-to-find-openscience-advisor.html).
+
+Open Science is a broad tent, and I believe there are many ways to
+engage in open science without crossing boundaries of collaborators or
+PIs. Some of the most valuable open science practices are those least
+likely to cross boundaries: in particular, those practices associated
+with post-publication of academic papers.  Many widely regarded journals,
+including _Nature_ and _Science_, have relatively strong data publication
+requirements, increasingly strong code publication expectations, and are
+compatible with the use of pre-print archives. Yes, their are those who
+would hesitate even to comply with the most minimal interpretation of
+these expectations; but there are many more who, given the expectation to
+do this at all, would appreciate your knowledge and effort on doing these
+things well and consistent with best practices. Using data repositories
+instead of supplemental material; exhibiting good management of data
+and code; providing good metadata in consistent formats; citing software
+and data appropriately. 
+
+Many of the practices promoted by open scientists work almost
+as well in a setting that is closed until you 'flip the switch' to
+make them public; even if that is long after publication. Good
+data management, a private Github repository, or a private
+electronic lab notebook are all ways to leverage best practices tools
+and approaches in a setting that can either be shared securely or made
+open later.  Attitudes to post-publication sharing are rarely black-and-white,
+and having everything curated and ready to go ahead of time can help nudge
+collaborators in the direction of best practices.
+
+I've been a post-doc for just over 2 years while enjoying a relatively
+open-science approach to my research: I've kept an open lab notebook,
+posted my papers ahead of publication on pre-print archives, released
+code, data, and knitr versions of my papers, discuss my work on social
+media, sign reviews, shared grant applications, contributed open source
+software and been active in open science communities.
+
+I was fortunate to have independent funding for most but not
+all of my post-doc, and to work in a field where researchers are often
+given substantial independence and in which open practices are common.
+Nonetheless these were not practices shared by either of my two excellent
+co-advisers, who gave only a neutral or vaguely positive response to
+these ideas.
+
+Nevertheless, I learned more about _old-school_ open science from them
+than I had ever imagined.  When I sent Marc the first draft of our paper,
+I had buried almost all of the equations in a curt appendix with minimal
+and jargon-laden supporting text. No sir, those equations not only had
+to appear in the main text, but I must endeavor to explain the meaning
+and relevance of each one in a language clear and concise enough for
+any ecologist to follow.  I won't claim to have succeeded, but boy did
+continuous integration on my unit tests feel like a low bar for openness
+by comparison.
+
+Meanwhile, I also felt I had the support and mentorship of an online community
+of open scientists even without going to work for one of them.  I am thankful
+that my mentors have always been tolerant of my open science experimentation,
+but I would have enjoyed working with them even if it had been otherwise.
+There was much to learn from them, much to learn from the open science community,
+and after all, a post-doc position doesn't last forever.
+
+
+

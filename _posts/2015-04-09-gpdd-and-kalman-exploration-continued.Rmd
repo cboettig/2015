@@ -17,6 +17,8 @@ library("tidyr")
 library("knitcitations")
 library("rgpdd")
 library("FKF")
+
+knitr::opts_chunk(eval=FALSE) ## Don't knit until this is ready
 ```
 
 
@@ -117,7 +119,7 @@ bootstrap <- function(df, null_model = "ssrw", test_model = "ssg", N=100){
   # compute p value of observed LR statistic relative to null distribution
   lr <- 2 * (ssrw$mloglik - ssg$mloglik)
   null_dist <- 2 * (null$mloglik - ssg$mloglik) 
-  sum(null_dist < lr)/N
+  data.frame(p = sum(null_dist < lr)/N)
 }
 ```
 
@@ -127,7 +129,7 @@ With these functions defined, we can perform the actual analysis.
 
 We may test on a subset of the data first:
 
-```{r }
+```{r eval=FALSE}
 #not run
 some <- sample(unique(df$MainID), 10)
 df %>% filter(MainID %in% some) -> df
@@ -144,6 +146,8 @@ system.time(
   df %>% group_by(MainID) %>% do(bootstrap(., "rw", "g")) -> g_p_values
   )
 ```
+
+
 
 
 ------
