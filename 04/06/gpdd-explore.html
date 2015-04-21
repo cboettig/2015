@@ -324,10 +324,10 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 }</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">kalman &lt;-<span class="st"> </span>function(df, ...){
   y &lt;-<span class="st"> </span>df$logN
-  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, ...) 
-  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, ...) 
-  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, ...) 
-  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, ...)
+  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
+  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
+  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
+  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>)
   <span class="kw">options</span>(<span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>)
   <span class="kw">rbind</span>(<span class="kw">data.frame</span>(<span class="dt">model =</span><span class="st">&quot;ssg&quot;</span>, <span class="kw">gather</span>(ssg, parameter, value)),
         <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;ssrw&quot;</span>, <span class="kw">gather</span>(ssrw, parameter, value)),
@@ -339,8 +339,8 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
 df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits
 )</code></pre>
-<pre><code>     user    system   elapsed 
- 6618.833   192.256 10377.893 </code></pre>
+<pre><code>    user   system  elapsed 
+12221.68   228.48 12480.11 </code></pre>
 <hr />
 <p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization (despite the documentation of <code>dplyr::init_cluster()</code> describing parallel <code>dplyr::do()</code> use, this feature is not actually implemented yet). Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># not run</span>
@@ -354,24 +354,24 @@ list_data &lt;-<span class="st"> </span><span class="kw">mclapply</span>(<span c
 fits_list &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, kalman, <span class="dt">method=</span><span class="st">&quot;BFGS&quot;</span>)
 
 ## reshape outputs back to a data.frame
-fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits_list[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
+fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
 <hr />
 <p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
-<pre><code>Source: local data frame [45,732 x 4]
+<pre><code>Source: local data frame [45,727 x 4]
 Groups: MainID
 
    MainID model parameter         value
-1       3   ssg        dt  3.467772e+00
-2       3   ssg        Tt -1.336804e-01
-3       3   ssg       HHt  6.396327e-02
-4       3   ssg       GGt  1.765060e-01
+1       3   ssg        dt  3.466916e+00
+2       3   ssg        Tt -1.334051e-01
+3       3   ssg       HHt  6.394019e-02
+4       3   ssg       GGt  1.765346e-01
 5       3   ssg   mloglik  2.050357e+01
 6       3   ssg  converge  0.000000e+00
 7       3   ssg         n  2.700000e+01
 8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.398405e-04
-10      3  ssrw       HHt  1.380725e-11
+9       3  ssrw        dt  7.431723e-04
+10      3  ssrw       HHt  3.562612e-09
 ..    ...   ...       ...           ...</code></pre>
 <p>A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.</p>
 <p>and here is our version then of Figure 1b:</p>
@@ -462,8 +462,8 @@ Groups: MainID
 	<p><a class="btn btn-default" rel="prev" href='/2015/03/26/ropensci-unconf-teaching-session.html'><i class="icon-chevron-left"></i> prev</a>
   
   
-    </p>
-    
+  <a class="btn btn-default" rel="next" href='/2015/04/20/open-science-post-doc.html'>next <i class="icon-chevron-right"></i></a></p>
+  
 
   <br />
 
