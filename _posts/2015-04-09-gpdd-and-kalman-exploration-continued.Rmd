@@ -17,8 +17,7 @@ library("tidyr")
 library("knitcitations")
 library("rgpdd")
 library("FKF")
-
-knitr::opts_chunk(eval=FALSE) ## Don't knit until this is ready
+knitr::opts_chunk(eval=FALSE)
 ```
 
 
@@ -275,6 +274,35 @@ system.time(
 system.time(
   DI %>% group_by(MainID) %>% do_parallel(bootstrap, "rw", "g") -> di_g_p_values
 )
+```
+
+
+----
+
+
+
+```{r figure2, eval=FALSE}
+
+combined <- rbind(
+  fits %>% 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>% mutate(type = "real"),
+  DI_fits %>% 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>% mutate(type = "independent"),
+  DD_fits %>% 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>% mutate(type = "dependent"))
+
+## Rename factor levels and re-order
+combined %>% transmutate(uncertainty = plyr::revalue(model, c(ssg = "accounting for uncertainty",
+                                                         g = "ignoring uncertainty")),
+                         type, value)
+
+ggplot(combined) + 
+  geom_hist(aes(value)) + 
+  facet_grid(uncertainty ~ type)
+
 ```
 
 
