@@ -340,20 +340,36 @@ We now have a nice table of parameter estimates and likelihoods by model for eac
 fits
 ```
 
-A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.  
 
-and here is our version then of Figure 1b:
 
-```{r}
+
+and here is our version then of Figure 1b, comparing the estimate of the density-dependence coefficent with and without the uncertainty in observations:
+
+```{r figure1b}
 fits %>% 
   filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
   select(model, value, MainID) %>%
   spread(model, value) %>%
-  ggplot(aes(ssg, g)) +
-  geom_point() + 
-  geom_abline(intercept=0, slope=1) + labs(title="c estimates")
+  ggplot(aes(g, ssg)) +
+  geom_point(alpha = 0.2) + 
+  geom_abline(intercept = 0, slope = 1) +
+  labs(title="c estimates")
 ```
 
+Likewise we can compute a version of Figure 1a; which calculates the absolute value of the difference between the estimates of density-dependence with and without the uncertainty, and then plots how frequently we observe a difference larger than a given amount in the data.  (The paper finds around 20% having a difference larger than 0.5)
+
+```{r figure1a}
+fits %>% 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>%
+  spread(model, value) %>%
+  mutate(difference = abs(g-ssg)) %>%
+  select(difference) -> diffs
+  
+s <- seq(0,1,length=100)
+fig1a <- sapply(s, function(s_i) mean(diffs$difference > s_i))
+qplot(s, fig1a)
+```
 
 
 ```{r}
