@@ -17,8 +17,45 @@ library("tidyr")
 library("knitcitations")
 library("rgpdd")
 library("FKF")
-knitr::opts_chunk(eval=FALSE)
+
 ```
+
+## Parallel version of `dplyr::do`
+
+```{r}
+do_parallel <- function(df, f, ...){
+
+  # supports only one group for now
+
+  require("parallel")
+  require("lazyeval")
+  require("reshape2")
+  options(mc.cores = detectCores())
+
+  grps <- groups(df)
+  ids <- sapply(grps, function(i) unique(df[[as.character(i)]]))
+  names(ids) <- as.character(ids)
+  ## turn grouped data.frame to a list of data.frames by MainID
+  list_data <- lapply(ids, 
+                      function(id){ 
+                        .dots <- list(interp(~y == x, .values = list(y = grps[[1]], x = id)))
+                        filter_(df, .dots = .dots)
+                      })
+
+  ## Actually do the fitting in parallel
+  list_out <- mclapply(list_data, f, ...)
+
+  ## reshape outputs back to a data.frame
+  melt(list_out, id=names(list_out[[1]])) %>% 
+    rename_(.dots = setNames(list("L1"), as.character(grps[[1]])) ) %>%
+              as_data_frame()
+}
+```
+
+
+
+## Prepare data
+
 
 
 Prepare data, as before: we filter on the stated criteria
@@ -54,6 +91,19 @@ df$logN[i] <- min(df$logN[-i])-1
 ```
 
 
+
+We may test on a subset of the data first:
+
+```{r eval=FALSE}
+#not run
+some <- sample(unique(df$MainID), 10)
+df %>% filter(MainID %in% some) -> df
+```
+
+
+## Import function definitions
+
+
 We import our previous model definitions:
 
 ```{r}
@@ -63,7 +113,7 @@ unlink("knape-de-valpine.R")
 ```
 
 
-## Simulating, bootstrapping
+## Simulating
 
 FKF package doesn't bother to define a simulation method, so we can simply define one directly from the state equations. Though a C implementation would be preferrable, fitting will always be much more rate-limiting. (We will also ignore the multi-variate definition for simplicity here).
 
@@ -100,105 +150,6 @@ sim_fkf <- function(fit){
 }
 
 ```
-
-With fitting and simulating functions in place, defining the bootstrap is straight forward. We define these separately for the state-space Gompertz (ssg; i.e. the model with both density dependence and observational errors) and the Gompertz (g; density dependence, no observational error).  We compare in each case to the simulations of the corresponding model without density dependence.  
-
-
-```{r}
-bootstrap <- function(df, null_model = "ssrw", test_model = "ssg", N=100){
-  y <- df$logN
-  
-  ssg <- robust_fit(test_model, y)
-  ssrw <- robust_fit(null_model, y)
-  sims <- as.data.frame(t(replicate(N, sim_fkf(ssrw))))
-  
-  # We use a relaxed version of robust_fit, with N=3
-  sims %>% rowwise() %>% do(robust_fit(null_model, y = as.numeric(.), N = 3)) %>% select(mloglik) -> null
-  
-  # compute p value of observed LR statistic relative to null distribution
-  lr <- 2 * (ssrw$mloglik - ssg$mloglik)
-  null_dist <- 2 * (null$mloglik - ssg$mloglik) 
-  data.frame(p = sum(null_dist < lr)/N)
-}
-```
-
-
-
-With these functions defined, we can perform the actual analysis.  
-
-We may test on a subset of the data first:
-
-```{r eval=FALSE}
-#not run
-some <- sample(unique(df$MainID), 10)
-df %>% filter(MainID %in% some) -> df
-```
-
-```{r }
-system.time(
-  df %>% group_by(MainID) %>% do(bootstrap(., "ssrw", "ssg")) -> ssg_p_values
-)
-```
-
-```{r }
-system.time(
-  df %>% group_by(MainID) %>% do(bootstrap(., "rw", "g")) -> g_p_values
-  )
-```
-
-
-
-
-------
-
-Or working around the current lack of parallelization in `dplyr::do()` for now:
-
-```{r}
-do_parallel <- function(df, f, ...){
-    
-  # supports only one group for now
-  
-  require("parallel")
-  require("lazyeval")
-  require("reshape2")
-  options(mc.cores = detectCores())
-  
-  grps <- groups(df)
-  ids <- sapply(grps, function(i) unique(df[[as.character(i)]]))
-  names(ids) <- as.character(ids)
-  ## turn grouped data.frame to a list of data.frames by MainID
-  list_data <- lapply(ids, 
-                      function(id){ 
-                        .dots <- list(interp(~y == x, .values = list(y = grps[[1]], x = id)))
-                        filter_(df, .dots = .dots)
-                      })
-  
-  ## Actually do the fitting in parallel
-  list_out <- mclapply(list_data, f, ...)
-
-  ## reshape outputs back to a data.frame
-  melt(list_out, id=names(list_out[[1]])) %>% 
-    rename_(.dots = setNames(list("L1"), as.character(grps[[1]])) ) %>%
-              as_data_frame()
-}
-  
-```
-
-
-
-```{r}
-system.time(
-  df %>% group_by(MainID) %>% do_parallel(bootstrap, "ssrw", "ssg") -> ssg_p_values
-  )
-```
-
-
-```{r}
-system.time(
-  df %>% group_by(MainID) %>% do_parallel(bootstrap, "rw", "g") -> g_p_values
-  )
-```
-
 
 
 
@@ -252,16 +203,128 @@ We can then use these two collections of datasets just as before:
 
 ```{r}
 system.time(
-  DD %>% group_by(MainID) %>% do_parallel(kalman) -> DD_fits
+  DD %>% group_by(MainID) %>% do_parallel(kalman, method = "BFGS") -> DD_fits
 )
 ```
 
 ```{r}
 system.time(
-  DI %>% group_by(MainID) %>% do_parallel(kalman) -> DI_fits
+  DI %>% group_by(MainID) %>% do_parallel(kalman, method = "BFGS") -> DI_fits
 )
 ```
 
+and from before: 
+
+```{r message=FALSE}
+system.time(
+df %>% do(kalman(., method = "BFGS")) -> fits
+)
+```
+
+
+#### Figure 2
+
+From these simulations and corresponding parameter estimates of the density-dependent parameter, we can create our version of Figure 2:
+
+```{r figure2, eval=FALSE}
+
+combined <- rbind(
+  fits %>% 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>% mutate(type = "real"),
+  DI_fits %>% 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>% mutate(type = "independent"),
+  DD_fits %>% 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>% mutate(type = "dependent"))
+
+## Rename factor levels and re-order
+combined %>% 
+  ungroup() %>% 
+  transmute(uncertainty = plyr::revalue(model, c(ssg = "accounting for uncertainty",
+                                                 g = "ignoring uncertainty")),
+                         type, value, MainID) -> 
+  combined
+
+ggplot(combined) + 
+  geom_histogram(aes(value)) + 
+  facet_grid(uncertainty ~ type)
+
+```
+
+
+
+
+
+---------------
+
+## Bootstrapping
+
+
+With fitting and simulating functions in place, defining the bootstrap is straight forward. We define these separately for the state-space Gompertz (ssg; i.e. the model with both density dependence and observational errors) and the Gompertz (g; density dependence, no observational error).  We compare in each case to the simulations of the corresponding model without density dependence.  
+
+
+```{r}
+bootstrap <- function(df, null_model = "ssrw", test_model = "ssg", N=100){
+  y <- df$logN
+  
+  ssg <- robust_fit(test_model, y)
+  ssrw <- robust_fit(null_model, y)
+  sims <- as.data.frame(t(replicate(N, sim_fkf(ssrw))))
+  
+  # We use a relaxed version of robust_fit, with N=3
+  sims %>% rowwise() %>% do(robust_fit(null_model, y = as.numeric(.), N = 3)) %>% select(mloglik) -> null
+  
+  # compute p value of observed LR statistic relative to null distribution
+  lr <- 2 * (ssrw$mloglik - ssg$mloglik)
+  null_dist <- 2 * (null$mloglik - ssg$mloglik) 
+  data.frame(p = sum(null_dist < lr)/N)
+}
+```
+
+
+
+With these functions defined, we can perform the actual analysis.  
+
+```{r }
+system.time(
+  df %>% group_by(MainID) %>% do(bootstrap(., "ssrw", "ssg")) -> ssg_p_values
+)
+```
+
+```{r }
+system.time(
+  df %>% group_by(MainID) %>% do(bootstrap(., "rw", "g")) -> g_p_values
+  )
+```
+
+
+
+
+------
+
+
+
+
+```{r}
+system.time(
+  df %>% group_by(MainID) %>% do_parallel(bootstrap, "ssrw", "ssg") -> ssg_p_values
+  )
+```
+
+
+```{r}
+system.time(
+  df %>% group_by(MainID) %>% do_parallel(bootstrap, "rw", "g") -> g_p_values
+  )
+```
+
+
+
+
+
+We can also do the bootstrapping for the simulated data:
 
 
 ```{r}
@@ -279,31 +342,6 @@ system.time(
 
 ----
 
-
-
-```{r figure2, eval=FALSE}
-
-combined <- rbind(
-  fits %>% 
-  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
-  select(model, value, MainID) %>% mutate(type = "real"),
-  DI_fits %>% 
-  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
-  select(model, value, MainID) %>% mutate(type = "independent"),
-  DD_fits %>% 
-  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
-  select(model, value, MainID) %>% mutate(type = "dependent"))
-
-## Rename factor levels and re-order
-combined %>% transmutate(uncertainty = plyr::revalue(model, c(ssg = "accounting for uncertainty",
-                                                         g = "ignoring uncertainty")),
-                         type, value)
-
-ggplot(combined) + 
-  geom_hist(aes(value)) + 
-  facet_grid(uncertainty ~ type)
-
-```
 
 
 
