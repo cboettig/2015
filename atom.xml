@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-21T17:44:58+00:00</updated>
+  <updated>2015-04-23T04:37:19+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -248,10 +248,10 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
 }&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;kalman &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(df, ...){
   y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;df$logN
-  ssg &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;) 
-  ssrw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;) 
-  g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;) 
-  rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, y, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;BFGS&amp;#39;&lt;/span&gt;)
+  ssg &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, y, ...) 
+  ssrw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, y, ...) 
+  g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;, y, ...) 
+  rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, y, ...)
   &lt;span class=&quot;kw&quot;&gt;options&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;stringsAsFactors=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
   &lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(ssg, parameter, value)),
         &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(ssrw, parameter, value)),
@@ -264,7 +264,7 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
 df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;kalman&lt;/span&gt;(., &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;    user   system  elapsed 
-12221.68   228.48 12480.11 &lt;/code&gt;&lt;/pre&gt;
+5862.068  168.046 6047.051 &lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 &lt;p&gt;Unfortunately &lt;code&gt;dplyr&lt;/code&gt; does not as yet directly support parallelization (despite the documentation of &lt;code&gt;dplyr::init_cluster()&lt;/code&gt; describing parallel &lt;code&gt;dplyr::do()&lt;/code&gt; use, this feature is not actually implemented yet). Most parallelization packages for R wrap around &lt;code&gt;apply&lt;/code&gt; functions, and thus are not trivially adapted to the &lt;code&gt;dplyr&lt;/code&gt; grammar. If many cores are available it may still be faster to devolve the &lt;code&gt;group_by()&lt;/code&gt; &lt;code&gt;data.frame&lt;/code&gt; into a list of data frames and then apply in parallel; e.g.:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# not run&lt;/span&gt;
@@ -278,36 +278,50 @@ list_data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class
 fits_list &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mclapply&lt;/span&gt;(list_data, kalman, &lt;span class=&quot;dt&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)
 
 ## reshape outputs back to a data.frame
-fits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;reshape2::&lt;span class=&quot;kw&quot;&gt;melt&lt;/span&gt;(fits_list, &lt;span class=&quot;dt&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(fits[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]])) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;MainID =&lt;/span&gt; L1) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as_data_frame&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+fits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;reshape2::&lt;span class=&quot;kw&quot;&gt;melt&lt;/span&gt;(fits_list, &lt;span class=&quot;dt&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(fits_list[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]])) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;MainID =&lt;/span&gt; L1) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as_data_frame&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 &lt;p&gt;We now have a nice table of parameter estimates and likelihoods by model for each data set:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Source: local data frame [45,727 x 4]
+&lt;pre&gt;&lt;code&gt;Source: local data frame [45,730 x 4]
 Groups: MainID
 
    MainID model parameter         value
-1       3   ssg        dt  3.466916e+00
-2       3   ssg        Tt -1.334051e-01
-3       3   ssg       HHt  6.394019e-02
-4       3   ssg       GGt  1.765346e-01
+1       3   ssg        dt  3.467069e+00
+2       3   ssg        Tt -1.334439e-01
+3       3   ssg       HHt  6.378128e-02
+4       3   ssg       GGt  1.767062e-01
 5       3   ssg   mloglik  2.050357e+01
 6       3   ssg  converge  0.000000e+00
 7       3   ssg         n  2.700000e+01
 8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.431723e-04
-10      3  ssrw       HHt  3.562612e-09
+9       3  ssrw        dt  7.443238e-04
+10      3  ssrw       HHt  2.120082e-09
 ..    ...   ...       ...           ...&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.&lt;/p&gt;
-&lt;p&gt;and here is our version then of Figure 1b:&lt;/p&gt;
+&lt;p&gt;and here is our version then of Figure 1b, comparing the estimate of the density-dependence coefficent with and without the uncertainty in observations:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;spread&lt;/span&gt;(model, value) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(ssg, g)) +
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_abline&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;intercept=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;slope=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;labs&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;title=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;c estimates&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(g, ssg)) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_abline&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;intercept =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;slope =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;labs&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;title=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;c estimates&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-12-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1b-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;p&gt;Likewise we can compute a version of Figure 1a; which calculates the absolute value of the difference between the estimates of density-dependence with and without the uncertainty, and then plots how frequently we observe a difference larger than a given amount in the data. (The paper finds around 20% having a difference larger than 0.5)&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;spread&lt;/span&gt;(model, value) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;difference =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;abs&lt;/span&gt;(g-ssg)) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(difference) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;diffs
+  
+s &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+fig1a &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(s, function(s_i) &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(diffs$difference &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;s_i))
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(s, fig1a)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1a-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;GGt&amp;quot;&lt;/span&gt;) %&amp;gt;%
@@ -317,7 +331,7 @@ Groups: MainID
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_abline&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;intercept=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;slope=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;labs&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;title=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;sigma^2 (obs error)&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-13-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-12-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;aside-further-exploring-numerical-issues&quot;&gt;Aside: further exploring numerical issues&lt;/h2&gt;
@@ -329,7 +343,7 @@ Groups: MainID
 
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-13-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(MainID==&lt;span class=&quot;dv&quot;&gt;1998&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -339,7 +353,7 @@ Groups: MainID
 
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;p&gt;Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;,  &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;Nile, &lt;span class=&quot;dt&quot;&gt;all=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -347,7 +361,7 @@ Groups: MainID
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(parameter, value) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;all
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(all) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~parameter, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-16-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;side-note-on-coding-strategy&quot;&gt;Side note on coding strategy&lt;/h2&gt;
@@ -619,7 +633,7 @@ df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.3 RC (2015-03-06 r67947)
+&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Debian GNU/Linux 8 (jessie)
 
@@ -636,17 +650,17 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.0          
+[1] dplyr_0.4.1             ggplot2_1.0.1          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
 [5] nimble_0.3-1            yaml_2.1.13            
 [7] knitr_1.9              
 
 loaded via a namespace (and not attached):
  [1] assertthat_0.1   codetools_0.2-11 colorspace_1.2-6
- [4] DBI_0.3.1        digest_0.6.8     evaluate_0.5.5  
- [7] formatR_1.0      grid_3.1.3       gtable_0.1.2    
+ [4] DBI_0.3.1        digest_0.6.8     evaluate_0.6    
+ [7] formatR_1.1      grid_3.1.3       gtable_0.1.2    
 [10] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[13] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[13] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
 [16] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
 [19] Rcpp_0.11.5      reshape2_1.4.1   scales_0.2.4    
 [22] stringr_0.6.2    tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
@@ -682,18 +696,18 @@ data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;pre&gt;&lt;code&gt;[1] 1&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;simulate&lt;/span&gt;(Rmodel, &lt;span class=&quot;st&quot;&gt;&amp;quot;l&amp;quot;&lt;/span&gt;)
 Rmodel$l&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 10.37676&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 12.82878&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Other nodes and likelihoods are updated to reflect the new value only after we run &lt;code&gt;calculate()&lt;/code&gt;, so this is the logProb of &lt;code&gt;l&lt;/code&gt; originally:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$logProb_l&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] NA&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;After we run &lt;code&gt;calculate()&lt;/code&gt;, the &lt;code&gt;logProb&lt;/code&gt; is updated to reflect our simulated value of &lt;code&gt;l&lt;/code&gt;, as are the dependent terms (like the Sigma matrix)&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Sigma &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Rmodel$Sigma
 &lt;span class=&quot;kw&quot;&gt;calculate&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] -29.81744&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] -30.36035&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(Sigma, Rmodel$Sigma)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] FALSE&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$logProb_l&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] -2.122469&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] -2.665388&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Interestingly, we don’t seem to be able to simulate actual data from the model in this way:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$y&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] -2  0  1  2 -1&lt;/code&gt;&lt;/pre&gt;
@@ -704,7 +718,7 @@ Rmodel$y&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Note that &lt;code&gt;y&lt;/code&gt; remaines fixed to the original data values. We have to do this manually:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mvrnorm&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;mu =&lt;/span&gt; constants$Mu, &lt;span class=&quot;dt&quot;&gt;Sigma =&lt;/span&gt; Rmodel$Sigma) &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1]  -7.498019 -20.999389   4.939137  11.751509  -8.123005&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1]  4.912117 19.095320 -6.258376  5.700355  2.688588&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Define our mcmc procedure in Nimble&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)
 mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
@@ -714,7 +728,7 @@ Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&qu
 Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
-  2.411   0.021   2.434 &lt;/code&gt;&lt;/pre&gt;
+  1.121   0.028   1.149 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
 df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
 &lt;h4 id=&quot;posteriors&quot;&gt;Posteriors&lt;/h4&gt;
@@ -759,7 +773,7 @@ df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;
 out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;metrop&lt;/span&gt;(posterior, &lt;span class=&quot;dt&quot;&gt;initial =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;l =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;sigma.n =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;), &lt;span class=&quot;dt&quot;&gt;nbatch =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; obs$x, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; obs$y)  
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 36.485   0.442  37.202 &lt;/code&gt;&lt;/pre&gt;
+ 18.233   0.000  18.281 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;burnin &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;
 thin &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;
 df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;cbind&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;index=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:out$nbatch, &lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(out$batch)))
@@ -881,8 +895,8 @@ m &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;k
 &lt;pre&gt;&lt;code&gt;Source: local data frame [2 x 3]
 
       key         mean          std
-1       l 49845.347322 29128.275365
-2 sigma.n     2.188315     1.372436&lt;/code&gt;&lt;/pre&gt;
+1       l 49713.508780 28953.615713
+2 sigma.n     2.149684     1.199397&lt;/code&gt;&lt;/pre&gt;
 &lt;h4 id=&quot;traces&quot;&gt;Traces&lt;/h4&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sample_n&lt;/span&gt;(df,&lt;span class=&quot;dv&quot;&gt;500&lt;/span&gt;)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -1138,8 +1152,9 @@ inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&qu
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
+&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Debian GNU/Linux 8 (jessie)
 
 locale:
  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -1154,21 +1169,21 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.0          
+[1] dplyr_0.4.1             ggplot2_1.0.1          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
-[5] nimble_0.3              yaml_2.1.13            
+[5] nimble_0.3-1            yaml_2.1.13            
 [7] knitr_1.9              
 
 loaded via a namespace (and not attached):
- [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-10
- [4] colorspace_1.2-4 DBI_0.3.1        devtools_1.7.0  
- [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
-[10] grid_3.1.2       gtable_0.1.2     httr_0.6.1      
+ [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-11
+ [4] colorspace_1.2-6 DBI_0.3.1        devtools_1.7.0  
+ [7] digest_0.6.8     evaluate_0.6     formatR_1.1     
+[10] grid_3.1.3       gtable_0.1.2     httr_0.6.1      
 [13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
-[19] parallel_3.1.2   plyr_1.8.1       proto_0.3-10    
-[22] Rcpp_0.11.4      RCurl_1.95-4.5   reshape2_1.4.1  
-[25] scales_0.2.4     stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
+[16] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
+[19] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
+[22] Rcpp_0.11.5      RCurl_1.95-4.5   reshape2_1.4.1  
+[25] scales_0.2.4     stringr_0.6.2    tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
@@ -1339,8 +1354,9 @@ inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&qu
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
+&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Debian GNU/Linux 8 (jessie)
 
 locale:
  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -1355,21 +1371,21 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.0          
+[1] dplyr_0.4.1             ggplot2_1.0.1          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
-[5] nimble_0.3              yaml_2.1.13            
+[5] nimble_0.3-1            yaml_2.1.13            
 [7] knitr_1.9              
 
 loaded via a namespace (and not attached):
- [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-10
- [4] colorspace_1.2-4 DBI_0.3.1        devtools_1.7.0  
- [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
-[10] grid_3.1.2       gtable_0.1.2     httr_0.6.1      
+ [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-11
+ [4] colorspace_1.2-6 DBI_0.3.1        devtools_1.7.0  
+ [7] digest_0.6.8     evaluate_0.6     formatR_1.1     
+[10] grid_3.1.3       gtable_0.1.2     httr_0.6.1      
 [13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
-[19] parallel_3.1.2   plyr_1.8.1       proto_0.3-10    
-[22] Rcpp_0.11.4      RCurl_1.95-4.5   reshape2_1.4.1  
-[25] scales_0.2.4     stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
+[16] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
+[19] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
+[22] Rcpp_0.11.5      RCurl_1.95-4.5   reshape2_1.4.1  
+[25] scales_0.2.4     stringr_0.6.2    tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
@@ -1642,13 +1658,11 @@ all_taxa &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=
 x1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots=&lt;/span&gt;.dots)
 
 &lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x1)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;This lets us treat the arguments (e.g. values of the factor on which we filter) as variables:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;family &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;#39;Scaridae&amp;#39;&lt;/span&gt;
 .dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(~Family ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;family)
 x2 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots=&lt;/span&gt;.dots)
 &lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x2)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;If we want both the key and value to vary, we need to get pretty fancy to subvert the non-standard evaluation:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(lazyeval)
 family &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;#39;Scaridae&amp;#39;&lt;/span&gt;
@@ -1657,7 +1671,6 @@ field &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;#39;Family&amp;#39;&lt;/sp
                      &lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;as.name&lt;/span&gt;(field), &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; family)))
 x3 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots=&lt;/span&gt;.dots)
 &lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x3)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;query &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;Family =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;Scaridae&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;SpecCode =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5537&lt;/span&gt;)
 dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(query), function(level){
@@ -2026,12 +2039,10 @@ Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
 Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e6&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;NULL&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and examine results&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
-&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 5000   84&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]
+&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)
+samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]
 long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(samples, &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, mean)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;            m       sigma_x       sigma_y         theta 
@@ -2049,8 +2060,9 @@ long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;img src=&quot;/2015/assets/figures/posts/2015-01-13-detrend-example/histogram-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
+&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Debian GNU/Linux 8 (jessie)
 
 locale:
  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -2065,18 +2077,18 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] tidyr_0.2.0        ggplot2_1.0.0      earlywarning_0.0-1
-[4] nimble_0.3         yaml_2.1.13        knitr_1.9         
+[1] tidyr_0.2.0        ggplot2_1.0.1      earlywarning_0.0-1
+[4] nimble_0.3-1       yaml_2.1.13        knitr_1.9         
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-10 colorspace_1.2-4 deSolve_1.11    
- [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
- [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
-[10] labeling_0.3     MASS_7.3-39      mnormt_1.5-1    
-[13] munsell_0.4.2    parallel_3.1.2   plyr_1.8.1      
-[16] proto_0.3-10     psych_1.5.1      Rcpp_0.11.4     
+ [1] codetools_0.2-11 colorspace_1.2-6 deSolve_1.11    
+ [4] digest_0.6.8     evaluate_0.6     formatR_1.1     
+ [7] grid_3.1.3       gtable_0.1.2     igraph_0.7.1    
+[10] labeling_0.3     MASS_7.3-40      mnormt_1.5-2    
+[13] munsell_0.4.2    parallel_3.1.3   plyr_1.8.1      
+[16] proto_0.3-10     psych_1.5.1      Rcpp_0.11.5     
 [19] reshape2_1.4.1   scales_0.2.4     stringr_0.6.2   
-[22] tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
+[22] tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
@@ -2187,9 +2199,8 @@ opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quo
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;123&lt;/span&gt;)
 d &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;-x))
 s &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) 
-data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sde.sim&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;X0=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;drift=&lt;/span&gt;d, &lt;span class=&quot;dt&quot;&gt;sigma=&lt;/span&gt;s, &lt;span class=&quot;dt&quot;&gt;T=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;20&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;N=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;sigma.x not provided, attempting symbolic derivation.&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(data) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(x),x))
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sde.sim&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;X0=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;drift=&lt;/span&gt;d, &lt;span class=&quot;dt&quot;&gt;sigma=&lt;/span&gt;s, &lt;span class=&quot;dt&quot;&gt;T=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;20&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;N=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;))
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(data) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(x),x))
 N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(data$x)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png&quot; /&gt;
@@ -2225,12 +2236,10 @@ Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
 Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e6&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;NULL&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and examine results&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
-&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 5000  206&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]
+&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)
+samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;]
 long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(samples, &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, mean)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;            m       sigma_x       sigma_y         theta 
@@ -2248,7 +2257,7 @@ long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.3 RC (2015-03-06 r67947)
+&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Debian GNU/Linux 8 (jessie)
 
@@ -2261,19 +2270,19 @@ locale:
 [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
-[1] stats4    splines   methods   stats     graphics  grDevices
+[1] splines   stats4    methods   stats     graphics  grDevices
 [7] utils     datasets  base     
 
 other attached packages:
- [1] tidyr_0.2.0   ggplot2_1.0.0 sde_2.0.13    zoo_1.7-11   
- [5] fda_2.4.4     Matrix_1.1-5  MASS_7.3-39   nimble_0.3-1 
+ [1] tidyr_0.2.0   ggplot2_1.0.1 sde_2.0.13    zoo_1.7-12   
+ [5] fda_2.4.4     Matrix_1.1-5  MASS_7.3-40   nimble_0.3-1 
  [9] yaml_2.1.13   knitr_1.9    
 
 loaded via a namespace (and not attached):
  [1] codetools_0.2-11 colorspace_1.2-6 digest_0.6.8    
- [4] evaluate_0.5.5   formatR_1.0      grid_3.1.3      
+ [4] evaluate_0.6     formatR_1.1      grid_3.1.3      
  [7] gtable_0.1.2     igraph_0.7.1     labeling_0.3    
-[10] lattice_0.20-30  munsell_0.4.2    plyr_1.8.1      
+[10] lattice_0.20-31  munsell_0.4.2    plyr_1.8.1      
 [13] proto_0.3-10     Rcpp_0.11.5      reshape2_1.4.1  
 [16] scales_0.2.4     stringr_0.6.2    tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
 </content>

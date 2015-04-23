@@ -324,10 +324,10 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 }</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">kalman &lt;-<span class="st"> </span>function(df, ...){
   y &lt;-<span class="st"> </span>df$logN
-  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
-  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
-  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
-  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>)
+  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, ...) 
+  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, ...) 
+  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, ...) 
+  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, ...)
   <span class="kw">options</span>(<span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>)
   <span class="kw">rbind</span>(<span class="kw">data.frame</span>(<span class="dt">model =</span><span class="st">&quot;ssg&quot;</span>, <span class="kw">gather</span>(ssg, parameter, value)),
         <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;ssrw&quot;</span>, <span class="kw">gather</span>(ssrw, parameter, value)),
@@ -340,7 +340,7 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits
 )</code></pre>
 <pre><code>    user   system  elapsed 
-12221.68   228.48 12480.11 </code></pre>
+5862.068  168.046 6047.051 </code></pre>
 <hr />
 <p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization (despite the documentation of <code>dplyr::init_cluster()</code> describing parallel <code>dplyr::do()</code> use, this feature is not actually implemented yet). Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># not run</span>
@@ -354,36 +354,50 @@ list_data &lt;-<span class="st"> </span><span class="kw">mclapply</span>(<span c
 fits_list &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, kalman, <span class="dt">method=</span><span class="st">&quot;BFGS&quot;</span>)
 
 ## reshape outputs back to a data.frame
-fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
+fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits_list[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
 <hr />
 <p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
-<pre><code>Source: local data frame [45,727 x 4]
+<pre><code>Source: local data frame [45,730 x 4]
 Groups: MainID
 
    MainID model parameter         value
-1       3   ssg        dt  3.466916e+00
-2       3   ssg        Tt -1.334051e-01
-3       3   ssg       HHt  6.394019e-02
-4       3   ssg       GGt  1.765346e-01
+1       3   ssg        dt  3.467069e+00
+2       3   ssg        Tt -1.334439e-01
+3       3   ssg       HHt  6.378128e-02
+4       3   ssg       GGt  1.767062e-01
 5       3   ssg   mloglik  2.050357e+01
 6       3   ssg  converge  0.000000e+00
 7       3   ssg         n  2.700000e+01
 8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.431723e-04
-10      3  ssrw       HHt  3.562612e-09
+9       3  ssrw        dt  7.443238e-04
+10      3  ssrw       HHt  2.120082e-09
 ..    ...   ...       ...           ...</code></pre>
-<p>A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.</p>
-<p>and here is our version then of Figure 1b:</p>
+<p>and here is our version then of Figure 1b, comparing the estimate of the density-dependence coefficent with and without the uncertainty in observations:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
 <span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%
 <span class="st">  </span><span class="kw">spread</span>(model, value) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssg, g)) +
-<span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;c estimates&quot;</span>)</code></pre>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(g, ssg)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.2</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;c estimates&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-12-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1b-1.png" />
+</figure>
+<p>Likewise we can compute a version of Figure 1a; which calculates the absolute value of the difference between the estimates of density-dependence with and without the uncertainty, and then plots how frequently we observe a difference larger than a given amount in the data. (The paper finds around 20% having a difference larger than 0.5)</p>
+<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(model, value) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">difference =</span> <span class="kw">abs</span>(g-ssg)) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(difference) -&gt;<span class="st"> </span>diffs
+  
+s &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">length=</span><span class="dv">100</span>)
+fig1a &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, function(s_i) <span class="kw">mean</span>(diffs$difference &gt;<span class="st"> </span>s_i))
+<span class="kw">qplot</span>(s, fig1a)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1a-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;ssrw&quot;</span>), parameter ==<span class="st"> &quot;GGt&quot;</span>) %&gt;%
@@ -393,7 +407,7 @@ Groups: MainID
 <span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;sigma^2 (obs error)&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-13-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-12-1.png" />
 </figure>
 <hr />
 <h2 id="aside-further-exploring-numerical-issues">Aside: further exploring numerical issues</h2>
@@ -405,7 +419,7 @@ Groups: MainID
 
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-13-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(MainID==<span class="dv">1998</span>) %&gt;%<span class="st"> </span>
@@ -415,7 +429,7 @@ Groups: MainID
 
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png" />
 </figure>
 <p>Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>Nile, <span class="dt">all=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
@@ -423,7 +437,7 @@ Groups: MainID
 <span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value) -&gt;<span class="st"> </span>all
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-16-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png" />
 </figure>
 <hr />
 <h2 id="side-note-on-coding-strategy">Side note on coding strategy</h2>
@@ -493,7 +507,7 @@ Groups: MainID
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/c9e6a9dbbe018c3e19820d77f88d2da80f5b646b/_posts/2015-04-06-gpdd-explore.Rmd"> c9e6a9dbbe018c3e19820d77f88d2da80f5b646b</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/261f4a3337c2506cacb54033dd368c55f44f6896/_posts/2015-04-06-gpdd-explore.Rmd"> 261f4a3337c2506cacb54033dd368c55f44f6896</a></small></p>
     
   <br/>
   

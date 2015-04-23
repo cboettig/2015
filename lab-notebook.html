@@ -362,10 +362,10 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 }</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">kalman &lt;-<span class="st"> </span>function(df, ...){
   y &lt;-<span class="st"> </span>df$logN
-  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
-  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
-  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>) 
-  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, <span class="dt">method=</span><span class="st">&#39;BFGS&#39;</span>)
+  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, ...) 
+  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, ...) 
+  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, ...) 
+  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, ...)
   <span class="kw">options</span>(<span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>)
   <span class="kw">rbind</span>(<span class="kw">data.frame</span>(<span class="dt">model =</span><span class="st">&quot;ssg&quot;</span>, <span class="kw">gather</span>(ssg, parameter, value)),
         <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;ssrw&quot;</span>, <span class="kw">gather</span>(ssrw, parameter, value)),
@@ -378,7 +378,7 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits
 )</code></pre>
 <pre><code>    user   system  elapsed 
-12221.68   228.48 12480.11 </code></pre>
+5862.068  168.046 6047.051 </code></pre>
 <hr />
 <p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization (despite the documentation of <code>dplyr::init_cluster()</code> describing parallel <code>dplyr::do()</code> use, this feature is not actually implemented yet). Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># not run</span>
@@ -392,36 +392,50 @@ list_data &lt;-<span class="st"> </span><span class="kw">mclapply</span>(<span c
 fits_list &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, kalman, <span class="dt">method=</span><span class="st">&quot;BFGS&quot;</span>)
 
 ## reshape outputs back to a data.frame
-fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
+fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits_list[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
 <hr />
 <p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
-<pre><code>Source: local data frame [45,727 x 4]
+<pre><code>Source: local data frame [45,730 x 4]
 Groups: MainID
 
    MainID model parameter         value
-1       3   ssg        dt  3.466916e+00
-2       3   ssg        Tt -1.334051e-01
-3       3   ssg       HHt  6.394019e-02
-4       3   ssg       GGt  1.765346e-01
+1       3   ssg        dt  3.467069e+00
+2       3   ssg        Tt -1.334439e-01
+3       3   ssg       HHt  6.378128e-02
+4       3   ssg       GGt  1.767062e-01
 5       3   ssg   mloglik  2.050357e+01
 6       3   ssg  converge  0.000000e+00
 7       3   ssg         n  2.700000e+01
 8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.431723e-04
-10      3  ssrw       HHt  3.562612e-09
+9       3  ssrw        dt  7.443238e-04
+10      3  ssrw       HHt  2.120082e-09
 ..    ...   ...       ...           ...</code></pre>
-<p>A bit worrying that one of our simpler models sometimes have better (smaller) minus log likelihood scores than the full SSG model; but that model (3, SSRW) also has a flag indicating convergence issues.</p>
-<p>and here is our version then of Figure 1b:</p>
+<p>and here is our version then of Figure 1b, comparing the estimate of the density-dependence coefficent with and without the uncertainty in observations:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
 <span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%
 <span class="st">  </span><span class="kw">spread</span>(model, value) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssg, g)) +
-<span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;c estimates&quot;</span>)</code></pre>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(g, ssg)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.2</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;c estimates&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-12-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1b-1.png" />
+</figure>
+<p>Likewise we can compute a version of Figure 1a; which calculates the absolute value of the difference between the estimates of density-dependence with and without the uncertainty, and then plots how frequently we observe a difference larger than a given amount in the data. (The paper finds around 20% having a difference larger than 0.5)</p>
+<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(model, value) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">difference =</span> <span class="kw">abs</span>(g-ssg)) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(difference) -&gt;<span class="st"> </span>diffs
+  
+s &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">length=</span><span class="dv">100</span>)
+fig1a &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, function(s_i) <span class="kw">mean</span>(diffs$difference &gt;<span class="st"> </span>s_i))
+<span class="kw">qplot</span>(s, fig1a)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1a-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;ssrw&quot;</span>), parameter ==<span class="st"> &quot;GGt&quot;</span>) %&gt;%
@@ -431,7 +445,7 @@ Groups: MainID
 <span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;sigma^2 (obs error)&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-13-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-12-1.png" />
 </figure>
 <hr />
 <h2 id="aside-further-exploring-numerical-issues">Aside: further exploring numerical issues</h2>
@@ -443,7 +457,7 @@ Groups: MainID
 
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-13-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(MainID==<span class="dv">1998</span>) %&gt;%<span class="st"> </span>
@@ -453,7 +467,7 @@ Groups: MainID
 
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png" />
 </figure>
 <p>Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>Nile, <span class="dt">all=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
@@ -461,7 +475,7 @@ Groups: MainID
 <span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value) -&gt;<span class="st"> </span>all
 <span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-16-1.png" />
+<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png" />
 </figure>
 <hr />
 <h2 id="side-note-on-coding-strategy">Side note on coding strategy</h2>
@@ -767,7 +781,7 @@ df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt
 </figure>
 <hr />
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.3 RC (2015-03-06 r67947)
+<pre><code>R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Debian GNU/Linux 8 (jessie)
 
@@ -784,17 +798,17 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.0          
+[1] dplyr_0.4.1             ggplot2_1.0.1          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
 [5] nimble_0.3-1            yaml_2.1.13            
 [7] knitr_1.9              
 
 loaded via a namespace (and not attached):
  [1] assertthat_0.1   codetools_0.2-11 colorspace_1.2-6
- [4] DBI_0.3.1        digest_0.6.8     evaluate_0.5.5  
- [7] formatR_1.0      grid_3.1.3       gtable_0.1.2    
+ [4] DBI_0.3.1        digest_0.6.8     evaluate_0.6    
+ [7] formatR_1.1      grid_3.1.3       gtable_0.1.2    
 [10] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[13] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[13] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
 [16] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
 [19] Rcpp_0.11.5      reshape2_1.4.1   scales_0.2.4    
 [22] stringr_0.6.2    tools_3.1.3     </code></pre>
@@ -840,18 +854,18 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
 <pre><code>[1] 1</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate</span>(Rmodel, <span class="st">&quot;l&quot;</span>)
 Rmodel$l</code></pre>
-<pre><code>[1] 10.37676</code></pre>
+<pre><code>[1] 12.82878</code></pre>
 <p>Other nodes and likelihoods are updated to reflect the new value only after we run <code>calculate()</code>, so this is the logProb of <code>l</code> originally:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
 <pre><code>[1] NA</code></pre>
 <p>After we run <code>calculate()</code>, the <code>logProb</code> is updated to reflect our simulated value of <code>l</code>, as are the dependent terms (like the Sigma matrix)</p>
 <pre class="sourceCode r"><code class="sourceCode r">Sigma &lt;-<span class="st"> </span>Rmodel$Sigma
 <span class="kw">calculate</span>(Rmodel)</code></pre>
-<pre><code>[1] -29.81744</code></pre>
+<pre><code>[1] -30.36035</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(Sigma, Rmodel$Sigma)</code></pre>
 <pre><code>[1] FALSE</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
-<pre><code>[1] -2.122469</code></pre>
+<pre><code>[1] -2.665388</code></pre>
 <p>Interestingly, we don’t seem to be able to simulate actual data from the model in this way:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$y</code></pre>
 <pre><code>[1] -2  0  1  2 -1</code></pre>
@@ -862,7 +876,7 @@ Rmodel$y</code></pre>
 <pre><code>[1] TRUE</code></pre>
 <p>Note that <code>y</code> remaines fixed to the original data values. We have to do this manually:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mvrnorm</span>(<span class="dt">mu =</span> constants$Mu, <span class="dt">Sigma =</span> Rmodel$Sigma) </code></pre>
-<pre><code>[1]  -7.498019 -20.999389   4.939137  11.751509  -8.123005</code></pre>
+<pre><code>[1]  4.912117 19.095320 -6.258376  5.700355  2.688588</code></pre>
 <p>Define our mcmc procedure in Nimble</p>
 <pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
 mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>)
@@ -872,7 +886,7 @@ Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc,
 Cmcmc$<span class="kw">run</span>(<span class="fl">1e5</span>)
 )</code></pre>
 <pre><code>   user  system elapsed 
-  2.411   0.021   2.434 </code></pre>
+  1.121   0.028   1.149 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
 df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <h4 id="posteriors">Posteriors</h4>
@@ -917,7 +931,7 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code><
 out &lt;-<span class="st"> </span><span class="kw">metrop</span>(posterior, <span class="dt">initial =</span> <span class="kw">c</span>(<span class="dt">l =</span> <span class="dv">1</span>,<span class="dt">sigma.n =</span> <span class="dv">10</span>), <span class="dt">nbatch =</span> <span class="fl">1e5</span>, <span class="dt">x =</span> obs$x, <span class="dt">y =</span> obs$y)  
 )</code></pre>
 <pre><code>   user  system elapsed 
- 36.485   0.442  37.202 </code></pre>
+ 18.233   0.000  18.281 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">burnin &lt;-<span class="st"> </span><span class="fl">1e3</span>
 thin &lt;-<span class="st"> </span><span class="fl">1e2</span>
 df &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">index=</span><span class="dv">1</span>:out$nbatch, <span class="kw">as.data.frame</span>(<span class="kw">exp</span>(out$batch)))
@@ -1053,8 +1067,8 @@ m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class=
 <pre><code>Source: local data frame [2 x 3]
 
       key         mean          std
-1       l 49845.347322 29128.275365
-2 sigma.n     2.188315     1.372436</code></pre>
+1       l 49713.508780 28953.615713
+2 sigma.n     2.149684     1.199397</code></pre>
 <h4 id="traces">Traces</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df,<span class="dv">500</span>)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
@@ -1330,8 +1344,9 @@ inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt
 </figure>
 <hr />
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.2 (2014-10-31)
+<pre><code>R version 3.1.3 (2015-03-09)
 Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Debian GNU/Linux 8 (jessie)
 
 locale:
  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -1346,21 +1361,21 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.0          
+[1] dplyr_0.4.1             ggplot2_1.0.1          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
-[5] nimble_0.3              yaml_2.1.13            
+[5] nimble_0.3-1            yaml_2.1.13            
 [7] knitr_1.9              
 
 loaded via a namespace (and not attached):
- [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-10
- [4] colorspace_1.2-4 DBI_0.3.1        devtools_1.7.0  
- [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
-[10] grid_3.1.2       gtable_0.1.2     httr_0.6.1      
+ [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-11
+ [4] colorspace_1.2-6 DBI_0.3.1        devtools_1.7.0  
+ [7] digest_0.6.8     evaluate_0.6     formatR_1.1     
+[10] grid_3.1.3       gtable_0.1.2     httr_0.6.1      
 [13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
-[19] parallel_3.1.2   plyr_1.8.1       proto_0.3-10    
-[22] Rcpp_0.11.4      RCurl_1.95-4.5   reshape2_1.4.1  
-[25] scales_0.2.4     stringr_0.6.2    tools_3.1.2     </code></pre>
+[16] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
+[19] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
+[22] Rcpp_0.11.5      RCurl_1.95-4.5   reshape2_1.4.1  
+[25] scales_0.2.4     stringr_0.6.2    tools_3.1.3     </code></pre>
  
 <!-- not that raw_content depends on custom generator, 
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
