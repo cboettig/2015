@@ -162,10 +162,12 @@ Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmode
 Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
+<pre><code>NULL</code></pre>
 <p>and examine results</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+<span class="kw">dim</span>(samples)</code></pre>
+<pre><code>[1] 5000   84</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
 long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
 <pre><code>            m       sigma_x       sigma_y         theta 
@@ -205,10 +207,10 @@ other attached packages:
 
 loaded via a namespace (and not attached):
  [1] codetools_0.2-11 colorspace_1.2-6 deSolve_1.11    
- [4] digest_0.6.8     evaluate_0.6     formatR_1.1     
+ [4] digest_0.6.8     evaluate_0.7     formatR_1.2     
  [7] grid_3.1.3       gtable_0.1.2     igraph_0.7.1    
 [10] labeling_0.3     MASS_7.3-40      mnormt_1.5-2    
-[13] munsell_0.4.2    parallel_3.1.3   plyr_1.8.1      
+[13] munsell_0.4.2    parallel_3.1.3   plyr_1.8.2      
 [16] proto_0.3-10     psych_1.5.1      Rcpp_0.11.5     
 [19] reshape2_1.4.1   scales_0.2.4     stringr_0.6.2   
 [22] tools_3.1.3     </code></pre>
