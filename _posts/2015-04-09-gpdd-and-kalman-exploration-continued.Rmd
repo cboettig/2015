@@ -1,9 +1,9 @@
 ---
 layout: post
 category: ecology
-published: false
 tags:
   - gpdd
+  
 ---
 
 
@@ -217,7 +217,7 @@ and from before:
 
 ```{r message=FALSE}
 system.time(
-df %>% do(kalman(., method = "BFGS")) -> fits
+df %>% group_by(MainID) %>% do_parallel(kalman, method = "BFGS") -> fits
 )
 ```
 
@@ -226,7 +226,7 @@ df %>% do(kalman(., method = "BFGS")) -> fits
 
 From these simulations and corresponding parameter estimates of the density-dependent parameter, we can create our version of Figure 2:
 
-```{r figure2, eval=FALSE}
+```{r figure2 }
 
 combined <- rbind(
   fits %>% 
@@ -237,16 +237,16 @@ combined <- rbind(
   select(model, value, MainID) %>% mutate(type = "independent"),
   DD_fits %>% 
   filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
-  select(model, value, MainID) %>% mutate(type = "dependent"))
-
-## Rename factor levels and re-order
-combined %>% 
+  select(model, value, MainID) %>% mutate(type = "dependent")) %>%
   ungroup() %>% 
-  transmute(uncertainty = plyr::revalue(model, c(ssg = "accounting for uncertainty",
-                                                 g = "ignoring uncertainty")),
-                         type, value, MainID) -> 
-  combined
+  transmute(uncertainty = 
+              plyr::revalue(model, 
+                            c(ssg = "accounting for uncertainty",
+                              g = "ignoring uncertainty")),
+            type, value, MainID)
+```
 
+```{r}
 ggplot(combined) + 
   geom_histogram(aes(value)) + 
   facet_grid(uncertainty ~ type)
@@ -287,24 +287,6 @@ bootstrap <- function(df, null_model = "ssrw", test_model = "ssg", N=100){
 
 With these functions defined, we can perform the actual analysis.  
 
-```{r }
-system.time(
-  df %>% group_by(MainID) %>% do(bootstrap(., "ssrw", "ssg")) -> ssg_p_values
-)
-```
-
-```{r }
-system.time(
-  df %>% group_by(MainID) %>% do(bootstrap(., "rw", "g")) -> g_p_values
-  )
-```
-
-
-
-
-------
-
-
 
 
 ```{r}
@@ -321,9 +303,6 @@ system.time(
 ```
 
 
-
-
-
 We can also do the bootstrapping for the simulated data:
 
 
@@ -335,10 +314,42 @@ system.time(
 
 ```{r}
 system.time(
+ DD %>% group_by(MainID) %>% do_parallel(bootstrap, "rw", "g") -> dd_g_p_values
+)
+```
+
+
+```{r}
+system.time(
+ DI %>% group_by(MainID) %>% do_parallel(bootstrap, "ssrw", "ssg") -> dd_ssg_p_values
+)
+```
+
+```{r}
+system.time(
   DI %>% group_by(MainID) %>% do_parallel(bootstrap, "rw", "g") -> di_g_p_values
 )
 ```
 
+
+
+
+
+```{r}
+P <- rbind(
+  ssg_p_values %>% mutate(data = "real", model = "ssg"),
+  g_p_values %>% mutate(data = "real", model = "g"),
+  di_ssg_p_values %>% mutate(data = "DI", model = "ssg"),
+  di_g_p_values %>% mutate(data = "DI", model = "g"),
+  dd_g_p_values %>% mutate(data = "DD", model = "g"),
+  dd_ssg_p_values %>% mutate(data = "DD", model = "ssg"))
+
+
+ggplot(P) + 
+  geom_histogram(aes(p)) + 
+  facet_grid(model ~ data)
+
+```
 
 ----
 
