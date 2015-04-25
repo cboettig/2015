@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-23T05:40:53+00:00</updated>
+  <updated>2015-04-25T10:57:23+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -23,6 +23,242 @@
 &lt;p&gt;I was fortunate to have independent funding for most but not all of my post-doc, and to work in a field where researchers are often given substantial independence and in which open practices are common. Nonetheless these were not practices shared by either of my two excellent co-advisers, who gave only a neutral or vaguely positive response to these ideas.&lt;/p&gt;
 &lt;p&gt;Nevertheless, I learned more about &lt;em&gt;old-school&lt;/em&gt; open science from them than I had ever imagined. When I sent Marc the first draft of our paper, I had buried almost all of the equations in a curt appendix with minimal and jargon-laden supporting text. No sir, those equations not only had to appear in the main text, but I must endeavor to explain the meaning and relevance of each one in a language clear and concise enough for any ecologist to follow. I won’t claim to have succeeded, but boy did continuous integration on my unit tests feel like a low bar for openness by comparison.&lt;/p&gt;
 &lt;p&gt;Meanwhile, I also felt I had the support and mentorship of an online community of open scientists even without going to work for one of them. I am thankful that my mentors have always been tolerant of my open science experimentation, but I would have enjoyed working with them even if it had been otherwise. There was much to learn from them, much to learn from the open science community, and after all, a post-doc position doesn’t last forever.&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Gpdd And Kalman Exploration Continued</title>
+	 <link href="//04/09/gpdd-and-kalman-exploration-continued.html"/>
+   <updated>2015-04-09T00:00:00+00:00</updated>
+   <id>/04/09/gpdd-and-kalman-exploration-continued</id>
+   <content type="html">&lt;p&gt;Load libraries and data as before&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ggplot2&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;tidyr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;knitcitations&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rgpdd&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;FKF&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;parallel-version-of-dplyrdo&quot;&gt;Parallel version of &lt;code&gt;dplyr::do&lt;/code&gt;&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;do_parallel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(df, f, ...){
+
+  &lt;span class=&quot;co&quot;&gt;# supports only one group for now&lt;/span&gt;
+
+  &lt;span class=&quot;kw&quot;&gt;require&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;parallel&amp;quot;&lt;/span&gt;)
+  &lt;span class=&quot;kw&quot;&gt;require&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;lazyeval&amp;quot;&lt;/span&gt;)
+  &lt;span class=&quot;kw&quot;&gt;require&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;reshape2&amp;quot;&lt;/span&gt;)
+  &lt;span class=&quot;kw&quot;&gt;options&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;mc.cores =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;detectCores&lt;/span&gt;())
+
+  grps &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;groups&lt;/span&gt;(df)
+  ids &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(grps, function(i) &lt;span class=&quot;kw&quot;&gt;unique&lt;/span&gt;(df[[&lt;span class=&quot;kw&quot;&gt;as.character&lt;/span&gt;(i)]]))
+  &lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(ids) &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.character&lt;/span&gt;(ids)
+  ## turn grouped data.frame to a list of data.frames by MainID
+  list_data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(ids, 
+                      function(id){ 
+                        .dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;interp&lt;/span&gt;(~y ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x, &lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; grps[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]], &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; id)))
+                        &lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(df, &lt;span class=&quot;dt&quot;&gt;.dots =&lt;/span&gt; .dots)
+                      })
+
+  ## Actually do the fitting in parallel
+  list_out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mclapply&lt;/span&gt;(list_data, f, ...)
+
+  ## reshape outputs back to a data.frame
+  &lt;span class=&quot;kw&quot;&gt;melt&lt;/span&gt;(list_out, &lt;span class=&quot;dt&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(list_out[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]])) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename_&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;.dots =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;setNames&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;L1&amp;quot;&lt;/span&gt;), &lt;span class=&quot;kw&quot;&gt;as.character&lt;/span&gt;(grps[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]])) ) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;              &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as_data_frame&lt;/span&gt;()
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;prepare-data&quot;&gt;Prepare data&lt;/h2&gt;
+&lt;p&gt;Prepare data, as before: we filter on the stated criteria&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;gpdd_main %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(SamplingProtocol ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Count&amp;quot;&lt;/span&gt;,
+         SourceDimension %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Count&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;Index&amp;quot;&lt;/span&gt;), 
+         SamplingFrequency ==&lt;span class=&quot;st&quot;&gt; &amp;quot;1&amp;quot;&lt;/span&gt;,
+         DatasetLength &amp;gt;=&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;15&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(MainID) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;arrange&lt;/span&gt;(MainID) -&amp;gt;
+filtered&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and select data matching this filter. We add a column for the log of the population size and group by data ID:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;gpdd_data %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(MainID %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;filtered$MainID) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(MainID, Population, SampleYear) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;logN =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;log&lt;/span&gt;(Population)) -&amp;gt;
+df&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Lastly, we replace &lt;code&gt;-Inf&lt;/code&gt; (introduced from &lt;code&gt;log(0)&lt;/code&gt; terms) with smallest finite values observed. (arbitrary, authors do not specify how these values are handled.)&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;i &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;which&lt;/span&gt;(df$logN ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;-&lt;span class=&quot;ot&quot;&gt;Inf&lt;/span&gt;)
+df$logN[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;min&lt;/span&gt;(df$logN[-i])-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We may test on a subset of the data first:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;#not run&lt;/span&gt;
+some &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sample&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;unique&lt;/span&gt;(df$MainID), &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
+df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(MainID %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;some) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;df&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;import-function-definitions&quot;&gt;Import function definitions&lt;/h2&gt;
+&lt;p&gt;We import our previous model definitions:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;downloader::&lt;span class=&quot;kw&quot;&gt;download&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;https://github.com/ropensci/rgpdd/raw/master/inst/scripts/knape-de-valpine.R&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;knape-de-valpine.R&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;source&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;knape-de-valpine.R&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;unlink&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;knape-de-valpine.R&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;simulating&quot;&gt;Simulating&lt;/h2&gt;
+&lt;p&gt;FKF package doesn’t bother to define a simulation method, so we can simply define one directly from the state equations. Though a C implementation would be preferrable, fitting will always be much more rate-limiting. (We will also ignore the multi-variate definition for simplicity here).&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;use &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x, default){
+  if(&lt;span class=&quot;kw&quot;&gt;is.null&lt;/span&gt;(x))
+    default
+  else
+    x
+}
+
+sim_fkf &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(fit){
+  n &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit[[&lt;span class=&quot;st&quot;&gt;&amp;quot;n&amp;quot;&lt;/span&gt;]]
+  dt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit[[&lt;span class=&quot;st&quot;&gt;&amp;quot;dt&amp;quot;&lt;/span&gt;]]
+  HHt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit[[&lt;span class=&quot;st&quot;&gt;&amp;quot;HHt&amp;quot;&lt;/span&gt;]]
+  Tt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;use&lt;/span&gt;(fit[[&lt;span class=&quot;st&quot;&gt;&amp;quot;Tt&amp;quot;&lt;/span&gt;]], &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)
+  GGt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;use&lt;/span&gt;(fit[[&lt;span class=&quot;st&quot;&gt;&amp;quot;GGt&amp;quot;&lt;/span&gt;]], &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)
+  a0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit[[&lt;span class=&quot;st&quot;&gt;&amp;quot;a0&amp;quot;&lt;/span&gt;]]
+  ct &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;
+  Zt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;
+  
+  a &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(n)
+  y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(n)
+  eta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rnorm&lt;/span&gt;(n, dt, &lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(HHt))
+  epsilon &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rnorm&lt;/span&gt;(n, ct, &lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(GGt))
+  a[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;a0
+    for(t in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(n&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)){
+      a[t&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Tt *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;a[t] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;eta[t]
+      y[t] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Zt *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;a[t] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;epsilon[t]
+    }
+        y[n] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Zt *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;a[n] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;epsilon[n]
+  y
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The study also creates simulated datasets based on the real data but explicitly making the assumption of either density independence (DI) or density dependence (DD). For each dataset, a density-independent simulated dataset is created by simulating under the SSRW model that was fit. The density-dependent model is created by explicitly fixing the density dependent parameter (&lt;span class=&quot;math&quot;&gt;\(c\)&lt;/span&gt; in the language of the paper, &lt;code&gt;Tt&lt;/code&gt; in FKF notation) to 0.8 and estimating the other parameters of this modified SSG model. We can define this model analgously to the others, only this time fixing &lt;code&gt;Tt = 0.8&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fit_dd &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, 
+                   &lt;span class=&quot;dt&quot;&gt;init =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dt =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(y), &lt;span class=&quot;dt&quot;&gt;HHt =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;log&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(y)/&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;), &lt;span class=&quot;dt&quot;&gt;GGt =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;log&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;var&lt;/span&gt;(y)/&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)),
+                   ...){
+    
+    o &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;optim&lt;/span&gt;(init,
+                 &lt;span class=&quot;dt&quot;&gt;fn =&lt;/span&gt;  function(par, ...)
+                   -&lt;span class=&quot;kw&quot;&gt;fkf&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dt =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(par[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]), &lt;span class=&quot;dt&quot;&gt;HHt =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(par[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;])), 
+                        &lt;span class=&quot;dt&quot;&gt;GGt =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(par[&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;])), ...)$logLik,
+                 &lt;span class=&quot;dt&quot;&gt;Tt =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;0.8&lt;/span&gt;), &lt;span class=&quot;dt&quot;&gt;a0 =&lt;/span&gt; y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;P0 =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;), 
+                 &lt;span class=&quot;dt&quot;&gt;ct =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;), &lt;span class=&quot;dt&quot;&gt;Zt =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;), &lt;span class=&quot;dt&quot;&gt;yt =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(y), 
+                 &lt;span class=&quot;dt&quot;&gt;check.input =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;, ...)
+  o$par[[&lt;span class=&quot;st&quot;&gt;&amp;quot;HHt&amp;quot;&lt;/span&gt;]] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(o$par[[&lt;span class=&quot;st&quot;&gt;&amp;quot;HHt&amp;quot;&lt;/span&gt;]])
+  o$par[[&lt;span class=&quot;st&quot;&gt;&amp;quot;GGt&amp;quot;&lt;/span&gt;]] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(o$par[[&lt;span class=&quot;st&quot;&gt;&amp;quot;GGt&amp;quot;&lt;/span&gt;]])
+  &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(o, &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;a0 =&lt;/span&gt; y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;n =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(y)))
+   
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The script adds a method for this to &lt;code&gt;robust_fit()&lt;/code&gt; as well; though given the computational cost it is not clear if a robust fit is actually used in generating the data.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;sim_di &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(df) &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;logN =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;sim_fkf&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, df$logN, &lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;)))
+sim_dd &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(df) &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;logN =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;sim_fkf&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dd&amp;quot;&lt;/span&gt;, df$logN, &lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(sim_di) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;DI
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+100.632   3.127 103.879 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+  df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(sim_dd) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;DD
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+ 99.320   2.913 102.372 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can then use these two collections of datasets just as before:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+  DD %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(kalman, &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;DD_fits
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in data.frame(model = &amp;quot;ssg&amp;quot;, gather(ssg, parameter, value)): arguments imply differing number of rows: 1, 0&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Timing stopped at: 3021.613 95.505 3120.433 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+  DI %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(kalman, &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;DI_fits
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;    user   system  elapsed 
+6293.416  208.204 6533.021 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and from before:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(kalman, &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;    user   system  elapsed 
+5638.109  193.054 5875.125 &lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;figure-2&quot;&gt;Figure 2&lt;/h4&gt;
+&lt;p&gt;From these simulations and corresponding parameter estimates of the density-dependent parameter, we can create our version of Figure 2:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;combined &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(
+  fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;),
+  DI_fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;independent&amp;quot;&lt;/span&gt;),
+  DD_fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;dependent&amp;quot;&lt;/span&gt;)) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ungroup&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;transmute&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;uncertainty =&lt;/span&gt; 
+              plyr::&lt;span class=&quot;kw&quot;&gt;revalue&lt;/span&gt;(model, 
+                            &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;ssg =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;accounting for uncertainty&amp;quot;&lt;/span&gt;,
+                              &lt;span class=&quot;dt&quot;&gt;g =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ignoring uncertainty&amp;quot;&lt;/span&gt;)),
+            type, value, MainID)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;DD_fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(combined) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(uncertainty ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;type)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in ggplot(combined): object &amp;#39;combined&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;bootstrapping&quot;&gt;Bootstrapping&lt;/h2&gt;
+&lt;p&gt;With fitting and simulating functions in place, defining the bootstrap is straight forward. We define these separately for the state-space Gompertz (ssg; i.e. the model with both density dependence and observational errors) and the Gompertz (g; density dependence, no observational error). We compare in each case to the simulations of the corresponding model without density dependence.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;bootstrap &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(df, &lt;span class=&quot;dt&quot;&gt;null_model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;test_model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;N=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;){
+  y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;df$logN
+  
+  ssg &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(test_model, y)
+  ssrw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(null_model, y)
+  sims &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;t&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;replicate&lt;/span&gt;(N, &lt;span class=&quot;kw&quot;&gt;sim_fkf&lt;/span&gt;(ssrw))))
+  
+  &lt;span class=&quot;co&quot;&gt;# We use a relaxed version of robust_fit, with N=3&lt;/span&gt;
+  sims %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rowwise&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;robust_fit&lt;/span&gt;(null_model, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;as.numeric&lt;/span&gt;(.), &lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(mloglik) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;null
+  
+  &lt;span class=&quot;co&quot;&gt;# compute p value of observed LR statistic relative to null distribution&lt;/span&gt;
+  lr &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(ssrw$mloglik -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;ssg$mloglik)
+  null_dist &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(null$mloglik -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;ssg$mloglik) 
+  &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;p =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(null_dist &amp;lt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;lr)/N)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With these functions defined, we can perform the actual analysis.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+  df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;ssg_p_values
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;     user    system   elapsed 
+13518.744   451.631 13989.005 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+  df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;g_p_values
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;    user   system  elapsed 
+5379.548  167.856 5554.810 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can also do the bootstrapping for the simulated data:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+ DD %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dd_ssg_p_values
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in numeric(n): invalid &amp;#39;length&amp;#39; argument&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Timing stopped at: 5876.874 185.698 6070.743 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+ DD %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dd_g_p_values
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in numeric(n): invalid &amp;#39;length&amp;#39; argument&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Timing stopped at: 2809.785 85.784 2899.52 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+ DI %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dd_ssg_p_values
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;     user    system   elapsed 
+14327.482   452.209 14813.232 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+  DI %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;di_g_p_values
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;    user   system  elapsed 
+5427.135  161.318 5621.888 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;P &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(
+  ssg_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;),
+  g_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;),
+  di_ssg_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DI&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;),
+  di_g_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DI&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;),
+  dd_g_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DD&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;),
+  dd_ssg_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DD&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;di_ssg_p_values&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(P) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(p)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(model ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;data)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in ggplot(P): object &amp;#39;P&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
 </content>
  </entry>
  

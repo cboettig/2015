@@ -139,6 +139,252 @@
         </div>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/04/09/gpdd-and-kalman-exploration-continued.html">Gpdd And Kalman Exploration Continued</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 09 Apr 2015</p>
+
+<article>
+<div class="excerpt">
+<p>Load libraries and data as before</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;knitcitations&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;rgpdd&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;FKF&quot;</span>)</code></pre>
+<h2 id="parallel-version-of-dplyrdo">Parallel version of <code>dplyr::do</code></h2>
+<pre class="sourceCode r"><code class="sourceCode r">do_parallel &lt;-<span class="st"> </span>function(df, f, ...){
+
+  <span class="co"># supports only one group for now</span>
+
+  <span class="kw">require</span>(<span class="st">&quot;parallel&quot;</span>)
+  <span class="kw">require</span>(<span class="st">&quot;lazyeval&quot;</span>)
+  <span class="kw">require</span>(<span class="st">&quot;reshape2&quot;</span>)
+  <span class="kw">options</span>(<span class="dt">mc.cores =</span> <span class="kw">detectCores</span>())
+
+  grps &lt;-<span class="st"> </span><span class="kw">groups</span>(df)
+  ids &lt;-<span class="st"> </span><span class="kw">sapply</span>(grps, function(i) <span class="kw">unique</span>(df[[<span class="kw">as.character</span>(i)]]))
+  <span class="kw">names</span>(ids) &lt;-<span class="st"> </span><span class="kw">as.character</span>(ids)
+  ## turn grouped data.frame to a list of data.frames by MainID
+  list_data &lt;-<span class="st"> </span><span class="kw">lapply</span>(ids, 
+                      function(id){ 
+                        .dots &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="kw">interp</span>(~y ==<span class="st"> </span>x, <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> grps[[<span class="dv">1</span>]], <span class="dt">x =</span> id)))
+                        <span class="kw">filter_</span>(df, <span class="dt">.dots =</span> .dots)
+                      })
+
+  ## Actually do the fitting in parallel
+  list_out &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, f, ...)
+
+  ## reshape outputs back to a data.frame
+  <span class="kw">melt</span>(list_out, <span class="dt">id=</span><span class="kw">names</span>(list_out[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">rename_</span>(<span class="dt">.dots =</span> <span class="kw">setNames</span>(<span class="kw">list</span>(<span class="st">&quot;L1&quot;</span>), <span class="kw">as.character</span>(grps[[<span class="dv">1</span>]])) ) %&gt;%
+<span class="st">              </span><span class="kw">as_data_frame</span>()
+}</code></pre>
+<h2 id="prepare-data">Prepare data</h2>
+<p>Prepare data, as before: we filter on the stated criteria</p>
+<pre class="sourceCode r"><code class="sourceCode r">gpdd_main %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(SamplingProtocol ==<span class="st"> &quot;Count&quot;</span>,
+         SourceDimension %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Count&quot;</span>, <span class="st">&quot;Index&quot;</span>), 
+         SamplingFrequency ==<span class="st"> &quot;1&quot;</span>,
+         DatasetLength &gt;=<span class="st"> </span><span class="dv">15</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(MainID) %&gt;%
+<span class="st">  </span><span class="kw">arrange</span>(MainID) -&gt;
+filtered</code></pre>
+<p>and select data matching this filter. We add a column for the log of the population size and group by data ID:</p>
+<pre class="sourceCode r"><code class="sourceCode r">gpdd_data %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(MainID %in%<span class="st"> </span>filtered$MainID) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(MainID, Population, SampleYear) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">logN =</span> <span class="kw">log</span>(Population)) -&gt;
+df</code></pre>
+<p>Lastly, we replace <code>-Inf</code> (introduced from <code>log(0)</code> terms) with smallest finite values observed. (arbitrary, authors do not specify how these values are handled.)</p>
+<pre class="sourceCode r"><code class="sourceCode r">i &lt;-<span class="st"> </span><span class="kw">which</span>(df$logN ==<span class="st"> </span>-<span class="ot">Inf</span>)
+df$logN[i] &lt;-<span class="st"> </span><span class="kw">min</span>(df$logN[-i])-<span class="dv">1</span></code></pre>
+<p>We may test on a subset of the data first:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#not run</span>
+some &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">unique</span>(df$MainID), <span class="dv">10</span>)
+df %&gt;%<span class="st"> </span><span class="kw">filter</span>(MainID %in%<span class="st"> </span>some) -&gt;<span class="st"> </span>df</code></pre>
+<h2 id="import-function-definitions">Import function definitions</h2>
+<p>We import our previous model definitions:</p>
+<pre class="sourceCode r"><code class="sourceCode r">downloader::<span class="kw">download</span>(<span class="st">&quot;https://github.com/ropensci/rgpdd/raw/master/inst/scripts/knape-de-valpine.R&quot;</span>, <span class="st">&quot;knape-de-valpine.R&quot;</span>)
+<span class="kw">source</span>(<span class="st">&quot;knape-de-valpine.R&quot;</span>)
+<span class="kw">unlink</span>(<span class="st">&quot;knape-de-valpine.R&quot;</span>)</code></pre>
+<h2 id="simulating">Simulating</h2>
+<p>FKF package doesn’t bother to define a simulation method, so we can simply define one directly from the state equations. Though a C implementation would be preferrable, fitting will always be much more rate-limiting. (We will also ignore the multi-variate definition for simplicity here).</p>
+<pre class="sourceCode r"><code class="sourceCode r">use &lt;-<span class="st"> </span>function(x, default){
+  if(<span class="kw">is.null</span>(x))
+    default
+  else
+    x
+}
+
+sim_fkf &lt;-<span class="st"> </span>function(fit){
+  n &lt;-<span class="st"> </span>fit[[<span class="st">&quot;n&quot;</span>]]
+  dt &lt;-<span class="st"> </span>fit[[<span class="st">&quot;dt&quot;</span>]]
+  HHt &lt;-<span class="st"> </span>fit[[<span class="st">&quot;HHt&quot;</span>]]
+  Tt &lt;-<span class="st"> </span><span class="kw">use</span>(fit[[<span class="st">&quot;Tt&quot;</span>]], <span class="dv">1</span>)
+  GGt &lt;-<span class="st"> </span><span class="kw">use</span>(fit[[<span class="st">&quot;GGt&quot;</span>]], <span class="dv">0</span>)
+  a0 &lt;-<span class="st"> </span>fit[[<span class="st">&quot;a0&quot;</span>]]
+  ct &lt;-<span class="st"> </span><span class="dv">0</span>
+  Zt &lt;-<span class="st"> </span><span class="dv">1</span>
+  
+  a &lt;-<span class="st"> </span><span class="kw">numeric</span>(n)
+  y &lt;-<span class="st"> </span><span class="kw">numeric</span>(n)
+  eta &lt;-<span class="st"> </span><span class="kw">rnorm</span>(n, dt, <span class="kw">sqrt</span>(HHt))
+  epsilon &lt;-<span class="st"> </span><span class="kw">rnorm</span>(n, ct, <span class="kw">sqrt</span>(GGt))
+  a[<span class="dv">1</span>] &lt;-<span class="st"> </span>a0
+    for(t in <span class="dv">1</span>:(n<span class="dv">-1</span>)){
+      a[t<span class="dv">+1</span>] &lt;-<span class="st"> </span>Tt *<span class="st"> </span>a[t] +<span class="st"> </span>eta[t]
+      y[t] &lt;-<span class="st"> </span>Zt *<span class="st"> </span>a[t] +<span class="st"> </span>epsilon[t]
+    }
+        y[n] &lt;-<span class="st"> </span>Zt *<span class="st"> </span>a[n] +<span class="st"> </span>epsilon[n]
+  y
+}</code></pre>
+<p>The study also creates simulated datasets based on the real data but explicitly making the assumption of either density independence (DI) or density dependence (DD). For each dataset, a density-independent simulated dataset is created by simulating under the SSRW model that was fit. The density-dependent model is created by explicitly fixing the density dependent parameter (<span class="math">\(c\)</span> in the language of the paper, <code>Tt</code> in FKF notation) to 0.8 and estimating the other parameters of this modified SSG model. We can define this model analgously to the others, only this time fixing <code>Tt = 0.8</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">fit_dd &lt;-<span class="st"> </span>function(y, 
+                   <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>)),
+                   ...){
+    
+    o &lt;-<span class="st"> </span><span class="kw">optim</span>(init,
+                 <span class="dt">fn =</span>  function(par, ...)
+                   -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), <span class="dt">HHt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">2</span>])), 
+                        <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">3</span>])), ...)$logLik,
+                 <span class="dt">Tt =</span> <span class="kw">matrix</span>(<span class="fl">0.8</span>), <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), 
+                 <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), 
+                 <span class="dt">check.input =</span> <span class="ot">FALSE</span>, ...)
+  o$par[[<span class="st">&quot;HHt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;HHt&quot;</span>]])
+  o$par[[<span class="st">&quot;GGt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;GGt&quot;</span>]])
+  <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
+   
+}</code></pre>
+<p>The script adds a method for this to <code>robust_fit()</code> as well; though given the computational cost it is not clear if a robust fit is actually used in generating the data.</p>
+<pre class="sourceCode r"><code class="sourceCode r">sim_di &lt;-<span class="st"> </span>function(df) <span class="kw">data.frame</span>(<span class="dt">logN =</span> <span class="kw">sim_fkf</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, df$logN, <span class="dt">N =</span> <span class="dv">3</span>)))
+sim_dd &lt;-<span class="st"> </span>function(df) <span class="kw">data.frame</span>(<span class="dt">logN =</span> <span class="kw">sim_fkf</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;dd&quot;</span>, df$logN, <span class="dt">N =</span> <span class="dv">3</span>)))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+df %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(sim_di) -&gt;<span class="st"> </span>DI
+)</code></pre>
+<pre><code>   user  system elapsed 
+100.632   3.127 103.879 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+  df %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(sim_dd) -&gt;<span class="st"> </span>DD
+)</code></pre>
+<pre><code>   user  system elapsed 
+ 99.320   2.913 102.372 </code></pre>
+<p>We can then use these two collections of datasets just as before:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+  DD %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(kalman, <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>) -&gt;<span class="st"> </span>DD_fits
+)</code></pre>
+<pre><code>Error in data.frame(model = &quot;ssg&quot;, gather(ssg, parameter, value)): arguments imply differing number of rows: 1, 0</code></pre>
+<pre><code>Timing stopped at: 3021.613 95.505 3120.433 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+  DI %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(kalman, <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>) -&gt;<span class="st"> </span>DI_fits
+)</code></pre>
+<pre><code>    user   system  elapsed 
+6293.416  208.204 6533.021 </code></pre>
+<p>and from before:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+df %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(kalman, <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>) -&gt;<span class="st"> </span>fits
+)</code></pre>
+<pre><code>    user   system  elapsed 
+5638.109  193.054 5875.125 </code></pre>
+<h4 id="figure-2">Figure 2</h4>
+<p>From these simulations and corresponding parameter estimates of the density-dependent parameter, we can create our version of Figure 2:</p>
+<pre class="sourceCode r"><code class="sourceCode r">combined &lt;-<span class="st"> </span><span class="kw">rbind</span>(
+  fits %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">type =</span> <span class="st">&quot;real&quot;</span>),
+  DI_fits %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">type =</span> <span class="st">&quot;independent&quot;</span>),
+  DD_fits %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">type =</span> <span class="st">&quot;dependent&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">transmute</span>(<span class="dt">uncertainty =</span> 
+              plyr::<span class="kw">revalue</span>(model, 
+                            <span class="kw">c</span>(<span class="dt">ssg =</span> <span class="st">&quot;accounting for uncertainty&quot;</span>,
+                              <span class="dt">g =</span> <span class="st">&quot;ignoring uncertainty&quot;</span>)),
+            type, value, MainID)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;DD_fits&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(combined) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_grid</span>(uncertainty ~<span class="st"> </span>type)</code></pre>
+<pre><code>Error in ggplot(combined): object &#39;combined&#39; not found</code></pre>
+<hr />
+<h2 id="bootstrapping">Bootstrapping</h2>
+<p>With fitting and simulating functions in place, defining the bootstrap is straight forward. We define these separately for the state-space Gompertz (ssg; i.e. the model with both density dependence and observational errors) and the Gompertz (g; density dependence, no observational error). We compare in each case to the simulations of the corresponding model without density dependence.</p>
+<pre class="sourceCode r"><code class="sourceCode r">bootstrap &lt;-<span class="st"> </span>function(df, <span class="dt">null_model =</span> <span class="st">&quot;ssrw&quot;</span>, <span class="dt">test_model =</span> <span class="st">&quot;ssg&quot;</span>, <span class="dt">N=</span><span class="dv">100</span>){
+  y &lt;-<span class="st"> </span>df$logN
+  
+  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(test_model, y)
+  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(null_model, y)
+  sims &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">t</span>(<span class="kw">replicate</span>(N, <span class="kw">sim_fkf</span>(ssrw))))
+  
+  <span class="co"># We use a relaxed version of robust_fit, with N=3</span>
+  sims %&gt;%<span class="st"> </span><span class="kw">rowwise</span>() %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">robust_fit</span>(null_model, <span class="dt">y =</span> <span class="kw">as.numeric</span>(.), <span class="dt">N =</span> <span class="dv">3</span>)) %&gt;%<span class="st"> </span><span class="kw">select</span>(mloglik) -&gt;<span class="st"> </span>null
+  
+  <span class="co"># compute p value of observed LR statistic relative to null distribution</span>
+  lr &lt;-<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>(ssrw$mloglik -<span class="st"> </span>ssg$mloglik)
+  null_dist &lt;-<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>(null$mloglik -<span class="st"> </span>ssg$mloglik) 
+  <span class="kw">data.frame</span>(<span class="dt">p =</span> <span class="kw">sum</span>(null_dist &lt;<span class="st"> </span>lr)/N)
+}</code></pre>
+<p>With these functions defined, we can perform the actual analysis.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+  df %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(bootstrap, <span class="st">&quot;ssrw&quot;</span>, <span class="st">&quot;ssg&quot;</span>) -&gt;<span class="st"> </span>ssg_p_values
+  )</code></pre>
+<pre><code>     user    system   elapsed 
+13518.744   451.631 13989.005 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+  df %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(bootstrap, <span class="st">&quot;rw&quot;</span>, <span class="st">&quot;g&quot;</span>) -&gt;<span class="st"> </span>g_p_values
+  )</code></pre>
+<pre><code>    user   system  elapsed 
+5379.548  167.856 5554.810 </code></pre>
+<p>We can also do the bootstrapping for the simulated data:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+ DD %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(bootstrap, <span class="st">&quot;ssrw&quot;</span>, <span class="st">&quot;ssg&quot;</span>) -&gt;<span class="st"> </span>dd_ssg_p_values
+)</code></pre>
+<pre><code>Error in numeric(n): invalid &#39;length&#39; argument</code></pre>
+<pre><code>Timing stopped at: 5876.874 185.698 6070.743 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+ DD %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(bootstrap, <span class="st">&quot;rw&quot;</span>, <span class="st">&quot;g&quot;</span>) -&gt;<span class="st"> </span>dd_g_p_values
+)</code></pre>
+<pre><code>Error in numeric(n): invalid &#39;length&#39; argument</code></pre>
+<pre><code>Timing stopped at: 2809.785 85.784 2899.52 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+ DI %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(bootstrap, <span class="st">&quot;ssrw&quot;</span>, <span class="st">&quot;ssg&quot;</span>) -&gt;<span class="st"> </span>dd_ssg_p_values
+)</code></pre>
+<pre><code>     user    system   elapsed 
+14327.482   452.209 14813.232 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+  DI %&gt;%<span class="st"> </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span><span class="kw">do_parallel</span>(bootstrap, <span class="st">&quot;rw&quot;</span>, <span class="st">&quot;g&quot;</span>) -&gt;<span class="st"> </span>di_g_p_values
+)</code></pre>
+<pre><code>    user   system  elapsed 
+5427.135  161.318 5621.888 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">rbind</span>(
+  ssg_p_values %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">data =</span> <span class="st">&quot;real&quot;</span>, <span class="dt">model =</span> <span class="st">&quot;ssg&quot;</span>),
+  g_p_values %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">data =</span> <span class="st">&quot;real&quot;</span>, <span class="dt">model =</span> <span class="st">&quot;g&quot;</span>),
+  di_ssg_p_values %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">data =</span> <span class="st">&quot;DI&quot;</span>, <span class="dt">model =</span> <span class="st">&quot;ssg&quot;</span>),
+  di_g_p_values %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">data =</span> <span class="st">&quot;DI&quot;</span>, <span class="dt">model =</span> <span class="st">&quot;g&quot;</span>),
+  dd_g_p_values %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">data =</span> <span class="st">&quot;DD&quot;</span>, <span class="dt">model =</span> <span class="st">&quot;g&quot;</span>),
+  dd_ssg_p_values %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">data =</span> <span class="st">&quot;DD&quot;</span>, <span class="dt">model =</span> <span class="st">&quot;ssg&quot;</span>))</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;di_ssg_p_values&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(P) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(p)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_grid</span>(model ~<span class="st"> </span>data)</code></pre>
+<pre><code>Error in ggplot(P): object &#39;P&#39; not found</code></pre>
+<hr />
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/04/09/gpdd-and-kalman-exploration-continued.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/04/06/gpdd-explore.html">Gpdd Explore</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 06 Apr 2015</p>
@@ -507,6 +753,10 @@ fig1a &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, function(s
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/03/26/ropensci-unconf-teaching-session.html">Ropensci Unconf Teaching Session</a></h4></header>
 <p><span></span></p>
@@ -600,10 +850,6 @@ fig1a &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, function(s
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/03/24/docker-machine-notes.html">Docker Machine Notes</a></h4></header>
@@ -823,6 +1069,10 @@ loaded via a namespace (and not attached):
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/03/04/GP-nimble-explore.html">Gp Nimble Explore</a></h4></header>
 <p><span></span></p>
@@ -957,10 +1207,6 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/03/03/GP-nimble-setup.html">Gp Nimble Setup</a></h4></header>
@@ -1169,218 +1415,6 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/03/02/notes.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/02/25/nimble-on-dai-model.html">Nimble On Dai Model</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 25 Feb 2015</p>
-
-<article>
-<div class="excerpt">
-<h2 id="testing-nimble-method-on-dai-model">Testing nimble method on Dai model</h2>
-<p>(shorter data series)</p>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;cboettig/regimeshifts&quot;</span>)</code></pre>
-<p>Define our mcmc procedure in Nimble</p>
-<pre class="sourceCode r"><code class="sourceCode r">my_mcmc &lt;-<span class="st"> </span>function(code, constants, data, inits, <span class="dt">n_iter=</span><span class="fl">1e5</span>, <span class="dt">thin =</span> <span class="fl">1e2</span>){
-  Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)
-  Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
-  mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>,<span class="dt">thin=</span>thin)
-  Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
-  Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)
-  Cmcmc$<span class="kw">run</span>(n_iter)
-  samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-  samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:(<span class="kw">length</span>(inits)-<span class="dv">1</span>)]
-  <span class="kw">gather</span>(samples)
-}</code></pre>
-<p>Generate the test data:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1000</span>)
-max_days &lt;-<span class="st"> </span><span class="dv">50</span>
-DF &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">2000</span>, <span class="dt">length=</span>max_days) <span class="co"># schedule for env degredation (increased dilution)</span>
-x &lt;-<span class="st"> </span><span class="kw">numeric</span>(max_days)   
-x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1.76e5</span> <span class="co"># initial density</span>
-   
-for(day in <span class="dv">1</span>:(max_days<span class="dv">-1</span>)){
- x[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">dai</span>(x[day], <span class="dt">DF =</span> DF[day])
-}
-
-raw &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">t =</span> <span class="dv">1</span>:max_days, <span class="dt">x =</span> x)</code></pre>
-<p>Detrend:</p>
-<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
-raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
-detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals/<span class="kw">sqrt</span>(<span class="kw">var</span>(detrend$residuals)))
-<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/detrend-1.png" />
-</figure>
-<h2 id="ou-model">OU Model</h2>
-<pre class="sourceCode r"><code class="sourceCode r">ou &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   theta ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">100.0</span>)
-       r ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">20.0</span>)
-   sigma ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="dv">100</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
-
-  for(t in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
-    mu[t] &lt;-<span class="st"> </span>x[t] +<span class="st"> </span>r *<span class="st"> </span>(theta -<span class="st"> </span>x[t]) 
-    x[t<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu[t], <span class="dt">sd =</span> sigma) 
-  }
-})
-
-ou_constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N)
-ou_inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">0</span>, <span class="dt">r =</span> <span class="fl">1e-3</span>, <span class="dt">sigma =</span> <span class="dv">1</span>)</code></pre>
-<p>Run the mcmc</p>
-<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>ou, ou_constants, data, ou_inits)</code></pre>
-<h4 id="summary-statistics">Summary statistics</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>Source: local data frame [2 x 3]
-
-    key      mean       std
-1     r 0.7866844 0.1600235
-2 sigma 1.0375633 0.1113334</code></pre>
-<h4 id="traces">Traces</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-8-1.png" />
-</figure>
-<h4 id="posteriors">Posteriors</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-9-1.png" />
-</figure>
-<h2 id="lsn-version">LSN version</h2>
-<p>A modified version of the LSN model to explicitly model the changing parameter as a hidden variable changing at constant rate</p>
-<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   theta ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
- sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">1e2</span>)
-       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
-    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>) 
-
-  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
-    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i]) 
-    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x) 
-    y[i<span class="dv">+1</span>] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i] /<span class="st"> </span>t[N] 
-    
-  }
-})
-
-constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">0</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>lsn, constants, data, inits)</code></pre>
-<h4 id="summary-statistics-1">Summary statistics</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>Source: local data frame [3 x 3]
-
-      key        mean        std
-1       m -0.02060616 0.02779506
-2 sigma_x  1.03148569 0.11158787
-3   theta -0.03136262 0.18565435</code></pre>
-<h4 id="traces-1">Traces</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-13-1.png" />
-</figure>
-<h4 id="posteriors-1">Posteriors</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-14-1.png" />
-</figure>
-<h2 id="lsn-stochastic-hidden-variable">LSN, stochastic hidden variable</h2>
-<h4 id="define-and-model-and-run-mcmc">Define and model and run MCMC</h4>
-<pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   theta ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-   sigma_x ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">1e2</span>)
-   sigma_y ~<span class="st"> </span><span class="kw">dunif</span>(<span class="fl">1e-10</span>, <span class="fl">1e2</span>)
-       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
-    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
-
-  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
-    mu_x[i] &lt;-<span class="st"> </span>x[i] +<span class="st"> </span>y[i] *<span class="st"> </span>(theta -<span class="st"> </span>x[i])
-    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> sigma_x)
-    mu_y[i] &lt;-<span class="st"> </span>y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i] /<span class="st"> </span>t[N]
-    y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_y[i], <span class="dt">sd =</span> sigma_y) 
-  }
-})
-
-constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">theta =</span> <span class="dv">0</span>, <span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_x =</span> <span class="dv">1</span>, <span class="dt">sigma_y =</span> <span class="dv">1</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>lsn, constants, data, inits)</code></pre>
-<h4 id="summary-statistics-2">Summary statistics</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>Source: local data frame [4 x 3]
-
-      key         mean        std
-1       m -0.008170135 0.06970863
-2 sigma_x  1.023650010 0.11068862
-3 sigma_y  0.171747380 0.14767809
-4   theta -0.025881301 0.18058435</code></pre>
-<h4 id="traces-2">Traces</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-18-1.png" />
-</figure>
-<h4 id="posteriors-2">Posteriors</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-02-25-nimble-on-dai-model/unnamed-chunk-19-1.png" />
-</figure>
-<hr />
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.3 (2015-03-09)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Debian GNU/Linux 8 (jessie)
-
-locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
- [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] methods   stats     graphics  grDevices utils     datasets 
-[7] base     
-
-other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.1          
-[3] tidyr_0.2.0             regimeshifts_0.0.0.9000
-[5] nimble_0.3-1            yaml_2.1.13            
-[7] knitr_1.9              
-
-loaded via a namespace (and not attached):
- [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-11
- [4] colorspace_1.2-6 DBI_0.3.1        devtools_1.7.0  
- [7] digest_0.6.8     evaluate_0.6     formatR_1.1     
-[10] grid_3.1.3       gtable_0.1.2     httr_0.6.1      
-[13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[16] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
-[19] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
-[22] Rcpp_0.11.5      RCurl_1.95-4.5   reshape2_1.4.1  
-[25] scales_0.2.4     stringr_0.6.2    tools_3.1.3     </code></pre>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/02/25/nimble-on-dai-model.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
