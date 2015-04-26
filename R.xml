@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-25T10:57:23+00:00</updated>
+  <updated>2015-04-26T22:16:44+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -13,8 +13,8 @@
    
  <entry>
    <title>Fun Standardizing Non Standard Evaluation</title>
-	 <link href="//02/06/fun-standardizing-non-standard-evaluation.html"/>
-   <updated>2015-02-06T00:00:00+00:00</updated>
+   <link href="http://www.carlboettiger.info/2015/02/06/fun-standardizing-non-standard-evaluation.html"/>
+<updated>2015-02-06T00:00:00+00:00</updated>
    <id>/02/06/fun-standardizing-non-standard-evaluation</id>
    <content type="html">&lt;p&gt;Using &lt;code&gt;dplyr&lt;/code&gt; calls on the back-end of the &lt;code&gt;rfishbase&lt;/code&gt; re-write means working around the non-standard evaluation (NSE), as described in the &lt;a href=&quot;&quot;&gt;&lt;code&gt;dplyr&lt;/code&gt; vignette&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Grab the data I was using for this:&lt;/p&gt;
