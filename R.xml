@@ -6,8 +6,8 @@ layout: atom
  {% for post in site.tags.R %}
  <entry>
    <title>{{ post.title }}</title>
-	 <link href="/{{ site.repo }}{{ post.url }}"/>
-   <updated>{{ post.date | date_to_xmlschema }}</updated>
+   <link href="{{ site.url }}{{ site.baseurl }}{{ post.url }}"/>
+<updated>{{ post.date | date_to_xmlschema }}</updated>
    <id>{{ post.id }}</id>
    <content type="html">{{ post.content | xml_escape }}</content>
  </entry>
