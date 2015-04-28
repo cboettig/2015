@@ -1,10 +1,9 @@
 ---
-published: false
 category: computing
 
 ---
 
-
+_ongoing notes comparing computing resources_
 
 Comparing compute resources:
 
@@ -33,6 +32,28 @@ Comparing compute resources:
   (very expensive) local SSD  option (limited to 375 GB increments, each inc at $81.75 / mo). 
   Though if the non-local nature creates a significant latency, it isn't clear
   why one would buy non-local SSD option for $0.17/GB. 
+
+
+## Using Google Compute Engine
+
+Web interface is cleaner but much less flexible than Amazon's, most tasks must be done with the commandline SDK tool instead, `gcloud` (such as modifying firewall settings other than port 80 and port 443).  For instance, [this tutorial](https://developer.ubuntu.com/en/snappy/start/#snappy-google) on running an Ubuntu Snappy Core image instead of the usual defaults.
+
+Docker-machine makes this a bit easier, as usual.  The user needs to create a project name and project id on the Google Cloud Engine web interface.  Only the project-name is required as an argument to docker-machine (e.g. no authentication token), auth must be done interactively through a web terminal.  It doesn't seem that there is a way to turn on `http` port or otherwise configure the firewall. By default, all inbound ports are shut.  By mapping to port `80` and checking 'allow http' in the web interface one can still access an app like RStudio-server (my mapping docker ports appropriately), but there doesn't seem to be any way to automate this.  (In contrast, with Amazon EC2, docker-machine automatically attaches a 'security-group' called `docker-machine`, so a user can customize the ports permitted on that security group to have, e.g. 8787 open by default.)
+
+
+## Performance comparisons
+
+CPU performance varies within a single provider.
+
+- DO CPUs appear 2.3 - 2.4 Ghz with ~ 15MB cache,
+- Google CPUs around 2.6 Ghz with ~ 20MB cache,
+- Amazon ~ 2.8 Ghz with ~ 25 MB cache
+
+network i/o speeds seem reasonable on all.
+
+--------------
+
+## Using resources with docker-machine
 
 docker-machine with docker save: after committing the container, this
 saves the container locally rather than on the host. With even reasonable
