@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-28T03:44:38+00:00</updated>
+  <updated>2015-04-28T22:54:59+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -23,6 +23,44 @@
 &lt;p&gt;I was fortunate to have independent funding for most but not all of my post-doc, and to work in a field where researchers are often given substantial independence and in which open practices are common. Nonetheless these were not practices shared by either of my two excellent co-advisers, who gave only a neutral or vaguely positive response to these ideas.&lt;/p&gt;
 &lt;p&gt;Nevertheless, I learned more about &lt;em&gt;old-school&lt;/em&gt; open science from them than I had ever imagined. When I sent Marc the first draft of our paper, I had buried almost all of the equations in a curt appendix with minimal and jargon-laden supporting text. No sir, those equations not only had to appear in the main text, but I must endeavor to explain the meaning and relevance of each one in a language clear and concise enough for any ecologist to follow. I won’t claim to have succeeded, but boy did continuous integration on my unit tests feel like a low bar for openness by comparison.&lt;/p&gt;
 &lt;p&gt;Meanwhile, I also felt I had the support and mentorship of an online community of open scientists even without going to work for one of them. I am thankful that my mentors have always been tolerant of my open science experimentation, but I would have enjoyed working with them even if it had been otherwise. There was much to learn from them, much to learn from the open science community, and after all, a post-doc position doesn’t last forever.&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Misc Notes On Cloud Providers</title>
+   <link href="http://www.carlboettiger.info/2015/04/15/misc-notes-on-cloud-providers.html"/>
+   <updated>2015-04-15T00:00:00+00:00</updated>
+   <id>/04/15/misc-notes-on-cloud-providers</id>
+   <content type="html">&lt;p&gt;&lt;em&gt;ongoing notes comparing computing resources&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Comparing compute resources:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;AWS EC2, DigitalOcean, and Google Compute Engine look significantly cheaper than Rackspace, Azure, etc. (The Economist has estimated that AWS EC2 prices are roughly 3% &lt;em&gt;below&lt;/em&gt; cost).&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;DigitalOcean tends to have the lowest price point for on-demand use of a given set of resources; usually comparable to the Amazon or EC2 persistent (e.g. monthly) use. All-inclusive pricing (storage, networking etc) and limited options make choices simple and total costs easy to anticipate, though lack the flexibility to fine-tune a configuration to pay for exactly what you need.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Google offers the best rate for higher-cpu instances, (e.g. 16 cores); primarily by provisioning them with less memory (0.9 GB/core) than DO or EC2.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Google configures disk space separately from instance type. Cost of $0.04 per GB for spinning disk storage, is quite a bit cheaper than the ~ $0.10/GB for AWS EBS, and in fact nearly S3 price ~ $0.03. This makes it a potentially compelling platform for high storage, low compute instances.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Presumably this is non-local storage like EBS, since they also offer a (very expensive) local SSD option (limited to 375 GB increments, each inc at $81.75 / mo). Though if the non-local nature creates a significant latency, it isn’t clear why one would buy non-local SSD option for $0.17/GB.&lt;/p&gt;
+&lt;h2 id=&quot;using-google-compute-engine&quot;&gt;Using Google Compute Engine&lt;/h2&gt;
+&lt;p&gt;Web interface is cleaner but much less flexible than Amazon’s, most tasks must be done with the commandline SDK tool instead, &lt;code&gt;gcloud&lt;/code&gt; (such as modifying firewall settings other than port 80 and port 443). For instance, &lt;a href=&quot;https://developer.ubuntu.com/en/snappy/start/#snappy-google&quot;&gt;this tutorial&lt;/a&gt; on running an Ubuntu Snappy Core image instead of the usual defaults.&lt;/p&gt;
+&lt;p&gt;Docker-machine makes this a bit easier, as usual. The user needs to create a project name and project id on the Google Cloud Engine web interface. Only the project-name is required as an argument to docker-machine (e.g. no authentication token), auth must be done interactively through a web terminal. It doesn’t seem that there is a way to turn on &lt;code&gt;http&lt;/code&gt; port or otherwise configure the firewall. By default, all inbound ports are shut. By mapping to port &lt;code&gt;80&lt;/code&gt; and checking ‘allow http’ in the web interface one can still access an app like RStudio-server (my mapping docker ports appropriately), but there doesn’t seem to be any way to automate this. (In contrast, with Amazon EC2, docker-machine automatically attaches a ‘security-group’ called &lt;code&gt;docker-machine&lt;/code&gt;, so a user can customize the ports permitted on that security group to have, e.g. 8787 open by default.)&lt;/p&gt;
+&lt;h2 id=&quot;performance-comparisons&quot;&gt;Performance comparisons&lt;/h2&gt;
+&lt;p&gt;CPU performance varies within a single provider.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;DO CPUs appear 2.3 - 2.4 Ghz with ~ 15MB cache,&lt;/li&gt;
+&lt;li&gt;Google CPUs around 2.6 Ghz with ~ 20MB cache,&lt;/li&gt;
+&lt;li&gt;Amazon ~ 2.8 Ghz with ~ 25 MB cache&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;network i/o speeds seem reasonable on all.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;using-resources-with-docker-machine&quot;&gt;Using resources with docker-machine&lt;/h2&gt;
+&lt;p&gt;docker-machine with docker save: after committing the container, this saves the container locally rather than on the host. With even reasonable download speeds ~ 0.5MB/s this is quite slow. DigitalOcean download speeds are ~ 680 Mb/s, and upload about half that. Better yet, pushing the container back to the Hub only pushes the changed layers anyway, so is nearly instantaneous. The Hub also provides a private repo for free.&lt;/p&gt;
+&lt;p&gt;This provides a pretty compelling workflow of&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;docker-machine create ...&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;docker run &amp;lt;...&amp;gt; user/private&lt;/code&gt; and do stuff&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;docker commit container user/private&lt;/code&gt;, &lt;code&gt;docker push user/private&lt;/code&gt;, &lt;code&gt;docker-machine rm -f ...&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;in order to deploy one’s work on temporary machine with appropriate power, and then save the work and close the machine. Using docker instead of the standard image ‘snapshots’ is probably faster and nicely independent of the machine and provider; and in this case the snapshot storage is free of cost as well.&lt;/p&gt;
 </content>
  </entry>
  
@@ -150,52 +188,67 @@ sim_dd &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(df) &lt;
 df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(sim_di) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;DI
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
-100.632   3.127 103.879 &lt;/code&gt;&lt;/pre&gt;
+123.079   7.039   8.836 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
   df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(sim_dd) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;DD
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 99.320   2.913 102.372 &lt;/code&gt;&lt;/pre&gt;
+120.578   5.209   8.023 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can then use these two collections of datasets just as before:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
   DD %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(kalman, &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;DD_fits
 )&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in data.frame(model = &amp;quot;ssg&amp;quot;, gather(ssg, parameter, value)): arguments imply differing number of rows: 1, 0&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Timing stopped at: 3021.613 95.505 3120.433 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;    user   system  elapsed 
+9218.572  248.985  324.883 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
   DI %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(kalman, &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;DI_fits
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;    user   system  elapsed 
-6293.416  208.204 6533.021 &lt;/code&gt;&lt;/pre&gt;
+8074.330  230.513  280.989 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and from before:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
 df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(kalman, &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;    user   system  elapsed 
-5638.109  193.054 5875.125 &lt;/code&gt;&lt;/pre&gt;
+7761.519  201.922  256.863 &lt;/code&gt;&lt;/pre&gt;
 &lt;h4 id=&quot;figure-2&quot;&gt;Figure 2&lt;/h4&gt;
 &lt;p&gt;From these simulations and corresponding parameter estimates of the density-dependent parameter, we can create our version of Figure 2:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;combined &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(
-  fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;),
-  DI_fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;independent&amp;quot;&lt;/span&gt;),
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;order &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;independent&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;dependent&amp;quot;&lt;/span&gt;)
+
+combined &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(
   DD_fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;dependent&amp;quot;&lt;/span&gt;)) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;factor&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dependent&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;levels=&lt;/span&gt;order)),
+  
+  DI_fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;factor&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;independent&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;levels=&lt;/span&gt;order)),
+  
+  fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;factor&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;levels=&lt;/span&gt;order))) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ungroup&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;transmute&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;uncertainty =&lt;/span&gt; 
               plyr::&lt;span class=&quot;kw&quot;&gt;revalue&lt;/span&gt;(model, 
                             &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;ssg =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;accounting for uncertainty&amp;quot;&lt;/span&gt;,
                               &lt;span class=&quot;dt&quot;&gt;g =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ignoring uncertainty&amp;quot;&lt;/span&gt;)),
             type, value, MainID)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;DD_fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(combined) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(uncertainty ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;type)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot(combined): object &amp;#39;combined&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;binwidth=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(uncertainty ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;type) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_vline&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;xintercept =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value)), &lt;span class=&quot;dt&quot;&gt;lwd=&lt;/span&gt;.&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_vline&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;xintercept =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;median&lt;/span&gt;(value)), &lt;span class=&quot;dt&quot;&gt;lwd=&lt;/span&gt;.&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;grey&amp;quot;&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlim&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1.1&lt;/span&gt;,&lt;span class=&quot;fl&quot;&gt;1.1&lt;/span&gt;)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;c value&amp;quot;&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;theme_bw&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;16&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-09-gpdd-and-kalman-exploration-continued/Figure2-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;bootstrapping&quot;&gt;Bootstrapping&lt;/h2&gt;
 &lt;p&gt;With fitting and simulating functions in place, defining the bootstrap is straight forward. We define these separately for the state-space Gompertz (ssg; i.e. the model with both density dependence and observational errors) and the Gompertz (g; density dependence, no observational error). We compare in each case to the simulations of the corresponding model without density dependence.&lt;/p&gt;
@@ -219,45 +272,49 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
   df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;ssg_p_values
   )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;     user    system   elapsed 
-13518.744   451.631 13989.005 &lt;/code&gt;&lt;/pre&gt;
+18552.515   509.365   630.503 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
   df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;g_p_values
   )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;    user   system  elapsed 
-5379.548  167.856 5554.810 &lt;/code&gt;&lt;/pre&gt;
+7958.974  215.100  259.174 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can also do the bootstrapping for the simulated data:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
  DD %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dd_ssg_p_values
 )&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in numeric(n): invalid &amp;#39;length&amp;#39; argument&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Timing stopped at: 5876.874 185.698 6070.743 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;     user    system   elapsed 
+20739.616   533.335   704.335 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
  DD %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dd_g_p_values
 )&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in numeric(n): invalid &amp;#39;length&amp;#39; argument&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Timing stopped at: 2809.785 85.784 2899.52 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;    user   system  elapsed 
+9970.254  285.473  332.748 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
- DI %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dd_ssg_p_values
+ DI %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssrw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;di_ssg_p_values
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;     user    system   elapsed 
-14327.482   452.209 14813.232 &lt;/code&gt;&lt;/pre&gt;
+18631.331   479.485   622.542 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
   DI %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do_parallel&lt;/span&gt;(bootstrap, &lt;span class=&quot;st&quot;&gt;&amp;quot;rw&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;di_g_p_values
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;    user   system  elapsed 
-5427.135  161.318 5621.888 &lt;/code&gt;&lt;/pre&gt;
+8021.423  227.704  264.113 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;P &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(
   ssg_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;),
   g_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;),
   di_ssg_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DI&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;),
   di_g_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DI&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;),
   dd_g_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DD&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;),
-  dd_ssg_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DD&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;di_ssg_p_values&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(P) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+  dd_ssg_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DD&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;))
+
+
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(P) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(p)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(model ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;data)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot(P): object &amp;#39;P&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(model ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;data) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;theme_bw&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;16&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-04-09-gpdd-and-kalman-exploration-continued/Figure3-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;hr /&gt;
 </content>
  </entry>
@@ -349,7 +406,7 @@ df$logN[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span clas
 &lt;blockquote&gt;
 &lt;p&gt;where &lt;span class=&quot;math&quot;&gt;\(N_t\)&lt;/span&gt; is population density or size in year &lt;span class=&quot;math&quot;&gt;\(t\)&lt;/span&gt;, &lt;span class=&quot;math&quot;&gt;\(a\)&lt;/span&gt; is an intercept, &lt;span class=&quot;math&quot;&gt;\(b\)&lt;/span&gt; is a measure of the strength of density dependence and &lt;span class=&quot;math&quot;&gt;\(\eta\)&lt;/span&gt; is normally distributed process error with mean zero and standard deviation &lt;span class=&quot;math&quot;&gt;\(\tau\)&lt;/span&gt;. By log transforming the population abundance and putting &lt;span class=&quot;math&quot;&gt;\(x_t = \log N_t\)&lt;/span&gt; this simplifies to&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[x_{t+1} = a _ c x_t + \epsilon_t\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[x_{t+1} = a + c x_t + \epsilon_t\]&lt;/span&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;where &lt;span class=&quot;math&quot;&gt;\(c = 1 - b\)&lt;/span&gt; is the lag 1 autocorrelation of the log transformed population abundance when the process is stationary.&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -499,8 +556,8 @@ fit_rw &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(y, &lt;s
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
 df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;kalman&lt;/span&gt;(., &lt;span class=&quot;dt&quot;&gt;method =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;BFGS&amp;quot;&lt;/span&gt;)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fits
 )&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;    user   system  elapsed 
-5862.068  168.046 6047.051 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;     user    system   elapsed 
+11652.039   278.562 11956.545 &lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 &lt;p&gt;Unfortunately &lt;code&gt;dplyr&lt;/code&gt; does not as yet directly support parallelization (despite the documentation of &lt;code&gt;dplyr::init_cluster()&lt;/code&gt; describing parallel &lt;code&gt;dplyr::do()&lt;/code&gt; use, this feature is not actually implemented yet). Most parallelization packages for R wrap around &lt;code&gt;apply&lt;/code&gt; functions, and thus are not trivially adapted to the &lt;code&gt;dplyr&lt;/code&gt; grammar. If many cores are available it may still be faster to devolve the &lt;code&gt;group_by()&lt;/code&gt; &lt;code&gt;data.frame&lt;/code&gt; into a list of data frames and then apply in parallel; e.g.:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# not run&lt;/span&gt;
@@ -518,20 +575,20 @@ fits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;reshape2::&lt;span 
 &lt;hr /&gt;
 &lt;p&gt;We now have a nice table of parameter estimates and likelihoods by model for each data set:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Source: local data frame [45,730 x 4]
+&lt;pre&gt;&lt;code&gt;Source: local data frame [45,727 x 4]
 Groups: MainID
 
    MainID model parameter         value
-1       3   ssg        dt  3.467069e+00
-2       3   ssg        Tt -1.334439e-01
-3       3   ssg       HHt  6.378128e-02
-4       3   ssg       GGt  1.767062e-01
+1       3   ssg        dt  3.466916e+00
+2       3   ssg        Tt -1.334051e-01
+3       3   ssg       HHt  6.394019e-02
+4       3   ssg       GGt  1.765346e-01
 5       3   ssg   mloglik  2.050357e+01
 6       3   ssg  converge  0.000000e+00
 7       3   ssg         n  2.700000e+01
 8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.443238e-04
-10      3  ssrw       HHt  2.120082e-09
+9       3  ssrw        dt  7.431723e-04
+10      3  ssrw       HHt  3.562612e-09
 ..    ...   ...       ...           ...&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and here is our version then of Figure 1b, comparing the estimate of the density-dependence coefficent with and without the uncertainty in observations:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -554,8 +611,8 @@ Groups: MainID
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(difference) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;diffs
   
 s &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
-fig1a &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(s, function(s_i) &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(diffs$difference &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;s_i))
-&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(s, fig1a)&lt;/code&gt;&lt;/pre&gt;
+difference &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(s, function(s_i) &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(diffs$difference &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;s_i))
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(s, difference) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ylab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Difference bewteen estimates&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Proportion of data sets&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1a-1.png&quot; /&gt;
 &lt;/figure&gt;
@@ -869,7 +926,7 @@ df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
+&lt;pre&gt;&lt;code&gt;R version 3.1.3 RC (2015-03-06 r67947)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Debian GNU/Linux 8 (jessie)
 
@@ -886,17 +943,17 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.1          
+[1] dplyr_0.4.1             ggplot2_1.0.0          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
 [5] nimble_0.3-1            yaml_2.1.13            
 [7] knitr_1.9              
 
 loaded via a namespace (and not attached):
  [1] assertthat_0.1   codetools_0.2-11 colorspace_1.2-6
- [4] DBI_0.3.1        digest_0.6.8     evaluate_0.6    
- [7] formatR_1.1      grid_3.1.3       gtable_0.1.2    
+ [4] DBI_0.3.1        digest_0.6.8     evaluate_0.5.5  
+ [7] formatR_1.0      grid_3.1.3       gtable_0.1.2    
 [10] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[13] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
+[13] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
 [16] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
 [19] Rcpp_0.11.5      reshape2_1.4.1   scales_0.2.4    
 [22] stringr_0.6.2    tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
@@ -932,18 +989,18 @@ data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;pre&gt;&lt;code&gt;[1] 1&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;simulate&lt;/span&gt;(Rmodel, &lt;span class=&quot;st&quot;&gt;&amp;quot;l&amp;quot;&lt;/span&gt;)
 Rmodel$l&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 12.82878&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 10.37676&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Other nodes and likelihoods are updated to reflect the new value only after we run &lt;code&gt;calculate()&lt;/code&gt;, so this is the logProb of &lt;code&gt;l&lt;/code&gt; originally:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$logProb_l&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] NA&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;After we run &lt;code&gt;calculate()&lt;/code&gt;, the &lt;code&gt;logProb&lt;/code&gt; is updated to reflect our simulated value of &lt;code&gt;l&lt;/code&gt;, as are the dependent terms (like the Sigma matrix)&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Sigma &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Rmodel$Sigma
 &lt;span class=&quot;kw&quot;&gt;calculate&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] -30.36035&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] -29.81744&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(Sigma, Rmodel$Sigma)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] FALSE&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$logProb_l&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] -2.665388&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] -2.122469&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Interestingly, we don’t seem to be able to simulate actual data from the model in this way:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel$y&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] -2  0  1  2 -1&lt;/code&gt;&lt;/pre&gt;
@@ -954,7 +1011,7 @@ Rmodel$y&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Note that &lt;code&gt;y&lt;/code&gt; remaines fixed to the original data values. We have to do this manually:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mvrnorm&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;mu =&lt;/span&gt; constants$Mu, &lt;span class=&quot;dt&quot;&gt;Sigma =&lt;/span&gt; Rmodel$Sigma) &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1]  4.912117 19.095320 -6.258376  5.700355  2.688588&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1]  -7.498019 -20.999389   4.939137  11.751509  -8.123005&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Define our mcmc procedure in Nimble&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)
 mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
@@ -964,7 +1021,7 @@ Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&qu
 Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
-  1.121   0.028   1.149 &lt;/code&gt;&lt;/pre&gt;
+  2.411   0.021   2.434 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
 df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
 &lt;h4 id=&quot;posteriors&quot;&gt;Posteriors&lt;/h4&gt;
@@ -1009,7 +1066,7 @@ df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;
 out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;metrop&lt;/span&gt;(posterior, &lt;span class=&quot;dt&quot;&gt;initial =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;l =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;sigma.n =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;), &lt;span class=&quot;dt&quot;&gt;nbatch =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; obs$x, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; obs$y)  
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 18.233   0.000  18.281 &lt;/code&gt;&lt;/pre&gt;
+ 36.485   0.442  37.202 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;burnin &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e3&lt;/span&gt;
 thin &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e2&lt;/span&gt;
 df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;cbind&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;index=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:out$nbatch, &lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(out$batch)))
@@ -1131,8 +1188,8 @@ m &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;k
 &lt;pre&gt;&lt;code&gt;Source: local data frame [2 x 3]
 
       key         mean          std
-1       l 49713.508780 28953.615713
-2 sigma.n     2.149684     1.199397&lt;/code&gt;&lt;/pre&gt;
+1       l 49845.347322 29128.275365
+2 sigma.n     2.188315     1.372436&lt;/code&gt;&lt;/pre&gt;
 &lt;h4 id=&quot;traces&quot;&gt;Traces&lt;/h4&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sample_n&lt;/span&gt;(df,&lt;span class=&quot;dv&quot;&gt;500&lt;/span&gt;)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(value), value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -1388,9 +1445,8 @@ inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&qu
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
+&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
 Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Debian GNU/Linux 8 (jessie)
 
 locale:
  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -1405,21 +1461,21 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.1          
+[1] dplyr_0.4.1             ggplot2_1.0.0          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
-[5] nimble_0.3-1            yaml_2.1.13            
+[5] nimble_0.3              yaml_2.1.13            
 [7] knitr_1.9              
 
 loaded via a namespace (and not attached):
- [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-11
- [4] colorspace_1.2-6 DBI_0.3.1        devtools_1.7.0  
- [7] digest_0.6.8     evaluate_0.6     formatR_1.1     
-[10] grid_3.1.3       gtable_0.1.2     httr_0.6.1      
+ [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-10
+ [4] colorspace_1.2-4 DBI_0.3.1        devtools_1.7.0  
+ [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+[10] grid_3.1.2       gtable_0.1.2     httr_0.6.1      
 [13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[16] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
-[19] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
-[22] Rcpp_0.11.5      RCurl_1.95-4.5   reshape2_1.4.1  
-[25] scales_0.2.4     stringr_0.6.2    tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
+[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[19] parallel_3.1.2   plyr_1.8.1       proto_0.3-10    
+[22] Rcpp_0.11.4      RCurl_1.95-4.5   reshape2_1.4.1  
+[25] scales_0.2.4     stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
@@ -1590,9 +1646,8 @@ inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&qu
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
+&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
 Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Debian GNU/Linux 8 (jessie)
 
 locale:
  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -1607,21 +1662,21 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.1          
+[1] dplyr_0.4.1             ggplot2_1.0.0          
 [3] tidyr_0.2.0             regimeshifts_0.0.0.9000
-[5] nimble_0.3-1            yaml_2.1.13            
+[5] nimble_0.3              yaml_2.1.13            
 [7] knitr_1.9              
 
 loaded via a namespace (and not attached):
- [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-11
- [4] colorspace_1.2-6 DBI_0.3.1        devtools_1.7.0  
- [7] digest_0.6.8     evaluate_0.6     formatR_1.1     
-[10] grid_3.1.3       gtable_0.1.2     httr_0.6.1      
+ [1] assertthat_0.1   bitops_1.0-6     codetools_0.2-10
+ [4] colorspace_1.2-4 DBI_0.3.1        devtools_1.7.0  
+ [7] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+[10] grid_3.1.2       gtable_0.1.2     httr_0.6.1      
 [13] igraph_0.7.1     labeling_0.3     lazyeval_0.1.10 
-[16] magrittr_1.5     MASS_7.3-40      munsell_0.4.2   
-[19] parallel_3.1.3   plyr_1.8.1       proto_0.3-10    
-[22] Rcpp_0.11.5      RCurl_1.95-4.5   reshape2_1.4.1  
-[25] scales_0.2.4     stringr_0.6.2    tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
+[16] magrittr_1.5     MASS_7.3-39      munsell_0.4.2   
+[19] parallel_3.1.2   plyr_1.8.1       proto_0.3-10    
+[22] Rcpp_0.11.4      RCurl_1.95-4.5   reshape2_1.4.1  
+[25] scales_0.2.4     stringr_0.6.2    tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
@@ -2127,7 +2182,6 @@ V0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;R[i,]&lt;/code&gt;&lt
 &lt;pre&gt;&lt;code&gt;Error: sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))) not equal to 0
 Mean absolute difference: 130&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P, R, &lt;span class=&quot;dt&quot;&gt;discount=&lt;/span&gt;delta, &lt;span class=&quot;dt&quot;&gt;epsilon=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e4&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0=&lt;/span&gt;V0)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox WARNING: max_iter is bounded by  5000&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in if (variation &amp;lt; thresh) {: missing value where TRUE/FALSE needed&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Whoops, this doesn’t look right:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(x_grid, h_grid[out$policy])&lt;/code&gt;&lt;/pre&gt;
@@ -2213,9 +2267,9 @@ pdfn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(P, s) &lt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;SDP_Mat &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;determine_SDP_matrix&lt;/span&gt;(f, p, x_grid, h_grid, sigma_g, pdfn)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;opt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;value_iteration&lt;/span&gt;(SDP_Mat, x_grid, h_grid, OptTime, xT, profit, delta)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(x_grid, h_grid[opt$D]) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Invasive population size&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ylab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Control effort&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-01-22-invasives-sdp/unnamed-chunk-6-1.png&quot; /&gt;
-&lt;/figure&gt;
+&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot; width=&quot;288pt&quot; height=&quot;288pt&quot; viewBox=&quot;0 0 288 288&quot; version=&quot;1.1&quot;&gt;
+&lt;defs&gt; &lt;g&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph0-0&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;&quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph0-1&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 2.640625 -6.796875 C 2 -6.796875 1.421875 -6.53125 1.078125 -6.046875 C 0.640625 -5.453125 0.40625 -4.546875 0.40625 -3.296875 C 0.40625 -1 1.1875 0.21875 2.640625 0.21875 C 4.078125 0.21875 4.859375 -1 4.859375 -3.234375 C 4.859375 -4.5625 4.65625 -5.4375 4.203125 -6.046875 C 3.84375 -6.53125 3.28125 -6.796875 2.640625 -6.796875 Z M 2.640625 -6.046875 C 3.546875 -6.046875 4 -5.125 4 -3.3125 C 4 -1.375 3.5625 -0.484375 2.625 -0.484375 C 1.734375 -0.484375 1.28125 -1.421875 1.28125 -3.28125 C 1.28125 -5.140625 1.734375 -6.046875 2.640625 -6.046875 Z M 2.640625 -6.046875 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph0-2&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 4.5625 -6.796875 L 1.0625 -6.796875 L 0.546875 -3.09375 L 1.328125 -3.09375 C 1.71875 -3.5625 2.046875 -3.734375 2.578125 -3.734375 C 3.484375 -3.734375 4.0625 -3.109375 4.0625 -2.09375 C 4.0625 -1.125 3.484375 -0.53125 2.578125 -0.53125 C 1.828125 -0.53125 1.375 -0.90625 1.1875 -1.671875 L 0.328125 -1.671875 C 0.453125 -1.109375 0.546875 -0.84375 0.75 -0.59375 C 1.125 -0.078125 1.828125 0.21875 2.59375 0.21875 C 3.96875 0.21875 4.921875 -0.78125 4.921875 -2.21875 C 4.921875 -3.5625 4.03125 -4.484375 2.71875 -4.484375 C 2.25 -4.484375 1.859375 -4.359375 1.46875 -4.0625 L 1.734375 -5.96875 L 4.5625 -5.96875 Z M 4.5625 -6.796875 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph0-3&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 2.484375 -4.84375 L 2.484375 0 L 3.328125 0 L 3.328125 -6.796875 L 2.765625 -6.796875 C 2.46875 -5.75 2.28125 -5.609375 0.984375 -5.453125 L 0.984375 -4.84375 Z M 2.484375 -4.84375 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-0&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;&quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-1&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 2.328125 -8.75 L 1.203125 -8.75 L 1.203125 0 L 2.328125 0 Z M 2.328125 -8.75 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-2&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 0.84375 -6.28125 L 0.84375 0 L 1.84375 0 L 1.84375 -3.46875 C 1.84375 -4.75 2.515625 -5.59375 3.546875 -5.59375 C 4.34375 -5.59375 4.84375 -5.109375 4.84375 -4.359375 L 4.84375 0 L 5.84375 0 L 5.84375 -4.75 C 5.84375 -5.796875 5.0625 -6.46875 3.859375 -6.46875 C 2.921875 -6.46875 2.3125 -6.109375 1.765625 -5.234375 L 1.765625 -6.28125 Z M 0.84375 -6.28125 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-3&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 3.421875 0 L 5.828125 -6.28125 L 4.703125 -6.28125 L 2.921875 -1.1875 L 1.25 -6.28125 L 0.125 -6.28125 L 2.328125 0 Z M 3.421875 0 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-4&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 6.421875 -0.59375 C 6.3125 -0.5625 6.265625 -0.5625 6.203125 -0.5625 C 5.859375 -0.5625 5.65625 -0.75 5.65625 -1.0625 L 5.65625 -4.75 C 5.65625 -5.875 4.84375 -6.46875 3.296875 -6.46875 C 2.390625 -6.46875 1.625 -6.203125 1.21875 -5.734375 C 0.921875 -5.40625 0.796875 -5.046875 0.78125 -4.421875 L 1.78125 -4.421875 C 1.875 -5.203125 2.328125 -5.546875 3.265625 -5.546875 C 4.15625 -5.546875 4.671875 -5.203125 4.671875 -4.609375 L 4.671875 -4.34375 C 4.671875 -3.921875 4.421875 -3.75 3.625 -3.640625 C 2.203125 -3.46875 1.984375 -3.421875 1.609375 -3.265625 C 0.875 -2.96875 0.5 -2.40625 0.5 -1.578125 C 0.5 -0.4375 1.296875 0.28125 2.5625 0.28125 C 3.359375 0.28125 4 0 4.703125 -0.640625 C 4.78125 -0.015625 5.09375 0.28125 5.734375 0.28125 C 5.9375 0.28125 6.09375 0.25 6.421875 0.171875 Z M 4.671875 -1.984375 C 4.671875 -1.640625 4.578125 -1.4375 4.265625 -1.15625 C 3.859375 -0.796875 3.375 -0.59375 2.78125 -0.59375 C 2 -0.59375 1.546875 -0.96875 1.546875 -1.609375 C 1.546875 -2.265625 1.984375 -2.609375 3.0625 -2.765625 C 4.109375 -2.90625 4.328125 -2.953125 4.671875 -3.109375 Z M 4.671875 -1.984375 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-5&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 5.25 -4.53125 C 5.25 -5.765625 4.421875 -6.46875 2.96875 -6.46875 C 1.515625 -6.46875 0.5625 -5.71875 0.5625 -4.546875 C 0.5625 -3.5625 1.0625 -3.09375 2.5625 -2.734375 L 3.484375 -2.515625 C 4.1875 -2.34375 4.46875 -2.09375 4.46875 -1.625 C 4.46875 -1.046875 3.875 -0.640625 3 -0.640625 C 2.453125 -0.640625 2 -0.796875 1.75 -1.0625 C 1.59375 -1.25 1.53125 -1.421875 1.46875 -1.875 L 0.40625 -1.875 C 0.453125 -0.421875 1.265625 0.28125 2.921875 0.28125 C 4.5 0.28125 5.515625 -0.5 5.515625 -1.71875 C 5.515625 -2.65625 4.984375 -3.171875 3.734375 -3.46875 L 2.765625 -3.703125 C 1.953125 -3.890625 1.609375 -4.15625 1.609375 -4.59375 C 1.609375 -5.171875 2.125 -5.546875 2.9375 -5.546875 C 3.75 -5.546875 4.171875 -5.203125 4.203125 -4.53125 Z M 5.25 -4.53125 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-6&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 1.796875 -6.28125 L 0.796875 -6.28125 L 0.796875 0 L 1.796875 0 Z M 1.796875 -8.75 L 0.796875 -8.75 L 0.796875 -7.484375 L 1.796875 -7.484375 Z M 1.796875 -8.75 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-7&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 6.15625 -2.8125 C 6.15625 -3.765625 6.078125 -4.34375 5.90625 -4.8125 C 5.5 -5.84375 4.53125 -6.46875 3.359375 -6.46875 C 1.609375 -6.46875 0.484375 -5.125 0.484375 -3.0625 C 0.484375 -1 1.578125 0.28125 3.34375 0.28125 C 4.78125 0.28125 5.765625 -0.546875 6.03125 -1.90625 L 5.015625 -1.90625 C 4.734375 -1.078125 4.171875 -0.640625 3.375 -0.640625 C 2.734375 -0.640625 2.203125 -0.9375 1.859375 -1.46875 C 1.625 -1.828125 1.53125 -2.1875 1.53125 -2.8125 Z M 1.546875 -3.625 C 1.625 -4.78125 2.34375 -5.546875 3.34375 -5.546875 C 4.328125 -5.546875 5.09375 -4.734375 5.09375 -3.703125 C 5.09375 -3.671875 5.09375 -3.640625 5.078125 -3.625 Z M 1.546875 -3.625 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-8&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;&quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-9&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 0.640625 2.609375 L 1.65625 2.609375 L 1.65625 -0.65625 C 2.1875 -0.015625 2.765625 0.28125 3.59375 0.28125 C 5.203125 0.28125 6.28125 -1.03125 6.28125 -3.03125 C 6.28125 -5.140625 5.25 -6.46875 3.578125 -6.46875 C 2.71875 -6.46875 2.046875 -6.078125 1.578125 -5.34375 L 1.578125 -6.28125 L 0.640625 -6.28125 Z M 3.40625 -5.53125 C 4.515625 -5.53125 5.234375 -4.5625 5.234375 -3.0625 C 5.234375 -1.625 4.5 -0.65625 3.40625 -0.65625 C 2.359375 -0.65625 1.65625 -1.625 1.65625 -3.09375 C 1.65625 -4.578125 2.359375 -5.53125 3.40625 -5.53125 Z M 3.40625 -5.53125 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-10&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 3.265625 -6.46875 C 1.5 -6.46875 0.4375 -5.203125 0.4375 -3.09375 C 0.4375 -0.984375 1.484375 0.28125 3.28125 0.28125 C 5.046875 0.28125 6.125 -0.984375 6.125 -3.046875 C 6.125 -5.21875 5.078125 -6.46875 3.265625 -6.46875 Z M 3.28125 -5.546875 C 4.40625 -5.546875 5.078125 -4.625 5.078125 -3.0625 C 5.078125 -1.578125 4.375 -0.640625 3.28125 -0.640625 C 2.15625 -0.640625 1.46875 -1.578125 1.46875 -3.09375 C 1.46875 -4.609375 2.15625 -5.546875 3.28125 -5.546875 Z M 3.28125 -5.546875 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-11&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 5.78125 0 L 5.78125 -6.28125 L 4.78125 -6.28125 L 4.78125 -2.71875 C 4.78125 -1.4375 4.109375 -0.59375 3.078125 -0.59375 C 2.28125 -0.59375 1.78125 -1.078125 1.78125 -1.84375 L 1.78125 -6.28125 L 0.78125 -6.28125 L 0.78125 -1.4375 C 0.78125 -0.390625 1.5625 0.28125 2.78125 0.28125 C 3.703125 0.28125 4.296875 -0.046875 4.890625 -0.875 L 4.890625 0 Z M 5.78125 0 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-12&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 1.828125 -8.75 L 0.8125 -8.75 L 0.8125 0 L 1.828125 0 Z M 1.828125 -8.75 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-13&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 3.046875 -6.28125 L 2.015625 -6.28125 L 2.015625 -8.015625 L 1.015625 -8.015625 L 1.015625 -6.28125 L 0.171875 -6.28125 L 0.171875 -5.46875 L 1.015625 -5.46875 L 1.015625 -0.71875 C 1.015625 -0.078125 1.453125 0.28125 2.234375 0.28125 C 2.46875 0.28125 2.71875 0.25 3.046875 0.1875 L 3.046875 -0.640625 C 2.921875 -0.609375 2.765625 -0.59375 2.5625 -0.59375 C 2.140625 -0.59375 2.015625 -0.71875 2.015625 -1.15625 L 2.015625 -5.46875 L 3.046875 -5.46875 Z M 3.046875 -6.28125 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph1-14&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M 5.3125 -6.28125 L 0.625 -6.28125 L 0.625 -5.40625 L 4.125 -5.40625 L 0.375 -0.90625 L 0.375 0 L 5.484375 0 L 5.484375 -0.875 L 1.578125 -0.875 L 5.3125 -5.40625 Z M 5.3125 -6.28125 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-0&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;&quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-1&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M -6.03125 -7.9375 C -7.953125 -7.59375 -8.890625 -6.484375 -8.890625 -4.578125 C -8.890625 -3.390625 -8.515625 -2.453125 -7.796875 -1.796875 C -6.9375 -1.015625 -5.6875 -0.578125 -4.265625 -0.578125 C -2.828125 -0.578125 -1.59375 -1.015625 -0.75 -1.84375 C -0.046875 -2.515625 0.28125 -3.390625 0.28125 -4.53125 C 0.28125 -6.65625 -0.875 -7.859375 -3.1875 -8.125 L -3.1875 -6.96875 C -2.59375 -6.875 -2.1875 -6.75 -1.84375 -6.578125 C -1.109375 -6.21875 -0.703125 -5.46875 -0.703125 -4.53125 C -0.703125 -2.796875 -2.09375 -1.6875 -4.28125 -1.6875 C -6.53125 -1.6875 -7.90625 -2.75 -7.90625 -4.4375 C -7.90625 -5.140625 -7.6875 -5.8125 -7.359375 -6.171875 C -7.0625 -6.484375 -6.6875 -6.671875 -6.03125 -6.796875 Z M -6.03125 -7.9375 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-2&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M -6.46875 -3.265625 C -6.46875 -1.5 -5.203125 -0.4375 -3.09375 -0.4375 C -0.984375 -0.4375 0.28125 -1.484375 0.28125 -3.28125 C 0.28125 -5.046875 -0.984375 -6.125 -3.046875 -6.125 C -5.21875 -6.125 -6.46875 -5.078125 -6.46875 -3.265625 Z M -5.546875 -3.28125 C -5.546875 -4.40625 -4.625 -5.078125 -3.0625 -5.078125 C -1.578125 -5.078125 -0.640625 -4.375 -0.640625 -3.28125 C -0.640625 -2.15625 -1.578125 -1.46875 -3.09375 -1.46875 C -4.609375 -1.46875 -5.546875 -2.15625 -5.546875 -3.28125 Z M -5.546875 -3.28125 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-3&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M -6.28125 -0.84375 L 0 -0.84375 L 0 -1.84375 L -3.46875 -1.84375 C -4.75 -1.84375 -5.59375 -2.515625 -5.59375 -3.546875 C -5.59375 -4.34375 -5.109375 -4.84375 -4.359375 -4.84375 L 0 -4.84375 L 0 -5.84375 L -4.75 -5.84375 C -5.796875 -5.84375 -6.46875 -5.0625 -6.46875 -3.859375 C -6.46875 -2.921875 -6.109375 -2.3125 -5.234375 -1.765625 L -6.28125 -1.765625 Z M -6.28125 -0.84375 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-4&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M -6.28125 -3.046875 L -6.28125 -2.015625 L -8.015625 -2.015625 L -8.015625 -1.015625 L -6.28125 -1.015625 L -6.28125 -0.171875 L -5.46875 -0.171875 L -5.46875 -1.015625 L -0.71875 -1.015625 C -0.078125 -1.015625 0.28125 -1.453125 0.28125 -2.234375 C 0.28125 -2.46875 0.25 -2.71875 0.1875 -3.046875 L -0.640625 -3.046875 C -0.609375 -2.921875 -0.59375 -2.765625 -0.59375 -2.5625 C -0.59375 -2.140625 -0.71875 -2.015625 -1.15625 -2.015625 L -5.46875 -2.015625 L -5.46875 -3.046875 Z M -6.28125 -3.046875 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-5&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M -6.28125 -0.828125 L 0 -0.828125 L 0 -1.84375 L -3.265625 -1.84375 C -4.15625 -1.84375 -4.75 -2.0625 -5.09375 -2.546875 C -5.328125 -2.859375 -5.40625 -3.15625 -5.40625 -3.859375 L -6.4375 -3.859375 C -6.453125 -3.6875 -6.46875 -3.59375 -6.46875 -3.46875 C -6.46875 -2.8125 -6.078125 -2.328125 -5.140625 -1.75 L -6.28125 -1.75 Z M -6.28125 -0.828125 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-6&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M -8.75 -1.828125 L -8.75 -0.8125 L 0 -0.8125 L 0 -1.828125 Z M -8.75 -1.828125 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-7&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;&quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-8&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M -2.8125 -6.15625 C -3.765625 -6.15625 -4.34375 -6.078125 -4.8125 -5.90625 C -5.84375 -5.5 -6.46875 -4.53125 -6.46875 -3.359375 C -6.46875 -1.609375 -5.125 -0.484375 -3.0625 -0.484375 C -1 -0.484375 0.28125 -1.578125 0.28125 -3.34375 C 0.28125 -4.78125 -0.546875 -5.765625 -1.90625 -6.03125 L -1.90625 -5.015625 C -1.078125 -4.734375 -0.640625 -4.171875 -0.640625 -3.375 C -0.640625 -2.734375 -0.9375 -2.203125 -1.46875 -1.859375 C -1.828125 -1.625 -2.1875 -1.53125 -2.8125 -1.53125 Z M -3.625 -1.546875 C -4.78125 -1.625 -5.546875 -2.34375 -5.546875 -3.34375 C -5.546875 -4.328125 -4.734375 -5.09375 -3.703125 -5.09375 C -3.671875 -5.09375 -3.640625 -5.09375 -3.625 -5.078125 Z M -3.625 -1.546875 &quot;/&gt; &lt;/symbol&gt; &lt;symbol overflow=&quot;visible&quot; id=&quot;glyph2-9&quot;&gt; &lt;path style=&quot;stroke:none;&quot; d=&quot;M -6.28125 -3.09375 L -6.28125 -2.046875 L -7.265625 -2.046875 C -7.6875 -2.046875 -7.90625 -2.296875 -7.90625 -2.75 C -7.90625 -2.828125 -7.90625 -2.875 -7.890625 -3.09375 L -8.71875 -3.09375 C -8.765625 -2.875 -8.78125 -2.734375 -8.78125 -2.53125 C -8.78125 -1.609375 -8.25 -1.0625 -7.359375 -1.0625 L -6.28125 -1.0625 L -6.28125 -0.21875 L -5.46875 -0.21875 L -5.46875 -1.0625 L 0 -1.0625 L 0 -2.046875 L -5.46875 -2.046875 L -5.46875 -3.09375 Z M -6.28125 -3.09375 &quot;/&gt; &lt;/symbol&gt; &lt;/g&gt; &lt;clipPath id=&quot;clip1&quot;&gt; &lt;path d=&quot;M 47.488281 14.398438 L 274 14.398438 L 274 251 L 47.488281 251 Z M 47.488281 14.398438 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip2&quot;&gt; &lt;path d=&quot;M 47.488281 202 L 274 202 L 274 204 L 47.488281 204 Z M 47.488281 202 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip3&quot;&gt; &lt;path d=&quot;M 47.488281 129 L 274 129 L 274 131 L 47.488281 131 Z M 47.488281 129 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip4&quot;&gt; &lt;path d=&quot;M 47.488281 56 L 274 56 L 274 58 L 47.488281 58 Z M 47.488281 56 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip5&quot;&gt; &lt;path d=&quot;M 90 14.398438 L 92 14.398438 L 92 251 L 90 251 Z M 90 14.398438 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip6&quot;&gt; &lt;path d=&quot;M 159 14.398438 L 161 14.398438 L 161 251 L 159 251 Z M 159 14.398438 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip7&quot;&gt; &lt;path d=&quot;M 228 14.398438 L 230 14.398438 L 230 251 L 228 251 Z M 228 14.398438 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip8&quot;&gt; &lt;path d=&quot;M 47.488281 239 L 274.601562 239 L 274.601562 241 L 47.488281 241 Z M 47.488281 239 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip9&quot;&gt; &lt;path d=&quot;M 47.488281 166 L 274.601562 166 L 274.601562 168 L 47.488281 168 Z M 47.488281 166 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip10&quot;&gt; &lt;path d=&quot;M 47.488281 93 L 274.601562 93 L 274.601562 95 L 47.488281 95 Z M 47.488281 93 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip11&quot;&gt; &lt;path d=&quot;M 47.488281 20 L 274.601562 20 L 274.601562 22 L 47.488281 22 Z M 47.488281 20 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip12&quot;&gt; &lt;path d=&quot;M 55 14.398438 L 57 14.398438 L 57 251.511719 L 55 251.511719 Z M 55 14.398438 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip13&quot;&gt; &lt;path d=&quot;M 124 14.398438 L 126 14.398438 L 126 251.511719 L 124 251.511719 Z M 124 14.398438 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip14&quot;&gt; &lt;path d=&quot;M 193 14.398438 L 195 14.398438 L 195 251.511719 L 193 251.511719 Z M 193 14.398438 &quot;/&gt; &lt;/clipPath&gt; &lt;clipPath id=&quot;clip15&quot;&gt; &lt;path d=&quot;M 262 14.398438 L 264 14.398438 L 264 251.511719 L 262 251.511719 Z M 262 14.398438 &quot;/&gt; &lt;/clipPath&gt; &lt;/defs&gt; &lt;g id=&quot;surface2&quot;&gt; &lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;288&quot; height=&quot;288&quot; style=&quot;fill:rgb(100%,100%,100%);fill-opacity:1;stroke:none;&quot;/&gt; &lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;288&quot; height=&quot;288&quot; style=&quot;fill:rgb(100%,100%,100%);fill-opacity:1;stroke:none;&quot;/&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 0 288 L 288 288 L 288 0 L 0 0 Z M 0 288 &quot;/&gt; &lt;g clip-path=&quot;url(#clip1)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(89.803922%,89.803922%,89.803922%);fill-opacity:1;&quot; d=&quot;M 47.488281 250.511719 L 273.601562 250.511719 L 273.601562 14.398438 L 47.488281 14.398438 Z M 47.488281 250.511719 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip2)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:0.531496;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(94.901961%,94.901961%,94.901961%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 47.488281 203.261719 L 273.601562 203.261719 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip3)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:0.531496;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(94.901961%,94.901961%,94.901961%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 47.488281 130.222656 L 273.601562 130.222656 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip4)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:0.531496;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(94.901961%,94.901961%,94.901961%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 47.488281 57.179688 L 273.601562 57.179688 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip5)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:0.531496;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(94.901961%,94.901961%,94.901961%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 90.875 250.511719 L 90.875 14.398438 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip6)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:0.531496;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(94.901961%,94.901961%,94.901961%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 159.855469 250.511719 L 159.855469 14.398438 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip7)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:0.531496;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(94.901961%,94.901961%,94.901961%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 228.832031 250.511719 L 228.832031 14.398438 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip8)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 47.488281 239.78125 L 273.601562 239.78125 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip9)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 47.488281 166.742188 L 273.601562 166.742188 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip10)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 47.488281 93.699219 L 273.601562 93.699219 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip11)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 47.488281 20.660156 L 273.601562 20.660156 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip12)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 56.386719 250.511719 L 56.386719 14.398438 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip13)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 125.363281 250.511719 L 125.363281 14.398438 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip14)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 194.34375 250.511719 L 194.34375 14.398438 &quot;/&gt; &lt;/g&gt; &lt;g clip-path=&quot;url(#clip15)&quot; clip-rule=&quot;nonzero&quot;&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 263.320312 250.511719 L 263.320312 14.398438 &quot;/&gt; &lt;/g&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 59.890625 239.78125 C 59.890625 242.617188 55.636719 242.617188 55.636719 239.78125 C 55.636719 236.945312 59.890625 236.945312 59.890625 239.78125 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 64.085938 235.308594 C 64.085938 238.144531 59.832031 238.144531 59.832031 235.308594 C 59.832031 232.472656 64.085938 232.472656 64.085938 235.308594 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 68.28125 230.835938 C 68.28125 233.671875 64.027344 233.671875 64.027344 230.835938 C 64.027344 228.003906 68.28125 228.003906 68.28125 230.835938 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 72.476562 226.367188 C 72.476562 229.199219 68.222656 229.199219 68.222656 226.367188 C 68.222656 223.53125 72.476562 223.53125 72.476562 226.367188 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 76.671875 221.894531 C 76.671875 224.726562 72.417969 224.726562 72.417969 221.894531 C 72.417969 219.058594 76.671875 219.058594 76.671875 221.894531 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 80.867188 217.421875 C 80.867188 220.257812 76.613281 220.257812 76.613281 217.421875 C 76.613281 214.585938 80.867188 214.585938 80.867188 217.421875 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 85.0625 212.949219 C 85.0625 215.785156 80.808594 215.785156 80.808594 212.949219 C 80.808594 210.117188 85.0625 210.117188 85.0625 212.949219 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 89.253906 208.476562 C 89.253906 211.3125 85.003906 211.3125 85.003906 208.476562 C 85.003906 205.644531 89.253906 205.644531 89.253906 208.476562 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 93.449219 204.007812 C 93.449219 206.839844 89.199219 206.839844 89.199219 204.007812 C 89.199219 201.171875 93.449219 201.171875 93.449219 204.007812 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 97.644531 199.535156 C 97.644531 202.367188 93.394531 202.367188 93.394531 199.535156 C 93.394531 196.699219 97.644531 196.699219 97.644531 199.535156 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 101.839844 199.535156 C 101.839844 202.367188 97.589844 202.367188 97.589844 199.535156 C 97.589844 196.699219 101.839844 196.699219 101.839844 199.535156 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 106.035156 195.0625 C 106.035156 197.898438 101.785156 197.898438 101.785156 195.0625 C 101.785156 192.226562 106.035156 192.226562 106.035156 195.0625 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 110.230469 190.589844 C 110.230469 193.425781 105.980469 193.425781 105.980469 190.589844 C 105.980469 187.757812 110.230469 187.757812 110.230469 190.589844 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 114.425781 186.117188 C 114.425781 188.953125 110.175781 188.953125 110.175781 186.117188 C 110.175781 183.285156 114.425781 183.285156 114.425781 186.117188 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 118.621094 181.648438 C 118.621094 184.480469 114.371094 184.480469 114.371094 181.648438 C 114.371094 178.8125 118.621094 178.8125 118.621094 181.648438 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 122.816406 177.175781 C 122.816406 180.011719 118.5625 180.011719 118.5625 177.175781 C 118.5625 174.339844 122.816406 174.339844 122.816406 177.175781 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 127.011719 172.703125 C 127.011719 175.539062 122.757812 175.539062 122.757812 172.703125 C 122.757812 169.867188 127.011719 169.867188 127.011719 172.703125 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 131.207031 168.230469 C 131.207031 171.066406 126.953125 171.066406 126.953125 168.230469 C 126.953125 165.398438 131.207031 165.398438 131.207031 168.230469 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 135.402344 163.757812 C 135.402344 166.59375 131.148438 166.59375 131.148438 163.757812 C 131.148438 160.925781 135.402344 160.925781 135.402344 163.757812 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 139.597656 159.289062 C 139.597656 162.121094 135.34375 162.121094 135.34375 159.289062 C 135.34375 156.453125 139.597656 156.453125 139.597656 159.289062 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 143.792969 154.816406 C 143.792969 157.652344 139.539062 157.652344 139.539062 154.816406 C 139.539062 151.980469 143.792969 151.980469 143.792969 154.816406 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 147.988281 150.34375 C 147.988281 153.179688 143.734375 153.179688 143.734375 150.34375 C 143.734375 147.507812 147.988281 147.507812 147.988281 150.34375 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 152.183594 145.871094 C 152.183594 148.707031 147.929688 148.707031 147.929688 145.871094 C 147.929688 143.039062 152.183594 143.039062 152.183594 145.871094 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 156.375 141.398438 C 156.375 144.234375 152.125 144.234375 152.125 141.398438 C 152.125 138.566406 156.375 138.566406 156.375 141.398438 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 160.570312 136.929688 C 160.570312 139.761719 156.320312 139.761719 156.320312 136.929688 C 156.320312 134.09375 160.570312 134.09375 160.570312 136.929688 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 164.765625 132.457031 C 164.765625 135.292969 160.515625 135.292969 160.515625 132.457031 C 160.515625 129.621094 164.765625 129.621094 164.765625 132.457031 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 168.960938 127.984375 C 168.960938 130.820312 164.710938 130.820312 164.710938 127.984375 C 164.710938 125.148438 168.960938 125.148438 168.960938 127.984375 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 173.15625 123.511719 C 173.15625 126.347656 168.90625 126.347656 168.90625 123.511719 C 168.90625 120.679688 173.15625 120.679688 173.15625 123.511719 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 177.351562 119.042969 C 177.351562 121.875 173.101562 121.875 173.101562 119.042969 C 173.101562 116.207031 177.351562 116.207031 177.351562 119.042969 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 181.546875 114.570312 C 181.546875 117.402344 177.296875 117.402344 177.296875 114.570312 C 177.296875 111.734375 181.546875 111.734375 181.546875 114.570312 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 185.742188 110.097656 C 185.742188 112.933594 181.488281 112.933594 181.488281 110.097656 C 181.488281 107.261719 185.742188 107.261719 185.742188 110.097656 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 189.9375 105.625 C 189.9375 108.460938 185.683594 108.460938 185.683594 105.625 C 185.683594 102.789062 189.9375 102.789062 189.9375 105.625 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 194.132812 101.152344 C 194.132812 103.988281 189.878906 103.988281 189.878906 101.152344 C 189.878906 98.320312 194.132812 98.320312 194.132812 101.152344 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 198.328125 96.683594 C 198.328125 99.515625 194.074219 99.515625 194.074219 96.683594 C 194.074219 93.847656 198.328125 93.847656 198.328125 96.683594 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 202.523438 92.210938 C 202.523438 95.042969 198.269531 95.042969 198.269531 92.210938 C 198.269531 89.375 202.523438 89.375 202.523438 92.210938 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 206.71875 87.738281 C 206.71875 90.574219 202.464844 90.574219 202.464844 87.738281 C 202.464844 84.902344 206.71875 84.902344 206.71875 87.738281 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 210.914062 83.265625 C 210.914062 86.101562 206.660156 86.101562 206.660156 83.265625 C 206.660156 80.433594 210.914062 80.433594 210.914062 83.265625 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 215.109375 78.792969 C 215.109375 81.628906 210.855469 81.628906 210.855469 78.792969 C 210.855469 75.960938 215.109375 75.960938 215.109375 78.792969 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 219.300781 74.324219 C 219.300781 77.15625 215.050781 77.15625 215.050781 74.324219 C 215.050781 71.488281 219.300781 71.488281 219.300781 74.324219 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 223.496094 69.851562 C 223.496094 72.683594 219.246094 72.683594 219.246094 69.851562 C 219.246094 67.015625 223.496094 67.015625 223.496094 69.851562 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 227.691406 65.378906 C 227.691406 68.214844 223.441406 68.214844 223.441406 65.378906 C 223.441406 62.542969 227.691406 62.542969 227.691406 65.378906 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 231.886719 60.90625 C 231.886719 63.742188 227.636719 63.742188 227.636719 60.90625 C 227.636719 58.074219 231.886719 58.074219 231.886719 60.90625 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 236.082031 56.433594 C 236.082031 59.269531 231.832031 59.269531 231.832031 56.433594 C 231.832031 53.601562 236.082031 53.601562 236.082031 56.433594 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 240.277344 51.964844 C 240.277344 54.796875 236.027344 54.796875 236.027344 51.964844 C 236.027344 49.128906 240.277344 49.128906 240.277344 51.964844 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 244.472656 47.492188 C 244.472656 50.328125 240.222656 50.328125 240.222656 47.492188 C 240.222656 44.65625 244.472656 44.65625 244.472656 47.492188 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 248.667969 43.019531 C 248.667969 45.855469 244.414062 45.855469 244.414062 43.019531 C 244.414062 40.183594 248.667969 40.183594 248.667969 43.019531 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 252.863281 38.546875 C 252.863281 41.382812 248.609375 41.382812 248.609375 38.546875 C 248.609375 35.714844 252.863281 35.714844 252.863281 38.546875 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 257.058594 34.074219 C 257.058594 36.910156 252.804688 36.910156 252.804688 34.074219 C 252.804688 31.242188 257.058594 31.242188 257.058594 34.074219 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 261.253906 29.605469 C 261.253906 32.4375 257 32.4375 257 29.605469 C 257 26.769531 261.253906 26.769531 261.253906 29.605469 &quot;/&gt; &lt;path style=&quot; stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;&quot; d=&quot;M 265.449219 25.132812 C 265.449219 27.96875 261.195312 27.96875 261.195312 25.132812 C 261.195312 22.296875 265.449219 22.296875 265.449219 25.132812 &quot;/&gt; &lt;g style=&quot;fill:rgb(49.803922%,49.803922%,49.803922%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;34.398438&quot; y=&quot;242.428711&quot;/&gt; &lt;/g&gt; &lt;g style=&quot;fill:rgb(49.803922%,49.803922%,49.803922%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph0-2&quot; x=&quot;29.398438&quot; y=&quot;169.389648&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;34.732422&quot; y=&quot;169.389648&quot;/&gt; &lt;/g&gt; &lt;g style=&quot;fill:rgb(49.803922%,49.803922%,49.803922%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph0-3&quot; x=&quot;23.398438&quot; y=&quot;96.34668&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;28.732422&quot; y=&quot;96.34668&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;34.066406&quot; y=&quot;96.34668&quot;/&gt; &lt;/g&gt; &lt;g style=&quot;fill:rgb(49.803922%,49.803922%,49.803922%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph0-3&quot; x=&quot;23.398438&quot; y=&quot;23.307617&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-2&quot; x=&quot;28.732422&quot; y=&quot;23.307617&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;34.066406&quot; y=&quot;23.307617&quot;/&gt; &lt;/g&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(49.803922%,49.803922%,49.803922%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 43.234375 239.78125 L 47.488281 239.78125 &quot;/&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(49.803922%,49.803922%,49.803922%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 43.234375 166.742188 L 47.488281 166.742188 &quot;/&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(49.803922%,49.803922%,49.803922%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 43.234375 93.699219 L 47.488281 93.699219 &quot;/&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(49.803922%,49.803922%,49.803922%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 43.234375 20.660156 L 47.488281 20.660156 &quot;/&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(49.803922%,49.803922%,49.803922%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 56.386719 254.765625 L 56.386719 250.511719 &quot;/&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(49.803922%,49.803922%,49.803922%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 125.363281 254.765625 L 125.363281 250.511719 &quot;/&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(49.803922%,49.803922%,49.803922%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 194.34375 254.765625 L 194.34375 250.511719 &quot;/&gt; &lt;path style=&quot;fill:none;stroke-width:1.062992;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(49.803922%,49.803922%,49.803922%);stroke-opacity:1;stroke-miterlimit:10;&quot; d=&quot;M 263.320312 254.765625 L 263.320312 250.511719 &quot;/&gt; &lt;g style=&quot;fill:rgb(49.803922%,49.803922%,49.803922%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;53.386719&quot; y=&quot;263.749023&quot;/&gt; &lt;/g&gt; &lt;g style=&quot;fill:rgb(49.803922%,49.803922%,49.803922%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph0-2&quot; x=&quot;119.863281&quot; y=&quot;263.749023&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;125.197266&quot; y=&quot;263.749023&quot;/&gt; &lt;/g&gt; &lt;g style=&quot;fill:rgb(49.803922%,49.803922%,49.803922%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph0-3&quot; x=&quot;185.84375&quot; y=&quot;263.749023&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;191.177734&quot; y=&quot;263.749023&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;196.511719&quot; y=&quot;263.749023&quot;/&gt; &lt;/g&gt; &lt;g style=&quot;fill:rgb(49.803922%,49.803922%,49.803922%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph0-3&quot; x=&quot;254.820312&quot; y=&quot;263.749023&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-2&quot; x=&quot;260.154297&quot; y=&quot;263.749023&quot;/&gt; &lt;use xlink:href=&quot;#glyph0-1&quot; x=&quot;265.488281&quot; y=&quot;263.749023&quot;/&gt; &lt;/g&gt; &lt;g style=&quot;fill:rgb(0%,0%,0%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph1-1&quot; x=&quot;96.542969&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-2&quot; x=&quot;99.878906&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-3&quot; x=&quot;106.550781&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-4&quot; x=&quot;112.550781&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-5&quot; x=&quot;119.222656&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-6&quot; x=&quot;125.222656&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-3&quot; x=&quot;127.886719&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-7&quot; x=&quot;133.886719&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-8&quot; x=&quot;140.558594&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-9&quot; x=&quot;143.894531&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-10&quot; x=&quot;150.566406&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-9&quot; x=&quot;157.238281&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-11&quot; x=&quot;163.910156&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-12&quot; x=&quot;170.582031&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-4&quot; x=&quot;173.246094&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-13&quot; x=&quot;179.917969&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-6&quot; x=&quot;183.253906&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-10&quot; x=&quot;185.917969&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-2&quot; x=&quot;192.589844&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-8&quot; x=&quot;199.261719&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-5&quot; x=&quot;202.597656&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-6&quot; x=&quot;208.597656&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-14&quot; x=&quot;211.261719&quot; y=&quot;276.634766&quot;/&gt; &lt;use xlink:href=&quot;#glyph1-7&quot; x=&quot;217.261719&quot; y=&quot;276.634766&quot;/&gt; &lt;/g&gt; &lt;g style=&quot;fill:rgb(0%,0%,0%);fill-opacity:1;&quot;&gt; &lt;use xlink:href=&quot;#glyph2-1&quot; x=&quot;19.236328&quot; y=&quot;167.457031&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-2&quot; x=&quot;19.236328&quot; y=&quot;158.792969&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-3&quot; x=&quot;19.236328&quot; y=&quot;152.121094&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-4&quot; x=&quot;19.236328&quot; y=&quot;145.449219&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-5&quot; x=&quot;19.236328&quot; y=&quot;142.113281&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-2&quot; x=&quot;19.236328&quot; y=&quot;138.117188&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-6&quot; x=&quot;19.236328&quot; y=&quot;131.445312&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-7&quot; x=&quot;19.236328&quot; y=&quot;128.78125&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-8&quot; x=&quot;19.236328&quot; y=&quot;125.445312&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-9&quot; x=&quot;19.236328&quot; y=&quot;118.773438&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-9&quot; x=&quot;19.236328&quot; y=&quot;115.4375&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-2&quot; x=&quot;19.236328&quot; y=&quot;112.101562&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-5&quot; x=&quot;19.236328&quot; y=&quot;105.429688&quot;/&gt; &lt;use xlink:href=&quot;#glyph2-4&quot; x=&quot;19.236328&quot; y=&quot;101.433594&quot;/&gt; &lt;/g&gt; &lt;/g&gt;
+&lt;/svg&gt;
 </content>
  </entry>
  
@@ -2302,9 +2356,8 @@ long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;img src=&quot;/2015/assets/figures/posts/2015-01-13-detrend-example/histogram-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
+&lt;pre&gt;&lt;code&gt;R version 3.1.2 (2014-10-31)
 Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Debian GNU/Linux 8 (jessie)
 
 locale:
  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -2319,18 +2372,18 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] tidyr_0.2.0        ggplot2_1.0.1      earlywarning_0.0-1
-[4] nimble_0.3-1       yaml_2.1.13        knitr_1.9         
+[1] tidyr_0.2.0        ggplot2_1.0.0      earlywarning_0.0-1
+[4] nimble_0.3         yaml_2.1.13        knitr_1.9         
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-11 colorspace_1.2-6 deSolve_1.11    
- [4] digest_0.6.8     evaluate_0.7     formatR_1.2     
- [7] grid_3.1.3       gtable_0.1.2     igraph_0.7.1    
-[10] labeling_0.3     MASS_7.3-40      mnormt_1.5-2    
-[13] munsell_0.4.2    parallel_3.1.3   plyr_1.8.2      
-[16] proto_0.3-10     psych_1.5.1      Rcpp_0.11.5     
+ [1] codetools_0.2-10 colorspace_1.2-4 deSolve_1.11    
+ [4] digest_0.6.8     evaluate_0.5.5   formatR_1.0     
+ [7] grid_3.1.2       gtable_0.1.2     igraph_0.7.1    
+[10] labeling_0.3     MASS_7.3-39      mnormt_1.5-1    
+[13] munsell_0.4.2    parallel_3.1.2   plyr_1.8.1      
+[16] proto_0.3-10     psych_1.5.1      Rcpp_0.11.4     
 [19] reshape2_1.4.1   scales_0.2.4     stringr_0.6.2   
-[22] tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
+[22] tools_3.1.2     &lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
@@ -2502,7 +2555,7 @@ long &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;img src=&quot;/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;sessionInfo&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;R version 3.1.3 (2015-03-09)
+&lt;pre&gt;&lt;code&gt;R version 3.1.3 RC (2015-03-06 r67947)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Debian GNU/Linux 8 (jessie)
 
@@ -2519,15 +2572,15 @@ attached base packages:
 [7] utils     datasets  base     
 
 other attached packages:
- [1] tidyr_0.2.0   ggplot2_1.0.1 sde_2.0.13    zoo_1.7-12   
- [5] fda_2.4.4     Matrix_1.1-5  MASS_7.3-40   nimble_0.3-1 
+ [1] tidyr_0.2.0   ggplot2_1.0.0 sde_2.0.13    zoo_1.7-11   
+ [5] fda_2.4.4     Matrix_1.1-5  MASS_7.3-39   nimble_0.3-1 
  [9] yaml_2.1.13   knitr_1.9    
 
 loaded via a namespace (and not attached):
  [1] codetools_0.2-11 colorspace_1.2-6 digest_0.6.8    
- [4] evaluate_0.7     formatR_1.2      grid_3.1.3      
+ [4] evaluate_0.5.5   formatR_1.0      grid_3.1.3      
  [7] gtable_0.1.2     igraph_0.7.1     labeling_0.3    
-[10] lattice_0.20-31  munsell_0.4.2    plyr_1.8.2      
+[10] lattice_0.20-30  munsell_0.4.2    plyr_1.8.1      
 [13] proto_0.3-10     Rcpp_0.11.5      reshape2_1.4.1  
 [16] scales_0.2.4     stringr_0.6.2    tools_3.1.3     &lt;/code&gt;&lt;/pre&gt;
 </content>
