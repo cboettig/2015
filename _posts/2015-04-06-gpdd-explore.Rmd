@@ -120,7 +120,7 @@ $$N_{t+1} = N_t \exp(a - b \log N_t + \epsilon_t)$$
 
 > where $N_t$ is population density or size in year $t$, $a$ is an intercept, $b$ is a measure of the strength of density dependence and $\eta$ is normally distributed process error with mean zero and standard deviation $\tau$.  By log transforming the population abundance and putting $x_t = \log N_t$ this simplifies to
 
-$$x_{t+1} = a _ c x_t + \epsilon_t$$
+$$x_{t+1} = a + c x_t + \epsilon_t$$
 
 > where $c = 1 - b$ is the lag 1 autocorrelation of the log transformed population abundance when the process is stationary.
 
@@ -367,8 +367,8 @@ fits %>%
   select(difference) -> diffs
   
 s <- seq(0,1,length=100)
-fig1a <- sapply(s, function(s_i) mean(diffs$difference > s_i))
-qplot(s, fig1a)
+difference <- sapply(s, function(s_i) mean(diffs$difference > s_i))
+qplot(s, difference) + ylab("Difference bewteen estimates") + xlab("Proportion of data sets")
 ```
 
 

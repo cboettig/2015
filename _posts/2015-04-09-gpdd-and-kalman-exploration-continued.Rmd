@@ -226,19 +226,28 @@ df %>% group_by(MainID) %>% do_parallel(kalman, method = "BFGS") -> fits
 
 From these simulations and corresponding parameter estimates of the density-dependent parameter, we can create our version of Figure 2:
 
-```{r figure2 }
+```{r }
+
+order <- c("real", "independent", "dependent")
 
 combined <- rbind(
-  fits %>% 
-  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
-  select(model, value, MainID) %>% mutate(type = "real"),
-  DI_fits %>% 
-  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
-  select(model, value, MainID) %>% mutate(type = "independent"),
   DD_fits %>% 
   filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
-  select(model, value, MainID) %>% mutate(type = "dependent")) %>%
+  select(model, value, MainID) %>% 
+  mutate(type = factor("dependent", levels=order)),
+  
+  DI_fits %>% 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>% 
+  mutate(type = factor("independent", levels=order)),
+  
+  fits %>% 
+  filter(model %in% c("ssg", "g"), parameter == "Tt") %>%
+  select(model, value, MainID) %>% 
+  mutate(type = factor("real", levels=order))) %>%
+  
   ungroup() %>% 
+  
   transmute(uncertainty = 
               plyr::revalue(model, 
                             c(ssg = "accounting for uncertainty",
@@ -246,10 +255,16 @@ combined <- rbind(
             type, value, MainID)
 ```
 
-```{r}
+
+```{r Figure2}
 ggplot(combined) + 
-  geom_histogram(aes(value)) + 
-  facet_grid(uncertainty ~ type)
+  geom_histogram(aes(value), binwidth=0.2) + 
+  facet_grid(uncertainty ~ type) + 
+  geom_vline(aes(xintercept = mean(value)), lwd=.5) +
+  geom_vline(aes(xintercept = median(value)), lwd=.5, col="grey") +
+  xlim(c(-1.1,1.1)) + 
+  xlab("c value") +
+  theme_bw(16)
 
 ```
 
@@ -335,7 +350,7 @@ system.time(
 
 
 
-```{r}
+```{r Figure3}
 P <- rbind(
   ssg_p_values %>% mutate(data = "real", model = "ssg"),
   g_p_values %>% mutate(data = "real", model = "g"),
@@ -347,7 +362,8 @@ P <- rbind(
 
 ggplot(P) + 
   geom_histogram(aes(p)) + 
-  facet_grid(model ~ data)
+  facet_grid(model ~ data) + 
+  theme_bw(16)
 
 ```
 
