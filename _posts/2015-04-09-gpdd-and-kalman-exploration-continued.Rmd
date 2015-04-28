@@ -321,7 +321,7 @@ system.time(
 
 ```{r}
 system.time(
- DI %>% group_by(MainID) %>% do_parallel(bootstrap, "ssrw", "ssg") -> dd_ssg_p_values
+ DI %>% group_by(MainID) %>% do_parallel(bootstrap, "ssrw", "ssg") -> di_ssg_p_values
 )
 ```
 

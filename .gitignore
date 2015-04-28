@@ -4,7 +4,6 @@ google_analytics.json
 .Rhistory
 _cache
 assets/figures/posts
-*.Rproj
 .Rproj.user
 _posts/*.md
 *.swp
