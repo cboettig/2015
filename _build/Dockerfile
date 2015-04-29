@@ -19,5 +19,3 @@ RUN install2.r --error -r http://cran.rstudio.com -r http://r-nimble.org \
     ropensci/rgpdd \
 	&& rm -rf /tmp/downloaded_packages
 
-COPY . /data
-
