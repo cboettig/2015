@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-04-29T01:44:06+00:00</updated>
+  <updated>2015-04-29T01:47:21+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -213,17 +213,26 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 5638.109  193.054 5875.125 &lt;/code&gt;&lt;/pre&gt;
 &lt;h4 id=&quot;figure-2&quot;&gt;Figure 2&lt;/h4&gt;
 &lt;p&gt;From these simulations and corresponding parameter estimates of the density-dependent parameter, we can create our version of Figure 2:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;combined &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(
-  fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;),
-  DI_fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;independent&amp;quot;&lt;/span&gt;),
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;order &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;independent&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;dependent&amp;quot;&lt;/span&gt;)
+
+combined &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rbind&lt;/span&gt;(
   DD_fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;dependent&amp;quot;&lt;/span&gt;)) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;factor&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dependent&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;levels=&lt;/span&gt;order)),
+  
+  DI_fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;factor&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;independent&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;levels=&lt;/span&gt;order)),
+  
+  fits %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(model %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;), parameter ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Tt&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(model, value, MainID) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;type =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;factor&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;real&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;levels=&lt;/span&gt;order))) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ungroup&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;transmute&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;uncertainty =&lt;/span&gt; 
               plyr::&lt;span class=&quot;kw&quot;&gt;revalue&lt;/span&gt;(model, 
                             &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;ssg =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;accounting for uncertainty&amp;quot;&lt;/span&gt;,
@@ -231,8 +240,13 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
             type, value, MainID)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;DD_fits&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(combined) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(uncertainty ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;type)&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value), &lt;span class=&quot;dt&quot;&gt;binwidth=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(uncertainty ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;type) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_vline&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;xintercept =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(value)), &lt;span class=&quot;dt&quot;&gt;lwd=&lt;/span&gt;.&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_vline&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;xintercept =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;median&lt;/span&gt;(value)), &lt;span class=&quot;dt&quot;&gt;lwd=&lt;/span&gt;.&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;grey&amp;quot;&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlim&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;1.1&lt;/span&gt;,&lt;span class=&quot;fl&quot;&gt;1.1&lt;/span&gt;)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;c value&amp;quot;&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;theme_bw&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;16&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in ggplot(combined): object &amp;#39;combined&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;bootstrapping&quot;&gt;Bootstrapping&lt;/h2&gt;
@@ -291,10 +305,11 @@ df %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
   di_g_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DI&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;),
   dd_g_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DD&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;g&amp;quot;&lt;/span&gt;),
   dd_ssg_p_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;DD&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;ssg&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;di_ssg_p_values&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;dd_g_p_values&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(P) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_histogram&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(p)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(model ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;data)&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_grid&lt;/span&gt;(model ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;data) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;theme_bw&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;16&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error in ggplot(P): object &amp;#39;P&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 </content>
@@ -387,7 +402,7 @@ df$logN[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span clas
 &lt;blockquote&gt;
 &lt;p&gt;where &lt;span class=&quot;math&quot;&gt;\(N_t\)&lt;/span&gt; is population density or size in year &lt;span class=&quot;math&quot;&gt;\(t\)&lt;/span&gt;, &lt;span class=&quot;math&quot;&gt;\(a\)&lt;/span&gt; is an intercept, &lt;span class=&quot;math&quot;&gt;\(b\)&lt;/span&gt; is a measure of the strength of density dependence and &lt;span class=&quot;math&quot;&gt;\(\eta\)&lt;/span&gt; is normally distributed process error with mean zero and standard deviation &lt;span class=&quot;math&quot;&gt;\(\tau\)&lt;/span&gt;. By log transforming the population abundance and putting &lt;span class=&quot;math&quot;&gt;\(x_t = \log N_t\)&lt;/span&gt; this simplifies to&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[x_{t+1} = a _ c x_t + \epsilon_t\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[x_{t+1} = a + c x_t + \epsilon_t\]&lt;/span&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;where &lt;span class=&quot;math&quot;&gt;\(c = 1 - b\)&lt;/span&gt; is the lag 1 autocorrelation of the log transformed population abundance when the process is stationary.&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -592,8 +607,8 @@ Groups: MainID
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(difference) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;diffs
   
 s &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
-fig1a &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(s, function(s_i) &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(diffs$difference &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;s_i))
-&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(s, fig1a)&lt;/code&gt;&lt;/pre&gt;
+difference &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(s, function(s_i) &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(diffs$difference &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;s_i))
+&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(s, difference) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ylab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Difference bewteen estimates&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Proportion of data sets&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1a-1.png&quot; /&gt;
 &lt;/figure&gt;
