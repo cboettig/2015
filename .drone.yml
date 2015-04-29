@@ -2,24 +2,24 @@ image: cboettig/2015
 
 script:
 ## Configure and import cached files.
-  - sudo mkdir -p /tmp/cache
-  - sudo chown -R rstudio:rstudio /tmp/cache
-  - rsync -a --delete /tmp/cache/ _cache/
-  - rsync -a --delete /tmp/figures/ assets/figures/posts/
+    # - sudo mkdir -p /tmp/cache
+    # - sudo chown -R rstudio:rstudio /tmp/cache
+    #  - rsync -a --delete /tmp/cache/ _cache/
+    #  - rsync -a --delete /tmp/figures/ assets/figures/posts/
 ## Build site with knitr and jekyll
   - Rscript -e 'servr::jekyll(serve=FALSE, script="_build/build.R")'
 ## update cache
-  - rsync -a --delete _cache/ /tmp/cache/
-  - rsync -a --delete assets/figures/posts/ /tmp/figures/
+#  - rsync -a --delete _cache/ /tmp/cache/
+    #  - rsync -a --delete assets/figures/posts/ /tmp/figures/
 
 ## if successful, deploy to Github pages branch
-deploy:
-  bash:
-    script:
-      - ./_build/deploy.sh
+#deploy:
+#  bash:
+#    script:
+#      - ./_build/deploy.sh
         
 ## Tell drone to cache these dirs. 
 ## (Cache must not be a subdirectory of repository, see https://github.com/drone/drone/issues/147)
-cache:
-  - /tmp/cache
-  - /tmp/figures
+#cache:
+  #  - /tmp/cache
+    #  - /tmp/figures
