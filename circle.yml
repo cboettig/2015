@@ -16,7 +16,7 @@ deployment:
   production:
     branches:
       - master
-    command:
+    commands:
       - docker run -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_build/deploy.sh" cboettig/2015
 
 
