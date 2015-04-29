@@ -1,0 +1,74 @@
+---
+published: false
+layout: post
+category: ecology
+
+---
+
+
+
+
+
+### kalman filtering
+
+### updates to drat repo
+
+- rescript personal deploy.R script
+- pull request 
+
+### rfishbase
+
+
+`rfishbase` queries from users: getting "Resilience," "Vulnerability" and "Price Category" data:
+
+```r
+x <- species_info("Labroides bicolor", fields = c("SpecCode", "Vulnerability", "PriceCateg"))
+```
+
+
+It so happens that "Resilience" is not in that table, but in the "stocks" table instead:
+
+```r
+y <- stocks("Labroides bicolor", fields=c("SpecCode", "Resilience"))
+```
+
+
+You can now merge the results:
+
+```r
+data <- merge(x,y)
+```
+
+In general, you can see a list of all the columns in a given table by just omitting the "fields" argument:
+
+```r
+species_info("Labroides bicolor")
+```
+
+
+Since the nearly 100 columns don't fit in the page, the function just summarizes the column names for the ones that don't fit.  You can read through that list and spot the words "Vulnerability" and "PriceCateg", and then use them in the 'fields' argument to just get those results.  
+
+Note that all of these functions can take a long list of species names instead of a single species, and thus will return a table with a row for each species and the desired columns.
+
+Also note that we use "SpecCode", the species code, to identify a species on fishbase.  You can use the function "speciesnames" to transform this numeric code into a species name; e.g. 
+
+```r
+data$SpecCode <- speciesnames(data$SpecCode)
+```
+
+
+
+- Improved sql helper script recipe.  
+
+#### searching SQL for a field
+
+```sql
+
+select distinct table_name from information_schema.columns where column_name in ('Resilience') and table_schema='fbapp';
+```
+
+and then we can do the usual
+
+```sql
+describe stocks
+```

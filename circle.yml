@@ -1,0 +1,9 @@
+machine:
+  services:
+    - docker
+
+test:
+  override:
+    - docker run --name cache -ti -v /data cboettig/2015-cache
+    - docker run -ti --volumes-from cache -w /data -e GH_TOKEN=$GH_TOKEN cboettig/2015 Rscript _build/deploy.R 
+
