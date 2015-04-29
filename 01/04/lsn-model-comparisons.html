@@ -121,9 +121,8 @@ opts_chunk$<span class="kw">set</span>(<span class="dt">dev =</span> <span class
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
 d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
 s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
-data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))</code></pre>
-<pre><code>sigma.x not provided, attempting symbolic derivation.</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
+data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))
+<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
 N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png" />
@@ -159,12 +158,10 @@ Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmode
 Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
-<pre><code>NULL</code></pre>
 <p>and examine results</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)</code></pre>
-<pre><code>[1] 5000  206</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+<span class="kw">dim</span>(samples)
+samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
 long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
 <pre><code>            m       sigma_x       sigma_y         theta 
@@ -182,7 +179,7 @@ long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code
 <img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.1.3 (2015-03-09)
+<pre><code>R version 3.2.0 (2015-04-16)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Debian GNU/Linux 8 (jessie)
 
@@ -195,21 +192,21 @@ locale:
 [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
-[1] stats4    splines   methods   stats     graphics  grDevices
+[1] splines   stats4    methods   stats     graphics  grDevices
 [7] utils     datasets  base     
 
 other attached packages:
  [1] tidyr_0.2.0   ggplot2_1.0.1 sde_2.0.13    zoo_1.7-12   
- [5] fda_2.4.4     Matrix_1.1-5  MASS_7.3-40   nimble_0.3-1 
- [9] yaml_2.1.13   knitr_1.9    
+ [5] fda_2.4.4     Matrix_1.2-0  MASS_7.3-40   nimble_0.3-1 
+ [9] yaml_2.1.13   knitr_1.10   
 
 loaded via a namespace (and not attached):
- [1] codetools_0.2-11 colorspace_1.2-6 digest_0.6.8    
- [4] evaluate_0.7     formatR_1.2      grid_3.1.3      
- [7] gtable_0.1.2     igraph_0.7.1     labeling_0.3    
-[10] lattice_0.20-31  munsell_0.4.2    plyr_1.8.2      
-[13] proto_0.3-10     Rcpp_0.11.5      reshape2_1.4.1  
-[16] scales_0.2.4     stringr_0.6.2    tools_3.1.3     </code></pre>
+ [1] igraph_0.7.1     Rcpp_0.11.5      munsell_0.4.2   
+ [4] colorspace_1.2-6 lattice_0.20-31  stringr_0.6.2   
+ [7] plyr_1.8.2       tools_3.2.0      grid_3.2.0      
+[10] gtable_0.1.2     digest_0.6.8     reshape2_1.4.1  
+[13] formatR_1.2      codetools_0.2-11 evaluate_0.7    
+[16] labeling_0.3     scales_0.2.4     proto_0.3-10    </code></pre>
 
     </article>
   </div>
@@ -263,7 +260,7 @@ loaded via a namespace (and not attached):
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/d23193526a1b4c70f939d5d3bd8a2b5235ad1f13/_posts/2015-01-04-lsn-model-comparisons.Rmd"> d23193526a1b4c70f939d5d3bd8a2b5235ad1f13</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/e9cdfd5f1bb325b0b91731941fa4fa226bc6830a/_posts/2015-01-04-lsn-model-comparisons.Rmd"> e9cdfd5f1bb325b0b91731941fa4fa226bc6830a</a></small></p>
     
   <br/>
   

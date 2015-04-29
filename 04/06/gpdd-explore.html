@@ -189,7 +189,7 @@ df$logN[i] &lt;-<span class="st"> </span><span class="kw">min</span>(df$logN[-i]
 <blockquote>
 <p>where <span class="math">\(N_t\)</span> is population density or size in year <span class="math">\(t\)</span>, <span class="math">\(a\)</span> is an intercept, <span class="math">\(b\)</span> is a measure of the strength of density dependence and <span class="math">\(\eta\)</span> is normally distributed process error with mean zero and standard deviation <span class="math">\(\tau\)</span>. By log transforming the population abundance and putting <span class="math">\(x_t = \log N_t\)</span> this simplifies to</p>
 </blockquote>
-<p><span class="math">\[x_{t+1} = a + c x_t + \epsilon_t\]</span></p>
+<p><span class="math">\[x_{t+1} = a _ c x_t + \epsilon_t\]</span></p>
 <blockquote>
 <p>where <span class="math">\(c = 1 - b\)</span> is the lag 1 autocorrelation of the log transformed population abundance when the process is stationary.</p>
 </blockquote>
@@ -340,7 +340,7 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits
 )</code></pre>
 <pre><code>    user   system  elapsed 
-5862.068  168.046 6047.051 </code></pre>
+4278.742  123.188 4402.113 </code></pre>
 <hr />
 <p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization (despite the documentation of <code>dplyr::init_cluster()</code> describing parallel <code>dplyr::do()</code> use, this feature is not actually implemented yet). Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># not run</span>
@@ -358,20 +358,20 @@ fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_l
 <hr />
 <p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
-<pre><code>Source: local data frame [45,730 x 4]
+<pre><code>Source: local data frame [45,724 x 4]
 Groups: MainID
 
    MainID model parameter         value
-1       3   ssg        dt  3.467069e+00
-2       3   ssg        Tt -1.334439e-01
-3       3   ssg       HHt  6.378128e-02
-4       3   ssg       GGt  1.767062e-01
+1       3   ssg        dt  3.467438e+00
+2       3   ssg        Tt -1.335810e-01
+3       3   ssg       HHt  6.383566e-02
+4       3   ssg       GGt  1.766069e-01
 5       3   ssg   mloglik  2.050357e+01
 6       3   ssg  converge  0.000000e+00
 7       3   ssg         n  2.700000e+01
 8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.443238e-04
-10      3  ssrw       HHt  2.120082e-09
+9       3  ssrw        dt  7.431098e-04
+10      3  ssrw       HHt  9.975410e-10
 ..    ...   ...       ...           ...</code></pre>
 <p>and here is our version then of Figure 1b, comparing the estimate of the density-dependence coefficent with and without the uncertainty in observations:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
@@ -394,8 +394,8 @@ Groups: MainID
 <span class="st">  </span><span class="kw">select</span>(difference) -&gt;<span class="st"> </span>diffs
   
 s &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">length=</span><span class="dv">100</span>)
-difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, function(s_i) <span class="kw">mean</span>(diffs$difference &gt;<span class="st"> </span>s_i))
-<span class="kw">qplot</span>(s, difference) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Difference bewteen estimates&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Proportion of data sets&quot;</span>)</code></pre>
+fig1a &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, function(s_i) <span class="kw">mean</span>(diffs$difference &gt;<span class="st"> </span>s_i))
+<span class="kw">qplot</span>(s, fig1a)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1a-1.png" />
 </figure>
@@ -507,7 +507,7 @@ difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, funct
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/495edecb78263f99e031411dc723836bc34dae96/_posts/2015-04-06-gpdd-explore.Rmd"> 495edecb78263f99e031411dc723836bc34dae96</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/261f4a3337c2506cacb54033dd368c55f44f6896/_posts/2015-04-06-gpdd-explore.Rmd"> 261f4a3337c2506cacb54033dd368c55f44f6896</a></small></p>
     
   <br/>
   

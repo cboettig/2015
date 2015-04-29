@@ -174,7 +174,6 @@ V0 &lt;-<span class="st"> </span>R[i,]</code></pre>
 <pre><code>Error: sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))) not equal to 0
 Mean absolute difference: 130</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, <span class="dt">discount=</span>delta, <span class="dt">epsilon=</span><span class="fl">0.001</span>, <span class="dt">max_iter =</span> <span class="fl">1e4</span>, <span class="dt">V0=</span>V0)</code></pre>
-<pre><code>[1] &quot;MDP Toolbox WARNING: max_iter is bounded by  5000&quot;</code></pre>
 <pre><code>Error in if (variation &lt; thresh) {: missing value where TRUE/FALSE needed</code></pre>
 <p>Whoops, this doesn’t look right:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(x_grid, h_grid[out$policy])</code></pre>
@@ -228,7 +227,7 @@ Mean absolute difference: 130</code></pre>
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/d23193526a1b4c70f939d5d3bd8a2b5235ad1f13/_posts/2015-01-23-mdptoolbox-ex.Rmd"> d23193526a1b4c70f939d5d3bd8a2b5235ad1f13</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/c34a615d86fc3ab6c45f607cf93442ee8ab4454a/_posts/2015-01-23-mdptoolbox-ex.Rmd"> c34a615d86fc3ab6c45f607cf93442ee8ab4454a</a></small></p>
     
   <br/>
   
