@@ -1,14 +1,21 @@
+general:
+  branches:
+    only: 
+      - master
+
 machine:
   services:
     - docker
 
 test:
   override:
-    - docker run --name cache -v /data cboettig/2015-cache
-    - docker run --volumes-from cache cboettig/2015 R -e 'servr::jekyll(script="_build/build.R", serve=FALSE)'
-
+    - docker run --name cache -v /data/_cache cboettig/2015-cache
+    - docker run --volumes-from cache -v $(pwd):/data cboettig/2015 R -e 'servr::jekyll(script="_build/build.R", serve=FALSE)'
 
 deployment:
-  override:
-    - docker run --volumes-from cache -e GH_TOKEN=$GH_TOKEN --entrypoint /data/_build/deploy.sh cboettig/2015
+  production:
+    branch: master
+    commands:
+      - docker run -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_build/deploy.sh" cboettig/2015
+
 
