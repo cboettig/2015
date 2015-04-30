@@ -14,7 +14,7 @@ library(nimble)
 library(earlywarning)
 library(ggplot2)
 library(tidyr)
-opts_chunk$set(dev='png', fig.width=5, fig.height=5, cache=1,results='hide')
+opts_chunk$set(dev='png', fig.width=5, fig.height=5, results='hide')
 ```
 
 

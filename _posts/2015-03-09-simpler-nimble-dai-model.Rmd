@@ -10,7 +10,7 @@ tags:
 ## A simpler Nimble model
 
 
-```{r include=FALSE, cache=FALSE}
+```{r }
 library("nimble")
 library("regimeshifts")
 library("tidyr")

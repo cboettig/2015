@@ -7,7 +7,7 @@ tags:
 
 ---
 
-```{r include=FALSE, cache=FALSE}
+```{r }
 library("nimble")
 library("ggplot2")
 library("tidyr")

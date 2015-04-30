@@ -16,7 +16,7 @@ devtools::install_github("cboettig/regimeshifts")
 ```
 
 
-```{r include=FALSE, cache=FALSE}
+```{r include=FALSE}
 library("nimble")
 library("regimeshifts")
 library("tidyr")

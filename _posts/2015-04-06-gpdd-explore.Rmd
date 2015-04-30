@@ -9,7 +9,7 @@ tags:
 
 ### setup 
 
-```{r cache=FALSE}
+```{r }
 library("ggplot2")
 library("dplyr")
 library("tidyr")

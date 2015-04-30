@@ -10,14 +10,10 @@ tags:
 
 ```{r settings}
 library(knitr)
-opts_chunk$set(dev='png', fig.width=3, fig.height=3, cache=FALSE,results='hide', fig.show='hold')
+opts_chunk$set(dev='png', fig.width=3, fig.height=3, results='hide', fig.show='hold')
 ```
 
-```{r cache=TRUE}
-devtools::install_github("cboettig/pdg_control")
-```
-
-```{r libs, cache=FALSE}
+```{r libs}
 library(pdgControl)
 library(ggplot2)
 

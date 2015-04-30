@@ -10,7 +10,7 @@ tags:
 
 ## A first go at implementing the Dai et al model
 
-```{r include=FALSE, cache=FALSE}
+```{r include=FALSE}
 library("ggplot2")
 library("knitcitations")
 ```

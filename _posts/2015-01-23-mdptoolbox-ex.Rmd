@@ -8,14 +8,9 @@ tags:
 Testing this out using `MDPtoolbox`, but not working yet...
 
 
-```{r settings}
-library(knitr)
-opts_chunk$set(dev='svg', fig.width=4, fig.height=4, cache=FALSE,results='hide', fig.show='hold', error=TRUE)
-```
 
 
-
-```{r libs, cache=FALSE}
+```{r libs}
 library(MDPtoolbox)
 library(ggplot2)
 ```
