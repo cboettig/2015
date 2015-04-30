@@ -9,12 +9,12 @@ machine:
 
 test:
   override:
-    - docker run --name cache -v /data/_cache cboettig/2015-cache && docker run --volumes-from cache -v $(pwd):/data cboettig/2015 ls _cache/* # _cache/posts/* && docker run --volumes-from cache -v $(pwd):/data cboettig/2015 R -e 'servr::jekyll(script="_build/build.R", serve=FALSE)'
+    - docker run --name cache -v /data/_cache cboettig/2015-cache && docker run --volumes-from cache -v $(pwd):/data cboettig/2015 R -e 'servr::jekyll(script="_build/build.R", serve=FALSE)'
 
 deployment:
   production:
     branch: master
     commands:
-      - ls # docker run -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_build/deploy.sh" cboettig/2015
+      - docker run -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_build/deploy.sh" cboettig/2015
 
 
