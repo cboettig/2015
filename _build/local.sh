@@ -2,7 +2,7 @@
 
 ## Build using cached data
 docker create --name cache -v /data/_cache cboettig/2015-cache
-docker run --rm --user 1000 --volumes-from cache -v $(pwd):/data cboettig/2015 Rscript -e 'servr::jekyll(serve = FALSE, script = "_build/build.R")'
+docker run --rm --volumes-from cache -v $(pwd):/data cboettig/2015 Rscript -e 'servr::jekyll(serve = FALSE, script = "_build/build.R")'
 
 ## Deploy to GitHub
 docker run --rm -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_build/deploy.sh" cboettig/2015
