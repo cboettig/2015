@@ -16,6 +16,6 @@ docker commit cache2 cboettig/2015-cache
 docker push cboettig/2015-cache
 
 ## Clean up
-docker rm cache cache2
+docker rm -v cache cache2
 rm backup.tar
 
