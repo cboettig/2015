@@ -9,7 +9,7 @@ docker run --rm -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_b
 
 ## Update cache to reflect build (local builds only)
 docker run --rm --volumes-from cache -v $(pwd):/backup busybox tar cvf /backup/backup.tar /data/_cache
-docker run --name cache2 -v $(pwd):/backup --entrypoint "/backup/_build/restore.sh" busybox 
+docker run --name cache2 -v $(pwd):/backup busybox tar -xf /backup/backup.tar
 
 ## commit and push updated cache container
 docker commit cache2 cboettig/2015-cache
