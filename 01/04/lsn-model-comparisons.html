@@ -108,11 +108,60 @@
   <div class="col-md-7 col-md-offset-1">
     <article>
     <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
-<span class="kw">library</span>(nimble)
-<span class="kw">library</span>(sde)
-<span class="kw">library</span>(ggplot2)
-<span class="kw">library</span>(tidyr)
-opts_chunk$<span class="kw">set</span>(<span class="dt">dev =</span> <span class="st">&#39;png&#39;</span>, 
+<span class="kw">library</span>(nimble)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;nimble&#39;
+## 
+## The following object is masked from &#39;package:stats&#39;:
+## 
+##     simulate</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sde)</code></pre>
+<pre><code>## Loading required package: MASS
+## Loading required package: stats4
+## Loading required package: fda
+## Loading required package: splines
+## Loading required package: Matrix
+## Loading required package: methods
+## 
+## Attaching package: &#39;Matrix&#39;
+## 
+## The following objects are masked from &#39;package:base&#39;:
+## 
+##     crossprod, tcrossprod
+## 
+## 
+## Attaching package: &#39;fda&#39;
+## 
+## The following object is masked from &#39;package:nimble&#39;:
+## 
+##     inprod
+## 
+## The following object is masked from &#39;package:graphics&#39;:
+## 
+##     matplot
+## 
+## Loading required package: zoo
+## 
+## Attaching package: &#39;zoo&#39;
+## 
+## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric
+## 
+## sde 2.0.13
+## Companion package to the book
+## &#39;Simulation and Inference for Stochastic Differential Equations With R Examples&#39;
+## Iacus, Springer NY, (2008)
+## To check the errata corrige of the book, type vignette(&quot;sde.errata&quot;)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(tidyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;tidyr&#39;
+## 
+## The following object is masked from &#39;package:Matrix&#39;:
+## 
+##     expand</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">opts_chunk$<span class="kw">set</span>(<span class="dt">dev =</span> <span class="st">&#39;png&#39;</span>, 
                <span class="dt">fig.width =</span> <span class="dv">5</span>, 
                <span class="dt">fig.height =</span> <span class="dv">5</span>, 
                <span class="dt">results =</span> <span class="st">&#39;hide&#39;</span>)</code></pre>
@@ -120,13 +169,13 @@ opts_chunk$<span class="kw">set</span>(<span class="dt">dev =</span> <span class
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
 d &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="fl">0.5</span> *<span class="st"> </span>(<span class="dv">10</span>-x))
 s &lt;-<span class="st"> </span><span class="kw">expression</span>(<span class="dv">1</span>) 
-data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))</code></pre>
-<pre><code>sigma.x not provided, attempting symbolic derivation.</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))
-N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
+data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">sde.sim</span>(<span class="dt">X0=</span><span class="dv">6</span>,<span class="dt">drift=</span>d, <span class="dt">sigma=</span>s, <span class="dt">T=</span><span class="dv">20</span>, <span class="dt">N=</span><span class="dv">100</span>))
+<span class="kw">ggplot</span>(data) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(x),x))</code></pre>
+<pre><code>## Don&#39;t know how to automatically pick scale for object of type ts. Defaulting to continuous</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/data-1.png" />
+<img src="/figure/posts/2015-01-04-lsn-model-comparisons/data-1.png" alt="plot of chunk data" /><figcaption>plot of chunk data</figcaption>
 </figure>
+<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(data$x)</code></pre>
 <h2 id="lsn-version">LSN version</h2>
 <p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
 <pre class="sourceCode r"><code class="sourceCode r">lsn &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
@@ -158,57 +207,53 @@ Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmode
 Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
-<pre><code>NULL</code></pre>
 <p>and examine results</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)</code></pre>
-<pre><code>[1] 5000  206</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+<span class="kw">dim</span>(samples)
+samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
 long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
-<pre><code>            m       sigma_x       sigma_y         theta 
--1.675333e-05  3.875174e-01  4.066872e-02  1.022867e+01 </code></pre>
+<pre><code>##             m       sigma_x       sigma_y         theta 
+## -1.675333e-05  3.875174e-01  4.066872e-02  1.022867e+01</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/trace-1.png" />
+<img src="/figure/posts/2015-01-04-lsn-model-comparisons/trace-1.png" alt="plot of chunk trace" /><figcaption>plot of chunk trace</figcaption>
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-01-04-lsn-model-comparisons/histogram-1.png" />
+<img src="/figure/posts/2015-01-04-lsn-model-comparisons/histogram-1.png" alt="plot of chunk histogram" /><figcaption>plot of chunk histogram</figcaption>
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.2.0 (2015-04-16)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Debian GNU/Linux 8 (jessie)
-
-locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
- [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] stats4    splines   methods   stats     graphics  grDevices
-[7] utils     datasets  base     
-
-other attached packages:
- [1] tidyr_0.2.0   ggplot2_1.0.1 sde_2.0.13    zoo_1.7-12   
- [5] fda_2.4.4     Matrix_1.2-0  MASS_7.3-40   nimble_0.3-1 
- [9] yaml_2.1.13   knitr_1.10   
-
-loaded via a namespace (and not attached):
- [1] igraph_0.7.1     Rcpp_0.11.5      munsell_0.4.2   
- [4] colorspace_1.2-6 lattice_0.20-31  stringr_0.6.2   
- [7] plyr_1.8.2       tools_3.2.0      grid_3.2.0      
-[10] gtable_0.1.2     digest_0.6.8     reshape2_1.4.1  
-[13] formatR_1.2      codetools_0.2-11 evaluate_0.7    
-[16] labeling_0.3     scales_0.2.4     proto_0.3-10    </code></pre>
+<pre><code>## R version 3.2.0 (2015-04-16)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Debian GNU/Linux 8 (jessie)
+## 
+## locale:
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] methods   splines   stats4    stats     graphics  grDevices utils    
+## [8] datasets  base     
+## 
+## other attached packages:
+## [1] tidyr_0.2.0   ggplot2_1.0.1 sde_2.0.13    zoo_1.7-12    fda_2.4.4    
+## [6] Matrix_1.2-0  MASS_7.3-40   nimble_0.3-1  knitr_1.10   
+## 
+## loaded via a namespace (and not attached):
+##  [1] igraph_0.7.1     Rcpp_0.11.5      munsell_0.4.2    colorspace_1.2-6
+##  [5] lattice_0.20-31  stringr_0.6.2    plyr_1.8.2       tools_3.2.0     
+##  [9] grid_3.2.0       gtable_0.1.2     digest_0.6.8     reshape2_1.4.1  
+## [13] formatR_1.2      codetools_0.2-11 evaluate_0.7     labeling_0.3    
+## [17] scales_0.2.4     proto_0.3-10</code></pre>
 
     </article>
   </div>
