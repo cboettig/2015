@@ -13,13 +13,12 @@ tags:
 library("ggplot2")
 library("dplyr")
 library("tidyr")
-library("knitcitations")
 library("rgpdd")
 library("FKF")
 ```
 
 
-Working through `r knitcitations::citet("10.1111/j.1461-0248.2011.01702.x")` provides a nice way to play around with the GPDD data and Kalman filtering.  More interested in exploring the data and methods than in just replicating the results, which are important but also rather intuitive and thus I expect rather robust -- as we add (observational) uncertainty, or indeed, any additional parameters that must be ended, we should expect to have less power to pin down a particular parameter associated with density dependence, as the paper illustrates rather nicely.  
+Working through [10.1111/j.1461-0248.2011.01702.x](http://doi.org/10.1111/j.1461-0248.2011.01702.x) provides a nice way to play around with the GPDD data and Kalman filtering.  More interested in exploring the data and methods than in just replicating the results, which are important but also rather intuitive and thus I expect rather robust -- as we add (observational) uncertainty, or indeed, any additional parameters that must be ended, we should expect to have less power to pin down a particular parameter associated with density dependence, as the paper illustrates rather nicely.  
 
 
 
