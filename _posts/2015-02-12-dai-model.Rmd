@@ -15,7 +15,7 @@ library("ggplot2")
 library("knitcitations")
 ```
 
-From  the supplement to `r citet("10.1126/science.1219805")`, we have:
+From  the supplement to `r knitcitations::citet("10.1126/science.1219805")`, we have:
 
 $$n_{t+1} = n_t g(n_t + \epsilon n_t, \theta)$$
 $$g(n_t) = \frac{n_{t+1}}{n_t}$$

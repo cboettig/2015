@@ -20,7 +20,7 @@ library(ggplot2)
 library(knitcitations)
 ```
 
-We propose a state model consistent with `r citet("10.2139/ssrn.421007")`; in this case a simple Beverton-Holt model.  Note that in defining $f$ we have assumed the harvesting take place before the population recruits.
+We propose a state model consistent with `r knitcitations::citet("10.2139/ssrn.421007")`; in this case a simple Beverton-Holt model.  Note that in defining $f$ we have assumed the harvesting take place before the population recruits.
 
 
 ```{r params}
