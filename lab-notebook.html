@@ -466,10 +466,9 @@ combined &lt;-<span class="st"> </span><span class="kw">rbind</span>(
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;knitcitations&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;rgpdd&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;FKF&quot;</span>)</code></pre>
-<p>Working through Knape and de Valpine (2011) provides a nice way to play around with the GPDD data and Kalman filtering. More interested in exploring the data and methods than in just replicating the results, which are important but also rather intuitive and thus I expect rather robust – as we add (observational) uncertainty, or indeed, any additional parameters that must be ended, we should expect to have less power to pin down a particular parameter associated with density dependence, as the paper illustrates rather nicely.</p>
+<p>Working through <a href="http://doi.org/10.1111/j.1461-0248.2011.01702.x">10.1111/j.1461-0248.2011.01702.x</a> provides a nice way to play around with the GPDD data and Kalman filtering. More interested in exploring the data and methods than in just replicating the results, which are important but also rather intuitive and thus I expect rather robust – as we add (observational) uncertainty, or indeed, any additional parameters that must be ended, we should expect to have less power to pin down a particular parameter associated with density dependence, as the paper illustrates rather nicely.</p>
 <hr />
 <h2 id="data-preparation">Data preparation</h2>
 <blockquote>
@@ -975,6 +974,11 @@ difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, funct
 <article>
 <div class="excerpt">
 <h2 id="a-simpler-nimble-model">A simpler Nimble model</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;regimeshifts&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)</code></pre>
 <h2 id="lsn-version">LSN version</h2>
 <p>A further simplified version:</p>
 <ul>
@@ -1147,6 +1151,12 @@ loaded via a namespace (and not attached):
 
 <article>
 <div class="excerpt">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;MASS&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;mcmc&quot;</span>)</code></pre>
 <h2 id="gp-model">GP Model</h2>
 <p>A successful specification looks like this:</p>
 <pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
@@ -1282,6 +1292,10 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
 
 <article>
 <div class="excerpt">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)</code></pre>
 <h2 id="dmnorm-example">dmnorm example</h2>
 <p>from Daniel, who notes we need to be explicit about vector/matrix sizes on both LHS and RHS,</p>
 <pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({

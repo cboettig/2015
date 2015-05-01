@@ -119,11 +119,13 @@ all_taxa &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span cl
 x1 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots=</span>.dots)
 
 <span class="kw">identical</span>(x, x1)</code></pre>
+<pre><code>[1] TRUE</code></pre>
 <p>This lets us treat the arguments (e.g. values of the factor on which we filter) as variables:</p>
 <pre class="sourceCode r"><code class="sourceCode r">family &lt;-<span class="st"> &#39;Scaridae&#39;</span>
 .dots &lt;-<span class="st"> </span><span class="kw">list</span>(~Family ==<span class="st"> </span>family)
 x2 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots=</span>.dots)
 <span class="kw">identical</span>(x, x2)</code></pre>
+<pre><code>[1] TRUE</code></pre>
 <p>If we want both the key and value to vary, we need to get pretty fancy to subvert the non-standard evaluation:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lazyeval)
 family &lt;-<span class="st"> &#39;Scaridae&#39;</span>
@@ -132,6 +134,7 @@ field &lt;-<span class="st"> &#39;Family&#39;</span>
                      <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> <span class="kw">as.name</span>(field), <span class="dt">x =</span> family)))
 x3 &lt;-<span class="st"> </span><span class="kw">filter_</span>(all_taxa, <span class="dt">.dots=</span>.dots)
 <span class="kw">identical</span>(x, x3)</code></pre>
+<pre><code>[1] TRUE</code></pre>
 <p>At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:</p>
 <pre class="sourceCode r"><code class="sourceCode r">query &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">Family =</span> <span class="st">&#39;Scaridae&#39;</span>, <span class="dt">SpecCode =</span> <span class="dv">5537</span>)
 dots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(query), function(level){
@@ -198,7 +201,7 @@ x3 &lt;-<span class="st">  </span><span class="kw">filter_</span>(all_taxa, <spa
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/a9de922ba7c794830a4a1c0bc22206f1cb0b13bd/_posts/2015-02-06-fun-standardizing-non-standard-evaluation.Rmd"> a9de922ba7c794830a4a1c0bc22206f1cb0b13bd</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/565f4c6843fa74418e9c3ed194f8fec5b08144f4/_posts/2015-02-06-fun-standardizing-non-standard-evaluation.Rmd"> 565f4c6843fa74418e9c3ed194f8fec5b08144f4</a></small></p>
     
   <br/>
   

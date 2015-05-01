@@ -108,8 +108,6 @@
   <div class="col-md-7 col-md-offset-1">
     <article>
     <p>Testing this out using <code>MDPtoolbox</code>, but not working yet…</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
-opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;svg&#39;</span>, <span class="dt">fig.width=</span><span class="dv">4</span>, <span class="dt">fig.height=</span><span class="dv">4</span>, <span class="dt">cache=</span><span class="ot">FALSE</span>,<span class="dt">results=</span><span class="st">&#39;hide&#39;</span>, <span class="dt">fig.show=</span><span class="st">&#39;hold&#39;</span>, <span class="dt">error=</span><span class="ot">TRUE</span>)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MDPtoolbox)
 <span class="kw">library</span>(ggplot2)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x, h, p){ 
@@ -174,6 +172,7 @@ V0 &lt;-<span class="st"> </span>R[i,]</code></pre>
 <pre><code>Error: sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))) not equal to 0
 Mean absolute difference: 130</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, <span class="dt">discount=</span>delta, <span class="dt">epsilon=</span><span class="fl">0.001</span>, <span class="dt">max_iter =</span> <span class="fl">1e4</span>, <span class="dt">V0=</span>V0)</code></pre>
+<pre><code>[1] &quot;MDP Toolbox WARNING: max_iter is bounded by  5000&quot;</code></pre>
 <pre><code>Error in if (variation &lt; thresh) {: missing value where TRUE/FALSE needed</code></pre>
 <p>Whoops, this doesn’t look right:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(x_grid, h_grid[out$policy])</code></pre>
@@ -227,7 +226,7 @@ Mean absolute difference: 130</code></pre>
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/c34a615d86fc3ab6c45f607cf93442ee8ab4454a/_posts/2015-01-23-mdptoolbox-ex.Rmd"> c34a615d86fc3ab6c45f607cf93442ee8ab4454a</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/79147f001a709a2eaad1a537fc5a65ccda98f882/_posts/2015-01-23-mdptoolbox-ex.Rmd"> 79147f001a709a2eaad1a537fc5a65ccda98f882</a></small></p>
     
   <br/>
   

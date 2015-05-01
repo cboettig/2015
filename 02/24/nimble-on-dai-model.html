@@ -109,7 +109,6 @@
     <article>
     <h2 id="testing-nimble-method-on-dai-model">Testing nimble method on Dai model</h2>
 <p>(long data series)</p>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;cboettig/regimeshifts&quot;</span>)</code></pre>
 <p>Define our mcmc procedure in Nimble</p>
 <pre class="sourceCode r"><code class="sourceCode r">my_mcmc &lt;-<span class="st"> </span>function(code, constants, data, inits, <span class="dt">n_iter=</span><span class="fl">1e5</span>, <span class="dt">thin =</span> <span class="fl">1e2</span>){
   Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)
@@ -172,14 +171,14 @@ ou_inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class=
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-8-1.png" />
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-7-1.png" />
 </figure>
 <h4 id="posteriors">Posteriors</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-9-1.png" />
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-8-1.png" />
 </figure>
 <h2 id="lsn-version">LSN version</h2>
 <p>A modified version of the LSN model to explicitly model the changing parameter as a hidden variable changing at constant rate</p>
@@ -214,14 +213,14 @@ inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-13-1.png" />
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-12-1.png" />
 </figure>
 <h4 id="posteriors-1">Posteriors</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-14-1.png" />
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-13-1.png" />
 </figure>
 <h2 id="lsn-stochastic-hidden-variable">LSN, stochastic hidden variable</h2>
 <h4 id="define-and-model-and-run-mcmc">Define and model and run MCMC</h4>
@@ -258,14 +257,14 @@ inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-18-1.png" />
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-17-1.png" />
 </figure>
 <h4 id="posteriors-2">Posteriors</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-19-1.png" />
+<img src="/2015/assets/figures/posts/2015-02-24-nimble-on-dai-model/unnamed-chunk-18-1.png" />
 </figure>
 <hr />
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
@@ -293,14 +292,13 @@ other attached packages:
 
 loaded via a namespace (and not attached):
  [1] igraph_0.7.1     Rcpp_0.11.5      magrittr_1.5    
- [4] devtools_1.7.0   MASS_7.3-40      munsell_0.4.2   
- [7] colorspace_1.2-6 stringr_0.6.2    httr_0.6.1      
-[10] plyr_1.8.2       tools_3.2.0      parallel_3.2.0  
-[13] grid_3.2.0       gtable_0.1.2     DBI_0.3.1       
-[16] lazyeval_0.1.10  assertthat_0.1   digest_0.6.8    
-[19] reshape2_1.4.1   formatR_1.2      bitops_1.0-6    
-[22] codetools_0.2-11 RCurl_1.95-4.5   evaluate_0.7    
-[25] labeling_0.3     scales_0.2.4     proto_0.3-10    </code></pre>
+ [4] MASS_7.3-40      munsell_0.4.2    colorspace_1.2-6
+ [7] stringr_0.6.2    plyr_1.8.2       tools_3.2.0     
+[10] parallel_3.2.0   grid_3.2.0       gtable_0.1.2    
+[13] DBI_0.3.1        lazyeval_0.1.10  digest_0.6.8    
+[16] assertthat_0.1   reshape2_1.4.1   formatR_1.2     
+[19] codetools_0.2-11 evaluate_0.7     labeling_0.3    
+[22] scales_0.2.4     proto_0.3-10    </code></pre>
 
     </article>
   </div>
@@ -358,7 +356,7 @@ loaded via a namespace (and not attached):
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/9d00cd648accd67fcaa53734db4437e6b34e1f8c/_posts/2015-02-24-nimble-on-dai-model.Rmd"> 9d00cd648accd67fcaa53734db4437e6b34e1f8c</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/79147f001a709a2eaad1a537fc5a65ccda98f882/_posts/2015-02-24-nimble-on-dai-model.Rmd"> 79147f001a709a2eaad1a537fc5a65ccda98f882</a></small></p>
     
   <br/>
   

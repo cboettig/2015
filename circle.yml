@@ -9,8 +9,7 @@ machine:
 
 test:
   override:
-    - docker run --name cache -v /data/_cache cboettig/2015-cache
-    - docker run --volumes-from cache -v $(pwd):/data cboettig/2015 R -e 'servr::jekyll(script="_build/build.R", serve=FALSE)'
+    - docker create --name cache -v /data/_cache cboettig/2015-cache && docker run --volumes-from cache -v $(pwd):/data cboettig/2015 Rscript -e 'servr::jekyll(script="_build/build.R", serve=FALSE)'
 
 deployment:
   production:
