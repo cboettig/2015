@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -e
+
+source ~/.notebook-env.sh
+
 ## Build using cached data
 docker create --name cache -v /data/_cache cboettig/2015-cache
 docker run --rm --volumes-from cache -v $(pwd):/data cboettig/2015 Rscript -e 'servr::jekyll(serve = FALSE, script = "_build/build.R")'
