@@ -107,10 +107,27 @@
       <div class="row">
   <div class="col-md-7 col-md-offset-1">
     <article>
-    <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
+    <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;nimble&#39;
+## 
+## The following object is masked from &#39;package:stats&#39;:
+## 
+##     simulate</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)</code></pre>
+<pre><code>## Loading required package: methods</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;
+## 
+## The following object is masked from &#39;package:stats&#39;:
+## 
+##     filter
+## 
+## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
 <h2 id="dmnorm-example">dmnorm example</h2>
 <p>from Daniel, who notes we need to be explicit about vector/matrix sizes on both LHS and RHS,</p>
 <pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
@@ -152,7 +169,16 @@ constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt
 inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
 data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)
 m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
-<pre><code>Error in x$parentNodeExprs[[iV]][[iDim + 2]]: object of type &#39;symbol&#39; is not subsettable</code></pre>
+<pre><code>## Warning in replaceConstantsRecurse(x, constEnv, constNames): Code diff was
+## given as known but evaluates to a non-scalar.  This is probably not what
+## you want.</code></pre>
+<pre><code>## Warning in replaceConstantsRecurse(x, constEnv, constNames): Code I was
+## given as known but evaluates to a non-scalar.  This is probably not what
+## you want.</code></pre>
+<pre><code>## Warning in replaceConstantsRecurse(x, constEnv, constNames): Code Mu was
+## given as known but evaluates to a non-scalar.  This is probably not what
+## you want.</code></pre>
+<pre><code>## Error in x$parentNodeExprs[[iV]][[iDim + 2]]: object of type &#39;symbol&#39; is not subsettable</code></pre>
 <h2 id="gp-model-v2">GP Model, v2</h2>
 <p>This model definition still doesn’t work, even though it appears to be more explicit</p>
 <pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
@@ -171,7 +197,7 @@ constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt
 inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
 data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)
 <span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
-<pre><code>Error in replaceConstantsRecurse(x, constEnv, constNames): Error, hit end</code></pre>
+<pre><code>## Error in replaceConstantsRecurse(x, constEnv, constNames): Error, hit end</code></pre>
 <h2 id="gp-model">GP Model</h2>
 <p>A successful specification looks like this:</p>
 <pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
@@ -206,24 +232,24 @@ m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class=
 <pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits, <span class="dt">n =</span> <span class="fl">1e6</span>)</code></pre>
 <h4 id="summary-statistics">Summary statistics</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>Source: local data frame [2 x 3]
-
-      key         mean          std
-1       l 50369.945229 28710.793488
-2 sigma.n     2.168649     1.149319</code></pre>
+<pre><code>## Source: local data frame [2 x 3]
+## 
+##       key        mean          std
+## 1       l 50320.81652 28799.034408
+## 2 sigma.n     2.18401     1.162494</code></pre>
 <h4 id="traces">Traces</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df,<span class="dv">500</span>)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-10-1.png" />
+<img src="/figure/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-10-1.png" alt="plot of chunk unnamed-chunk-10" /><figcaption>plot of chunk unnamed-chunk-10</figcaption>
 </figure>
 <h4 id="posteriors">Posteriors</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-11-1.png" />
+<img src="/figure/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-11-1.png" alt="plot of chunk unnamed-chunk-11" /><figcaption>plot of chunk unnamed-chunk-11</figcaption>
 </figure>
 <h2 id="time-series-example">Time-series example</h2>
 <pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function (x, p){ x *<span class="st"> </span><span class="kw">exp</span>(p[<span class="dv">1</span>] *<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>x /<span class="st"> </span>p[<span class="dv">2</span>]) *<span class="st"> </span>(x -<span class="st"> </span>p[<span class="dv">3</span>]) /<span class="st"> </span>p[<span class="dv">2</span>]) }
@@ -238,11 +264,11 @@ x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">5.5<
 for(t in <span class="dv">1</span>:(T<span class="dv">-1</span>))
   x[t<span class="dv">+1</span>] =<span class="st"> </span><span class="kw">z_g</span>() *<span class="st"> </span><span class="kw">f</span>(x[t], <span class="dt">p=</span>p)
 
-<span class="kw">qplot</span>(<span class="kw">seq_along</span>(x), x)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span>x)</code></pre>
+<span class="kw">qplot</span>(<span class="kw">seq_along</span>(x), x)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-12-1.png" />
+<img src="/figure/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-12-1.png" alt="plot of chunk unnamed-chunk-12" /><figcaption>plot of chunk unnamed-chunk-12</figcaption>
 </figure>
+<pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span>x)</code></pre>
 <h4 id="model-setup">model setup</h4>
 <pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span>x[<span class="dv">1</span>:(T<span class="dv">-1</span>)], <span class="dt">y =</span> x[<span class="dv">2</span>:T])
 N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
@@ -254,24 +280,24 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
 <pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits, <span class="dt">n =</span> <span class="fl">1e6</span>)</code></pre>
 <h4 id="summary-statistics-1">Summary statistics</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>Source: local data frame [2 x 3]
-
-      key      mean        std
-1       l 3.8059775 0.60843921
-2 sigma.n 0.3641306 0.04565619</code></pre>
+<pre><code>## Source: local data frame [2 x 3]
+## 
+##       key      mean        std
+## 1       l 3.8059775 0.60843921
+## 2 sigma.n 0.3641306 0.04565619</code></pre>
 <h4 id="traces-1">Traces</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df,<span class="dv">500</span>)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-16-1.png" />
+<img src="/figure/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-16-1.png" alt="plot of chunk unnamed-chunk-16" /><figcaption>plot of chunk unnamed-chunk-16</figcaption>
 </figure>
 <h4 id="posteriors-1">Posteriors</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-17-1.png" />
+<img src="/figure/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-17-1.png" alt="plot of chunk unnamed-chunk-17" /><figcaption>plot of chunk unnamed-chunk-17</figcaption>
 </figure>
 
     </article>

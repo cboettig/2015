@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-05-11T18:55:23+00:00</updated>
+  <updated>2015-05-11T19:01:58+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -18,8 +18,18 @@
    <id>/02/06/fun-standardizing-non-standard-evaluation</id>
    <content type="html">&lt;p&gt;Using &lt;code&gt;dplyr&lt;/code&gt; calls on the back-end of the &lt;code&gt;rfishbase&lt;/code&gt; re-write means working around the non-standard evaluation (NSE), as described in the &lt;a href=&quot;&quot;&gt;&lt;code&gt;dplyr&lt;/code&gt; vignette&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Grab the data I was using for this:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)
-downloader::&lt;span class=&quot;kw&quot;&gt;download&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;https://github.com/cboettig/2015/raw/fc0d9185659e7976927d0ec91981912537ac6018/assets/data/2015-02-06-taxa.csv&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;taxa.csv&amp;quot;&lt;/span&gt;)
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Attaching package: &amp;#39;dplyr&amp;#39;
+## 
+## The following object is masked from &amp;#39;package:stats&amp;#39;:
+## 
+##     filter
+## 
+## The following objects are masked from &amp;#39;package:base&amp;#39;:
+## 
+##     intersect, setdiff, setequal, union&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;downloader::&lt;span class=&quot;kw&quot;&gt;download&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;https://github.com/cboettig/2015/raw/fc0d9185659e7976927d0ec91981912537ac6018/assets/data/2015-02-06-taxa.csv&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;taxa.csv&amp;quot;&lt;/span&gt;)
 all_taxa &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;read.csv&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;taxa.csv&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Consider a simple NSE &lt;code&gt;dplyr&lt;/code&gt; call:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(all_taxa, Family ==&lt;span class=&quot;st&quot;&gt; &amp;#39;Scaridae&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
@@ -28,13 +38,11 @@ all_taxa &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=
 x1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots=&lt;/span&gt;.dots)
 
 &lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x1)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;This lets us treat the arguments (e.g. values of the factor on which we filter) as variables:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;family &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;#39;Scaridae&amp;#39;&lt;/span&gt;
 .dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(~Family ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;family)
 x2 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots=&lt;/span&gt;.dots)
 &lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x2)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;If we want both the key and value to vary, we need to get pretty fancy to subvert the non-standard evaluation:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(lazyeval)
 family &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;#39;Scaridae&amp;#39;&lt;/span&gt;
@@ -43,7 +51,6 @@ field &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;#39;Family&amp;#39;&lt;/sp
                      &lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;as.name&lt;/span&gt;(field), &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; family)))
 x3 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter_&lt;/span&gt;(all_taxa, &lt;span class=&quot;dt&quot;&gt;.dots=&lt;/span&gt;.dots)
 &lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x, x3)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;At bit more fun to wrap this into a function where we take arbitrary number of arguments as name-value pairs:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;query &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;Family =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;Scaridae&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;SpecCode =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5537&lt;/span&gt;)
 dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(query), function(level){

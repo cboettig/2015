@@ -111,6 +111,7 @@
 opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">3</span>, <span class="dt">fig.height=</span><span class="dv">3</span>, <span class="dt">results=</span><span class="st">&#39;hide&#39;</span>, <span class="dt">fig.show=</span><span class="st">&#39;hold&#39;</span>)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pdgControl)
 <span class="kw">library</span>(ggplot2)</code></pre>
+<pre><code>## Loading required package: methods</code></pre>
 <h2 id="reed-solution-harvest-control">Reed solution; harvest control</h2>
 <pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x, h, p){ 
   x &lt;-<span class="st"> </span><span class="kw">sapply</span>(x, function(x) <span class="kw">max</span>(x-h,<span class="dv">0</span>))
@@ -131,7 +132,7 @@ pdfn &lt;-<span class="st"> </span>function(P, s) <span class="kw">dlnorm</span>
 <pre class="sourceCode r"><code class="sourceCode r">opt &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(SDP_Mat, x_grid, h_grid, OptTime, xT, profit, delta)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(x_grid, h_grid[opt$D]) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Stock size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Harvest&quot;</span>)
 <span class="kw">qplot</span>(x_grid, x_grid -<span class="st"> </span>h_grid[opt$D]) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Stock size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Escapement&quot;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-3-1.png" /> <img src="/2015/assets/figures/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-3-2.png" /></p>
+<p><img src="/figure/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-3-1.png" alt="plot of chunk unnamed-chunk-3" /> <img src="/figure/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-3-2.png" alt="plot of chunk unnamed-chunk-3" /></p>
 <h2 id="reed-solution-with-effort-based-control">Reed solution with effort-based control</h2>
 <pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x, h, p){
   x &lt;-<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>h) *<span class="st"> </span>x
@@ -144,7 +145,7 @@ profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">sapply</spa
 <pre class="sourceCode r"><code class="sourceCode r">opt &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(SDP_Mat, x_grid, h_grid, OptTime, xT, profit, delta)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(x_grid, h_grid[opt$D]) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Stock size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Fishing Effort&quot;</span>)
 <span class="kw">qplot</span>(x_grid, x_grid -<span class="st"> </span>x_grid *<span class="st"> </span>h_grid[opt$D]) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Stock size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Escapement&quot;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-7-1.png" /> <img src="/2015/assets/figures/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-7-2.png" /></p>
+<p><img src="/figure/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-7-1.png" alt="plot of chunk unnamed-chunk-7" /> <img src="/figure/posts/2015-01-22-sdp-Reed-controls-comparisons/unnamed-chunk-7-2.png" alt="plot of chunk unnamed-chunk-7" /></p>
 
     </article>
   </div>
