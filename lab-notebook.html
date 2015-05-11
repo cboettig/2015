@@ -114,6 +114,325 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/05/08/ram-legacy-database-explore.html">Ram Legacy Database Explore</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 08 May 2015</p>
+
+<article>
+<div class="excerpt">
+<h2 id="accessing-the-database">Accessing the database</h2>
+<p>Connect to the database (connection info is <a href="http://ramlegacy.marinebiodiversity.ca/ram-legacy-stock-assessment-database/accessing-the-live-database">public</a>), works fine:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;RPostgreSQL&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">mydb &lt;-<span class="st"> </span><span class="kw">src_postgres</span>(<span class="dt">dbname =</span> <span class="st">&quot;srdb&quot;</span>, 
+                     <span class="dt">host=</span><span class="st">&quot;nautilus-vm.mathstat.dal.ca&quot;</span>, 
+                     <span class="dt">user =</span> <span class="st">&quot;srdbuser&quot;</span>, 
+                     <span class="dt">password =</span>  <span class="st">&quot;srd6us3r!&quot;</span>, 
+                     <span class="dt">port =</span> <span class="dv">5432</span>)
+mydb</code></pre>
+<pre><code>src:  postgres 8.4.10 [srdbuser@nautilus-vm.mathstat.dal.ca:5432/srdb]
+tbls: area, assessment, assessmethod, assessor, biometrics,
+  bioparams, brptots, fishbasesaupcodes, geometry_columns, lmerefs,
+  lmes, lmetostocks, management, mostrecent, recorder, referencedoc,
+  reference_point_units_view, reference_point_values_view, risfields,
+  risfieldvalues, spatial_ref_sys, stock, taxonomy, timeseries,
+  timeseries_units_view, timeseries_values_view, tsmetrics,
+  tsrelative_explicit_view</code></pre>
+<p>However, the expected mechanism for accessing a complete table seems to fail:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tbl</span>(mydb, <span class="st">&quot;stock&quot;</span>)</code></pre>
+<pre><code>Error in postgresqlExecStatement(conn, statement, ...): RS-DBI driver: (could not Retrieve the result : ERROR:  relation &quot;stock&quot; does not exist
+LINE 1: SELECT * FROM &quot;stock&quot; WHERE 0=1
+                      ^
+)</code></pre>
+<p>Filed as a bug report in <a href="https://github.com/rstats-db/RPostgres/issues/32">RPostgres/#32</a>.</p>
+<p>Meanwhile, direct sql queries work (note we need the full table address, e.g. <code>dbname.tablename</code>.)</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.stock&quot;</span>))</code></pre>
+<pre><code>Source: postgres 8.4.10 [srdbuser@nautilus-vm.mathstat.dal.ca:5432/srdb]
+From: &lt;derived table&gt; [?? x 8]
+
+      stockid    tsn scientificname   commonname
+1        COD1 164712   Gadus morhua Atlantic cod
+2    COD2J3KL 164712   Gadus morhua Atlantic cod
+3  COD2J3KLIS 164712   Gadus morhua Atlantic cod
+4       COD3M 164712   Gadus morhua Atlantic cod
+5      COD3NO 164712   Gadus morhua Atlantic cod
+6      COD3Ps 164712   Gadus morhua Atlantic cod
+7   COD3Pn4RS 164712   Gadus morhua Atlantic cod
+8       COD4T 164712   Gadus morhua Atlantic cod
+9     COD4VsW 164712   Gadus morhua Atlantic cod
+10    COD4TVn 164712   Gadus morhua Atlantic cod
+..        ...    ...            ...          ...
+Variables not shown: areaid (chr), stocklong (chr), inmyersdb (int),
+  myersstockid (chr)</code></pre>
+<p>Since these tables easily fit into memory, it is generally faster to just import them into R rather than leaving <code>dplyr</code> to just work with them remotely. The <code>dplyr::collect()</code> function does this. So we create local copies of each table of interest like so:</p>
+<pre class="sourceCode r"><code class="sourceCode r">timeseries &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries&quot;</span>)))
+values &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries_values_view&quot;</span>)))
+
+units &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries_units_view&quot;</span>)))
+assessment &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessment&quot;</span>)))
+area &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.area&quot;</span>)))
+stock &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.stock&quot;</span>)))
+method &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessmethod&quot;</span>)))
+assessor &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessor&quot;</span>)))
+management  &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.management&quot;</span>)))
+taxonomy &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.taxonomy&quot;</span>)))
+
+lmerefs &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.lmerefs&quot;</span>)))
+lmestock &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.lmetostocks&quot;</span>)))
+
+
+biometrics  &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.biometrics&quot;</span>)))
+bioparams &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.bioparams&quot;</span>)))
+
+tsmetrics &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.tsmetrics&quot;</span>)))</code></pre>
+<p>Many of the tables contain observations of variables that describe each given assessment (<code>assessid</code>), including the species <code>stock</code> assessed, <code>area</code> assessed, the method used, and so forth. Since these all follow the same schema of a row being a unique stock assessment and a column being an attribute of that assessment, it makes sense to combine this into a single metadata table. (Especially as these datasets fit so easily into memory anyway.)</p>
+<pre class="sourceCode r"><code class="sourceCode r">meta &lt;-<span class="st"> </span>assessment %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">methodshort =</span> assessmethod) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(method) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(area) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(units) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(assessor) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(management) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(taxonomy) </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">all_areas &lt;-<span class="st"> </span>stock %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(stockid, areaid) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(area) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">right_join</span>(lmestock) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(lmerefs)
+
+<span class="kw">sapply</span>(all_areas, function(x) <span class="kw">length</span>(<span class="kw">levels</span>(<span class="kw">factor</span>(x))))</code></pre>
+<pre><code>           stockid             areaid            country 
+               391                174                 10 
+          areatype           areacode           areaname 
+                24                167                167 
+ alternateareaname         lme_number stocktolmerelation 
+                 5                 34                  5 
+          lme_name 
+                34 </code></pre>
+<ul>
+<li><code>bioparams</code>: Fixed parameter values of a study.</li>
+<li><code>biometrics</code>: definitions of said parameters.</li>
+</ul>
+<p>The column is called <code>biounique</code> in <code>biometrics</code> table but <code>bioid</code> in <code>bioparams</code> table, so we fix that:</p>
+<pre class="sourceCode r"><code class="sourceCode r">parameters &lt;-<span class="st"> </span>biometrics %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">bioid =</span> biounique) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(bioparams) </code></pre>
+<ul>
+<li><code>tsmetrics</code> defines the factor levels and the units used in <code>timeseries</code> <code>tsid</code> column.</li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r">tsmetrics &lt;-<span class="st"> </span>tsmetrics %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">tsid =</span> tsunique)</code></pre>
+<p>For example, we can see what measurements are available</p>
+<pre class="sourceCode r"><code class="sourceCode r">ids &lt;-<span class="st"> </span>timeseries %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid ==<span class="st"> &quot;NWFSC-COWCODSCAL-1900-2007-BRANCH&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">distinct</span>(tsid) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(tsid)
+ids</code></pre>
+<pre><code>Source: local data frame [7 x 1]
+
+      tsid
+1   SSB-MT
+2    R-E03
+3   F-1/yr
+4    TB-MT
+5    TC-MT
+6    TL-MT
+7 STB1+-MT</code></pre>
+<p>Looking up these ids in the <code>tsmetrics</code> table tells us what these seven time series are:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">inner_join</span>(ids, tsmetrics) %&gt;%<span class="st"> </span><span class="kw">select</span>(tsshort, tslong, tsunitsshort, tsunitslong)</code></pre>
+<pre><code>Source: local data frame [7 x 4]
+
+  tsshort
+1     SSB
+2       R
+3       F
+4      TB
+5      TC
+6      TL
+7   STB1+
+Variables not shown: tslong (chr), tsunitsshort (chr), tsunitslong
+  (chr)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">cowcod &lt;-<span class="st"> </span>timeseries %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid ==<span class="st"> &quot;NWFSC-COWCODSCAL-1900-2007-BRANCH&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(tsmetrics) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, tsvalue, <span class="dt">col=</span>tsid)) +<span class="st"> </span><span class="kw">geom_line</span>() 
+cowcod</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-05-08-ram-legacy-database-explore/unnamed-chunk-12-1.png" />
+</figure>
+<pre class="sourceCode r"><code class="sourceCode r">cowcod +<span class="st"> </span><span class="kw">scale_y_log10</span>()</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-05-08-ram-legacy-database-explore/unnamed-chunk-13-1.png" />
+</figure>
+<p>(Note TC (total catch) and TL (total landings) are equivalent in this context, implying neglible discards.)</p>
+<p>Unfortunately, there is a lot of heterogeneity in the metrics measured by each assessment: <code>tsmetrics</code> defines 151 units, (though only 93 appear in timeseries)</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">length</span>(<span class="kw">unique</span>(tsmetrics$tsid))</code></pre>
+<pre><code>[1] 151</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">length</span>(<span class="kw">table</span>(timeseries$tsid))</code></pre>
+<pre><code>[1] 93</code></pre>
+<p>Most are variations differing only by units, as we see from the most commonly used metrics:</p>
+<pre class="sourceCode r"><code class="sourceCode r">unit_occurs &lt;-<span class="st"> </span>
+timeseries %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(tsid) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">distinct</span>(assessid) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">occurs =</span> <span class="kw">n</span>()) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(tsmetrics) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(occurs)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(tsid, tslong, tsunitsshort, occurs)
+unit_occurs</code></pre>
+<pre><code>Source: local data frame [93 x 4]
+
+                      tsid
+1                    TB-MT
+2                   SSB-MT
+3                    R-E03
+4                    TC-MT
+5                    TL-MT
+6                    F-1/T
+7                   F-1/yr
+8                 ER-ratio
+9  Yield-SSB-dimensionless
+10                 YEAR-yr
+..                     ...
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)</code></pre>
+<p>These are all variations of the same several variables, but measured in different units. For instance, we see many series use a catch to biomass ratio (ER) instead of a fishing mortality.</p>
+<pre class="sourceCode r"><code class="sourceCode r">unit_occurs %&gt;%<span class="st"> </span><span class="kw">filter</span>(<span class="kw">grepl</span>(<span class="st">&quot;^SSB&quot;</span>, tsid))</code></pre>
+<pre><code>Source: local data frame [12 x 4]
+
+                tsid
+1             SSB-MT
+2        SSB-E03eggs
+3      SSB-STDDEV-MT
+4           SSB-1-MT
+5           SSB-2-MT
+6       SSB-relative
+7            SSB-E03
+8      SSB-E06larvae
+9           SSB-3-MT
+10          SSB-4-MT
+11     SSB-E03pertow
+12 SSB-FemaleGonadMT
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">unit_occurs %&gt;%<span class="st"> </span><span class="kw">filter</span>(<span class="kw">grepl</span>(<span class="st">&quot;^R&quot;</span>, tsid))</code></pre>
+<pre><code>Source: local data frame [7 x 4]
+
+        tsid
+1      R-E03
+2    R-1-E03
+3    R-2-E03
+4       R-MT
+5 R-relative
+6    R-3-E03
+7    R-4-E03
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">unit_occurs %&gt;%<span class="st"> </span><span class="kw">filter</span>(<span class="kw">grepl</span>(<span class="st">&quot;^TC&quot;</span>, tsid))</code></pre>
+<pre><code>Source: local data frame [7 x 4]
+
+      tsid
+1    TC-MT
+2   TC-E03
+3   TC-E00
+4 TC-1-E03
+5  TC-1-MT
+6  TC-2-MT
+7 TC-2-E03
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">unit_occurs %&gt;%<span class="st"> </span><span class="kw">filter</span>(<span class="kw">grepl</span>(<span class="st">&quot;^TL&quot;</span>, tsid))</code></pre>
+<pre><code>Source: local data frame [5 x 4]
+
+     tsid
+1   TL-MT
+2 TL-1-MT
+3 TL-2-MT
+4 TL-3-MT
+5  TL-E00
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">unit_occurs %&gt;%<span class="st"> </span><span class="kw">filter</span>(<span class="kw">grepl</span>(<span class="st">&quot;^CPUE&quot;</span>, tsid))</code></pre>
+<pre><code>Source: local data frame [10 x 4]
+
+                   tsid
+1         CPUE-kgpertow
+2       CPUEstand-1-C/E
+3       CPUEstand-2-C/E
+4         CPUEstand-C/E
+5           CPUEraw-C/E
+6       CPUEstand-3-C/E
+7       CPUEstand-4-C/E
+8  CPUEsmooth-E00pertow
+9       CPUEstand-5-C/E
+10      CPUEstand-6-C/E
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)</code></pre>
+<p>The <code>values</code> table appears to be derived from the <code>timeseries</code> table, presumably standardizing on consistent metrics(?)</p>
+<pre class="sourceCode r"><code class="sourceCode r">values</code></pre>
+<pre><code>Source: local data frame [16,308 x 9]
+
+                        assessid tsyear pt_avail       ssb       r
+1  ADFG-HERRPWS-1980-2006-COLLIE   1980        5  48270.35  414070
+2  ADFG-HERRPWS-1980-2006-COLLIE   1981        5  51090.88  335200
+3  ADFG-HERRPWS-1980-2006-COLLIE   1982        5  47402.54  112300
+4  ADFG-HERRPWS-1980-2006-COLLIE   1983        5  56449.01  103740
+5  ADFG-HERRPWS-1980-2006-COLLIE   1984        5  64461.28 1062360
+6  ADFG-HERRPWS-1980-2006-COLLIE   1985        5  79124.61   99630
+7  ADFG-HERRPWS-1980-2006-COLLIE   1986        5  65601.06   74880
+8  ADFG-HERRPWS-1980-2006-COLLIE   1987        5  70646.42   84820
+9  ADFG-HERRPWS-1980-2006-COLLIE   1988        5  93508.20 1006440
+10 ADFG-HERRPWS-1980-2006-COLLIE   1989        5 105135.41  119970
+..                           ...    ...      ...       ...     ...
+Variables not shown: total (dbl), f (dbl), cpue (dbl), catch_landings
+  (dbl)</code></pre>
+<p>We can see this by transforming our example:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span>timeseries %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid ==<span class="st"> &quot;NWFSC-COWCODSCAL-1900-2007-BRANCH&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(tsid, tsvalue) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">ssb=</span><span class="st">`</span><span class="dt">SSB-MT</span><span class="st">`</span>, <span class="dt">r =</span> <span class="st">`</span><span class="dt">R-E03</span><span class="st">`</span>, <span class="dt">total =</span> <span class="st">`</span><span class="dt">TB-MT</span><span class="st">`</span>, <span class="dt">f =</span> <span class="st">`</span><span class="dt">F-1/yr</span><span class="st">`</span>, <span class="dt">catch_landings =</span> <span class="st">`</span><span class="dt">TL-MT</span><span class="st">`</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(assessid, tsyear, ssb, r, total, f, catch_landings)</code></pre>
+<p>which is indeed identical to corresponding assessment in the <code>values</code> table</p>
+<pre class="sourceCode r"><code class="sourceCode r">y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid ==<span class="st"> &quot;NWFSC-COWCODSCAL-1900-2007-BRANCH&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">select</span>(-pt_avail, -cpue)
+<span class="kw">identical</span>(x,y)</code></pre>
+<pre><code>[1] TRUE</code></pre>
+<p>So what happens when the units differ?</p>
+<pre class="sourceCode r"><code class="sourceCode r">timeseries %&gt;%<span class="st"> </span><span class="kw">filter</span>(tsid==<span class="st">&quot;SSB-E03eggs&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">distinct</span>(<span class="st">&quot;assessid&quot;</span>)</code></pre>
+<pre><code>Source: local data frame [1 x 5]
+
+                               assessid        tsid tsyear  tsvalue
+1 TAFI-TASGIANTCRABTAS-1990-2007-JENSEN SSB-E03eggs   1998 188.9256
+Variables not shown: &quot;assessid&quot; (chr)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span>timeseries %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid ==<span class="st"> &quot;TAFI-TASGIANTCRABTAS-1990-2007-JENSEN&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(tsid, tsvalue) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="dt">ssb=</span><span class="st">`</span><span class="dt">SSB-E03eggs</span><span class="st">`</span>)
+
+y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid ==<span class="st"> &quot;TAFI-TASGIANTCRABTAS-1990-2007-JENSEN&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">select</span>(ssb)
+<span class="kw">identical</span>(x,y)</code></pre>
+<pre><code>[1] TRUE</code></pre>
+<p>No transformation has been done, hence the units of the <code>values</code> columns vary depending on the assessment id. Nonetheless it is quite useful to have the metrics split into their corresponding 5 types rather than as 93 unique subtypes. As long as we are not comparing magnitudes across different assessments directly though, this should not be an issue.</p>
+<hr />
+<p>It would probably be useful to reconstruct the code to generate the <code>values</code> table from the timeseries table directly. One might hope that the mappings between <code>tsid</code> values and the five column headings in the <code>values</code> table would be defined in the database, e.g. in perhaps the <code>tscategory</code> column of <code>tsmetrics</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(tsmetrics$tscategory)</code></pre>
+<pre><code>[1] &quot;FISHING MORTALITY&quot;                                                            
+[2] &quot;TOTAL BIOMASS&quot;                                                                
+[3] &quot;TIME UNITS&quot;                                                                   
+[4] &quot;SPAWNING STOCK BIOMASS or CPUE&quot;                                               
+[5] &quot;RECRUITS (NOTE: RECRUITS ARE OFFSET IN TIME SERIES BY THE AGE OF RECRUITMENT)&quot;
+[6] &quot;CATCH or LANDINGS&quot;                                                            
+[7] &quot;OTHER TIME SERIES DATA&quot;                                                       </code></pre>
+<p>but alas this does not quite appear to be the case (e.g. CPUE and SSB are a single category.) Some combination of this information and splitting on the <code>tsid</code> strings would probably suffice.</p>
+<hr />
+<pre class="sourceCode r"><code class="sourceCode r">ts &lt;-<span class="st"> </span>meta %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, commonname) %&gt;%<span class="st"> </span><span class="kw">right_join</span>(values)</code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/05/08/ram-legacy-database-explore.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/04/20/open-science-post-doc.html">Open Science Post Doc</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 20 Apr 2015</p>
@@ -185,6 +504,10 @@
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/04/09/gpdd-and-kalman-exploration-continued.html">Gpdd And Kalman Exploration Continued</a></h4></header>
@@ -450,10 +773,6 @@ combined &lt;-<span class="st"> </span><span class="kw">rbind</span>(
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/04/06/gpdd-explore.html">Gpdd Explore</a></h4></header>
@@ -917,6 +1236,10 @@ difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, funct
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/03/24/docker-machine-notes.html">Docker Machine Notes</a></h4></header>
 <p><span></span></p>
@@ -961,10 +1284,6 @@ difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, funct
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/03/09/simpler-nimble-dai-model.html">Simpler Nimble Dai Model</a></h4></header>
@@ -1279,190 +1598,6 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/03/04/GP-nimble-explore.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/03/03/GP-nimble-setup.html">Gp Nimble Setup</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 03 Mar 2015</p>
-
-<article>
-<div class="excerpt">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)</code></pre>
-<h2 id="dmnorm-example">dmnorm example</h2>
-<p>from Daniel, who notes we need to be explicit about vector/matrix sizes on both LHS and RHS,</p>
-<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-    mu ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="dv">100</span>, <span class="dv">100</span>)
-    sigma ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)
-    rho ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">20</span>, <span class="dv">100</span>)
-    muVec[<span class="dv">1</span>:N] &lt;-<span class="st"> </span>mu *<span class="st"> </span>onesVector[<span class="dv">1</span>:N]
-    Cov[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span>sigma^<span class="dv">2</span> *<span class="st"> </span><span class="kw">exp</span>(-dist[<span class="dv">1</span>:N, <span class="dv">1</span>:N]/rho)
-    g[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(muVec[<span class="dv">1</span>:N], <span class="dt">cov =</span> Cov[<span class="dv">1</span>:N, <span class="dv">1</span>:N])
-    for (i in <span class="dv">1</span>:N) {
-        y[i] ~<span class="st"> </span><span class="kw">dpois</span>(<span class="kw">exp</span>(g[i]))
-    }
-})
-constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> <span class="dv">148</span>, 
-                  <span class="dt">onesVector =</span> <span class="kw">rep</span>(<span class="dv">1</span>, <span class="dv">148</span>), 
-                  <span class="dt">dist =</span> <span class="kw">matrix</span>(<span class="dv">1</span>, <span class="dt">nrow=</span><span class="dv">148</span>, <span class="dt">ncol=</span><span class="dv">148</span>))
-y =<span class="st"> </span><span class="kw">rpois</span>(<span class="dv">148</span>, <span class="dv">1</span>) <span class="co"># vector of 148 observations (counts)</span>
-data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">y=</span>y)
-
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">mu =</span> <span class="dv">0</span>, 
-              <span class="dt">sigma =</span> <span class="dv">5</span>, 
-              <span class="dt">rho =</span> <span class="dv">60</span>, 
-              <span class="dt">g =</span> <span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">148</span>))
-m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
-<h2 id="gp-model-original-specification">GP Model, original specification</h2>
-<p>This model definition doesn’t work, since we do not define sizes explicitly</p>
-<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   l ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>,<span class="fl">1e4</span>)
-   sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e4</span>) 
-   Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span><span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>diff /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I
-   y[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(Mu, <span class="dt">cov =</span> Sigma)  
-})
-obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(-<span class="dv">4</span>, -<span class="dv">3</span>, -<span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">2</span>),
-                   <span class="dt">y =</span> <span class="kw">c</span>(-<span class="dv">2</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">2</span>, -<span class="dv">1</span>))
-
-N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
-diff &lt;-<span class="st"> </span><span class="kw">outer</span>(obs$x, obs$x, function(xi, xj) (xi-xj)^<span class="dv">2</span>)
-constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">diff =</span> diff, <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)
-m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
-<pre><code>Error in x$parentNodeExprs[[iV]][[iDim + 2]]: object of type &#39;symbol&#39; is not subsettable</code></pre>
-<h2 id="gp-model-v2">GP Model, v2</h2>
-<p>This model definition still doesn’t work, even though it appears to be more explicit</p>
-<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-
-   l ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>,<span class="dv">100</span>)
-   sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>,<span class="dv">100</span>)
-   SE &lt;-<span class="st"> </span>function(xi,xj, l) <span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>(xi -<span class="st"> </span>xj) ^<span class="st"> </span><span class="dv">2</span> /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>)
-   Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span><span class="kw">outer</span>(x[<span class="dv">1</span>:N], x[<span class="dv">1</span>:N], SE, l) +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I[<span class="dv">1</span>:N, <span class="dv">1</span>:N]
-   y[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(Mu[<span class="dv">1</span>:N], <span class="dt">cov =</span> Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N])  
-
-})
-obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(-<span class="dv">4</span>, -<span class="dv">3</span>, -<span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">2</span>),
-                   <span class="dt">y =</span> <span class="kw">c</span>(-<span class="dv">2</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">2</span>, -<span class="dv">1</span>))
-N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
-constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)
-<span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
-<pre><code>Error in replaceConstantsRecurse(x, constEnv, constNames): Error, hit end</code></pre>
-<h2 id="gp-model">GP Model</h2>
-<p>A successful specification looks like this:</p>
-<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-
-   l ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>,<span class="fl">1e5</span>) <span class="co"># dgamma(5, 5)</span>
-   sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>) <span class="co"># dgamma(5, 5) </span>
-   Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span><span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>diff[<span class="dv">1</span>:N, <span class="dv">1</span>:N] /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I[<span class="dv">1</span>:N, <span class="dv">1</span>:N]
-   y[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(Mu[<span class="dv">1</span>:N], <span class="dt">cov =</span> Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N])  
-
-})</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(-<span class="dv">4</span>, -<span class="dv">3</span>, -<span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">2</span>),
-                   <span class="dt">y =</span> <span class="kw">c</span>(-<span class="dv">2</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">2</span>, -<span class="dv">1</span>))
-
-N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
-diff &lt;-<span class="st"> </span><span class="kw">outer</span>(obs$x, obs$x, function(xi, xj) (xi-xj)^<span class="dv">2</span>)
-constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">diff =</span> diff, <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)
-m &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
-<p>Define our mcmc procedure in Nimble</p>
-<pre class="sourceCode r"><code class="sourceCode r">my_mcmc &lt;-<span class="st"> </span>function(code, constants, data, inits, <span class="dt">n_iter=</span><span class="fl">1e5</span>, <span class="dt">thin =</span> <span class="fl">1e2</span>){  
-  Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)
-  Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
-  mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>,<span class="dt">thin=</span>thin)
-  Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
-  Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)
-  Cmcmc$<span class="kw">run</span>(n_iter)
-  samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-  <span class="co">#samples &lt;- samples[,1:(length(inits)-1)]</span>
-  <span class="kw">gather</span>(samples)
-}</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits, <span class="dt">n =</span> <span class="fl">1e6</span>)</code></pre>
-<h4 id="summary-statistics">Summary statistics</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>Source: local data frame [2 x 3]
-
-      key         mean          std
-1       l 50369.945229 28710.793488
-2 sigma.n     2.168649     1.149319</code></pre>
-<h4 id="traces">Traces</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df,<span class="dv">500</span>)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-10-1.png" />
-</figure>
-<h4 id="posteriors">Posteriors</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-11-1.png" />
-</figure>
-<h2 id="time-series-example">Time-series example</h2>
-<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function (x, p){ x *<span class="st"> </span><span class="kw">exp</span>(p[<span class="dv">1</span>] *<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>x /<span class="st"> </span>p[<span class="dv">2</span>]) *<span class="st"> </span>(x -<span class="st"> </span>p[<span class="dv">3</span>]) /<span class="st"> </span>p[<span class="dv">2</span>]) }
-p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">8</span>, <span class="dv">5</span>)
-z_g &lt;-<span class="st"> </span>function() <span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="fl">0.05</span>)
-T &lt;-<span class="st"> </span><span class="dv">40</span>
-
-<span class="kw">set.seed</span>(<span class="dv">1234</span>)
-x &lt;-<span class="st"> </span><span class="kw">numeric</span>(T)
-x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">5.5</span>
-
-for(t in <span class="dv">1</span>:(T<span class="dv">-1</span>))
-  x[t<span class="dv">+1</span>] =<span class="st"> </span><span class="kw">z_g</span>() *<span class="st"> </span><span class="kw">f</span>(x[t], <span class="dt">p=</span>p)
-
-<span class="kw">qplot</span>(<span class="kw">seq_along</span>(x), x)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span>x)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-12-1.png" />
-</figure>
-<h4 id="model-setup">model setup</h4>
-<pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span>x[<span class="dv">1</span>:(T<span class="dv">-1</span>)], <span class="dt">y =</span> x[<span class="dv">2</span>:T])
-N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
-diff &lt;-<span class="st"> </span><span class="kw">outer</span>(obs$x, obs$x, function(xi, xj) (xi-xj)^<span class="dv">2</span>)
-constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">diff =</span> diff, <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)</code></pre>
-<h4 id="estimate-gp-bm-mcmc-with-nimble">Estimate GP bm MCMC with Nimble</h4>
-<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits, <span class="dt">n =</span> <span class="fl">1e6</span>)</code></pre>
-<h4 id="summary-statistics-1">Summary statistics</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>Source: local data frame [2 x 3]
-
-      key      mean        std
-1       l 3.8059775 0.60843921
-2 sigma.n 0.3641306 0.04565619</code></pre>
-<h4 id="traces-1">Traces</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df,<span class="dv">500</span>)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-16-1.png" />
-</figure>
-<h4 id="posteriors-1">Posteriors</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-03-GP-nimble-setup/unnamed-chunk-17-1.png" />
-</figure>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/03/03/GP-nimble-setup.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 

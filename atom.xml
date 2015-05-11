@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-05-01T04:01:16+00:00</updated>
+  <updated>2015-05-11T18:45:45+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -11,6 +11,315 @@
   </author>
 
    
+ <entry>
+   <title>Ram Legacy Database Explore</title>
+   <link href="http://www.carlboettiger.info/2015/05/08/ram-legacy-database-explore.html"/>
+   <updated>2015-05-08T00:00:00+00:00</updated>
+   <id>/05/08/ram-legacy-database-explore</id>
+   <content type="html">&lt;h2 id=&quot;accessing-the-database&quot;&gt;Accessing the database&lt;/h2&gt;
+&lt;p&gt;Connect to the database (connection info is &lt;a href=&quot;http://ramlegacy.marinebiodiversity.ca/ram-legacy-stock-assessment-database/accessing-the-live-database&quot;&gt;public&lt;/a&gt;), works fine:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;RPostgreSQL&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;tidyr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ggplot2&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mydb &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;src_postgres&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dbname =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;srdb&amp;quot;&lt;/span&gt;, 
+                     &lt;span class=&quot;dt&quot;&gt;host=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;nautilus-vm.mathstat.dal.ca&amp;quot;&lt;/span&gt;, 
+                     &lt;span class=&quot;dt&quot;&gt;user =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;srdbuser&amp;quot;&lt;/span&gt;, 
+                     &lt;span class=&quot;dt&quot;&gt;password =&lt;/span&gt;  &lt;span class=&quot;st&quot;&gt;&amp;quot;srd6us3r!&amp;quot;&lt;/span&gt;, 
+                     &lt;span class=&quot;dt&quot;&gt;port =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5432&lt;/span&gt;)
+mydb&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;src:  postgres 8.4.10 [srdbuser@nautilus-vm.mathstat.dal.ca:5432/srdb]
+tbls: area, assessment, assessmethod, assessor, biometrics,
+  bioparams, brptots, fishbasesaupcodes, geometry_columns, lmerefs,
+  lmes, lmetostocks, management, mostrecent, recorder, referencedoc,
+  reference_point_units_view, reference_point_values_view, risfields,
+  risfieldvalues, spatial_ref_sys, stock, taxonomy, timeseries,
+  timeseries_units_view, timeseries_values_view, tsmetrics,
+  tsrelative_explicit_view&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, the expected mechanism for accessing a complete table seems to fail:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;st&quot;&gt;&amp;quot;stock&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in postgresqlExecStatement(conn, statement, ...): RS-DBI driver: (could not Retrieve the result : ERROR:  relation &amp;quot;stock&amp;quot; does not exist
+LINE 1: SELECT * FROM &amp;quot;stock&amp;quot; WHERE 0=1
+                      ^
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Filed as a bug report in &lt;a href=&quot;https://github.com/rstats-db/RPostgres/issues/32&quot;&gt;RPostgres/#32&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Meanwhile, direct sql queries work (note we need the full table address, e.g. &lt;code&gt;dbname.tablename&lt;/code&gt;.)&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.stock&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: postgres 8.4.10 [srdbuser@nautilus-vm.mathstat.dal.ca:5432/srdb]
+From: &amp;lt;derived table&amp;gt; [?? x 8]
+
+      stockid    tsn scientificname   commonname
+1        COD1 164712   Gadus morhua Atlantic cod
+2    COD2J3KL 164712   Gadus morhua Atlantic cod
+3  COD2J3KLIS 164712   Gadus morhua Atlantic cod
+4       COD3M 164712   Gadus morhua Atlantic cod
+5      COD3NO 164712   Gadus morhua Atlantic cod
+6      COD3Ps 164712   Gadus morhua Atlantic cod
+7   COD3Pn4RS 164712   Gadus morhua Atlantic cod
+8       COD4T 164712   Gadus morhua Atlantic cod
+9     COD4VsW 164712   Gadus morhua Atlantic cod
+10    COD4TVn 164712   Gadus morhua Atlantic cod
+..        ...    ...            ...          ...
+Variables not shown: areaid (chr), stocklong (chr), inmyersdb (int),
+  myersstockid (chr)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Since these tables easily fit into memory, it is generally faster to just import them into R rather than leaving &lt;code&gt;dplyr&lt;/code&gt; to just work with them remotely. The &lt;code&gt;dplyr::collect()&lt;/code&gt; function does this. So we create local copies of each table of interest like so:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;timeseries &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.timeseries&amp;quot;&lt;/span&gt;)))
+values &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.timeseries_values_view&amp;quot;&lt;/span&gt;)))
+
+units &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.timeseries_units_view&amp;quot;&lt;/span&gt;)))
+assessment &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.assessment&amp;quot;&lt;/span&gt;)))
+area &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.area&amp;quot;&lt;/span&gt;)))
+stock &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.stock&amp;quot;&lt;/span&gt;)))
+method &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.assessmethod&amp;quot;&lt;/span&gt;)))
+assessor &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.assessor&amp;quot;&lt;/span&gt;)))
+management  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.management&amp;quot;&lt;/span&gt;)))
+taxonomy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.taxonomy&amp;quot;&lt;/span&gt;)))
+
+lmerefs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.lmerefs&amp;quot;&lt;/span&gt;)))
+lmestock &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.lmetostocks&amp;quot;&lt;/span&gt;)))
+
+
+biometrics  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.biometrics&amp;quot;&lt;/span&gt;)))
+bioparams &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.bioparams&amp;quot;&lt;/span&gt;)))
+
+tsmetrics &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.tsmetrics&amp;quot;&lt;/span&gt;)))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Many of the tables contain observations of variables that describe each given assessment (&lt;code&gt;assessid&lt;/code&gt;), including the species &lt;code&gt;stock&lt;/code&gt; assessed, &lt;code&gt;area&lt;/code&gt; assessed, the method used, and so forth. Since these all follow the same schema of a row being a unique stock assessment and a column being an attribute of that assessment, it makes sense to combine this into a single metadata table. (Especially as these datasets fit so easily into memory anyway.)&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;meta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;assessment %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;methodshort =&lt;/span&gt; assessmethod) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(method) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(stock) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(area) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(units) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(assessor) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(management) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(taxonomy) &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;all_areas &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;stock %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(stockid, areaid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(area) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;right_join&lt;/span&gt;(lmestock) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(lmerefs)
+
+&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(all_areas, function(x) &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;levels&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;factor&lt;/span&gt;(x))))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;           stockid             areaid            country 
+               391                174                 10 
+          areatype           areacode           areaname 
+                24                167                167 
+ alternateareaname         lme_number stocktolmerelation 
+                 5                 34                  5 
+          lme_name 
+                34 &lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;bioparams&lt;/code&gt;: Fixed parameter values of a study.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;biometrics&lt;/code&gt;: definitions of said parameters.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The column is called &lt;code&gt;biounique&lt;/code&gt; in &lt;code&gt;biometrics&lt;/code&gt; table but &lt;code&gt;bioid&lt;/code&gt; in &lt;code&gt;bioparams&lt;/code&gt; table, so we fix that:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;parameters &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;biometrics %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;bioid =&lt;/span&gt; biounique) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(bioparams) &lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;tsmetrics&lt;/code&gt; defines the factor levels and the units used in &lt;code&gt;timeseries&lt;/code&gt; &lt;code&gt;tsid&lt;/code&gt; column.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;tsmetrics &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tsmetrics %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;tsid =&lt;/span&gt; tsunique)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For example, we can see what measurements are available&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;ids &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;timeseries %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid ==&lt;span class=&quot;st&quot;&gt; &amp;quot;NWFSC-COWCODSCAL-1900-2007-BRANCH&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;distinct&lt;/span&gt;(tsid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(tsid)
+ids&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [7 x 1]
+
+      tsid
+1   SSB-MT
+2    R-E03
+3   F-1/yr
+4    TB-MT
+5    TC-MT
+6    TL-MT
+7 STB1+-MT&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Looking up these ids in the &lt;code&gt;tsmetrics&lt;/code&gt; table tells us what these seven time series are:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;inner_join&lt;/span&gt;(ids, tsmetrics) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(tsshort, tslong, tsunitsshort, tsunitslong)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [7 x 4]
+
+  tsshort
+1     SSB
+2       R
+3       F
+4      TB
+5      TC
+6      TL
+7   STB1+
+Variables not shown: tslong (chr), tsunitsshort (chr), tsunitslong
+  (chr)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;cowcod &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;timeseries %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid ==&lt;span class=&quot;st&quot;&gt; &amp;quot;NWFSC-COWCODSCAL-1900-2007-BRANCH&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(tsmetrics) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(tsyear, tsvalue, &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;tsid)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;() 
+cowcod&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-05-08-ram-legacy-database-explore/unnamed-chunk-12-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;cowcod +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;scale_y_log10&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-05-08-ram-legacy-database-explore/unnamed-chunk-13-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;p&gt;(Note TC (total catch) and TL (total landings) are equivalent in this context, implying neglible discards.)&lt;/p&gt;
+&lt;p&gt;Unfortunately, there is a lot of heterogeneity in the metrics measured by each assessment: &lt;code&gt;tsmetrics&lt;/code&gt; defines 151 units, (though only 93 appear in timeseries)&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;unique&lt;/span&gt;(tsmetrics$tsid))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 151&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;table&lt;/span&gt;(timeseries$tsid))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 93&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Most are variations differing only by units, as we see from the most commonly used metrics:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;unit_occurs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+timeseries %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(tsid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;distinct&lt;/span&gt;(assessid) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;summarize&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;occurs =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;n&lt;/span&gt;()) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(tsmetrics) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;arrange&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;desc&lt;/span&gt;(occurs)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(tsid, tslong, tsunitsshort, occurs)
+unit_occurs&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [93 x 4]
+
+                      tsid
+1                    TB-MT
+2                   SSB-MT
+3                    R-E03
+4                    TC-MT
+5                    TL-MT
+6                    F-1/T
+7                   F-1/yr
+8                 ER-ratio
+9  Yield-SSB-dimensionless
+10                 YEAR-yr
+..                     ...
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;These are all variations of the same several variables, but measured in different units. For instance, we see many series use a catch to biomass ratio (ER) instead of a fishing mortality.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;unit_occurs %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;grepl&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;^SSB&amp;quot;&lt;/span&gt;, tsid))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [12 x 4]
+
+                tsid
+1             SSB-MT
+2        SSB-E03eggs
+3      SSB-STDDEV-MT
+4           SSB-1-MT
+5           SSB-2-MT
+6       SSB-relative
+7            SSB-E03
+8      SSB-E06larvae
+9           SSB-3-MT
+10          SSB-4-MT
+11     SSB-E03pertow
+12 SSB-FemaleGonadMT
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;unit_occurs %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;grepl&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;^R&amp;quot;&lt;/span&gt;, tsid))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [7 x 4]
+
+        tsid
+1      R-E03
+2    R-1-E03
+3    R-2-E03
+4       R-MT
+5 R-relative
+6    R-3-E03
+7    R-4-E03
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;unit_occurs %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;grepl&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;^TC&amp;quot;&lt;/span&gt;, tsid))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [7 x 4]
+
+      tsid
+1    TC-MT
+2   TC-E03
+3   TC-E00
+4 TC-1-E03
+5  TC-1-MT
+6  TC-2-MT
+7 TC-2-E03
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;unit_occurs %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;grepl&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;^TL&amp;quot;&lt;/span&gt;, tsid))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [5 x 4]
+
+     tsid
+1   TL-MT
+2 TL-1-MT
+3 TL-2-MT
+4 TL-3-MT
+5  TL-E00
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;unit_occurs %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;grepl&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;^CPUE&amp;quot;&lt;/span&gt;, tsid))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [10 x 4]
+
+                   tsid
+1         CPUE-kgpertow
+2       CPUEstand-1-C/E
+3       CPUEstand-2-C/E
+4         CPUEstand-C/E
+5           CPUEraw-C/E
+6       CPUEstand-3-C/E
+7       CPUEstand-4-C/E
+8  CPUEsmooth-E00pertow
+9       CPUEstand-5-C/E
+10      CPUEstand-6-C/E
+Variables not shown: tslong (chr), tsunitsshort (chr), occurs (int)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;values&lt;/code&gt; table appears to be derived from the &lt;code&gt;timeseries&lt;/code&gt; table, presumably standardizing on consistent metrics(?)&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [16,308 x 9]
+
+                        assessid tsyear pt_avail       ssb       r
+1  ADFG-HERRPWS-1980-2006-COLLIE   1980        5  48270.35  414070
+2  ADFG-HERRPWS-1980-2006-COLLIE   1981        5  51090.88  335200
+3  ADFG-HERRPWS-1980-2006-COLLIE   1982        5  47402.54  112300
+4  ADFG-HERRPWS-1980-2006-COLLIE   1983        5  56449.01  103740
+5  ADFG-HERRPWS-1980-2006-COLLIE   1984        5  64461.28 1062360
+6  ADFG-HERRPWS-1980-2006-COLLIE   1985        5  79124.61   99630
+7  ADFG-HERRPWS-1980-2006-COLLIE   1986        5  65601.06   74880
+8  ADFG-HERRPWS-1980-2006-COLLIE   1987        5  70646.42   84820
+9  ADFG-HERRPWS-1980-2006-COLLIE   1988        5  93508.20 1006440
+10 ADFG-HERRPWS-1980-2006-COLLIE   1989        5 105135.41  119970
+..                           ...    ...      ...       ...     ...
+Variables not shown: total (dbl), f (dbl), cpue (dbl), catch_landings
+  (dbl)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can see this by transforming our example:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;timeseries %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid ==&lt;span class=&quot;st&quot;&gt; &amp;quot;NWFSC-COWCODSCAL-1900-2007-BRANCH&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;spread&lt;/span&gt;(tsid, tsvalue) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;ssb=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;SSB-MT&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;r =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;R-E03&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;total =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;TB-MT&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;f =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;F-1/yr&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;catch_landings =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;TL-MT&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, tsyear, ssb, r, total, f, catch_landings)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;which is indeed identical to corresponding assessment in the &lt;code&gt;values&lt;/code&gt; table&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid ==&lt;span class=&quot;st&quot;&gt; &amp;quot;NWFSC-COWCODSCAL-1900-2007-BRANCH&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(-pt_avail, -cpue)
+&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x,y)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So what happens when the units differ?&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;timeseries %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(tsid==&lt;span class=&quot;st&quot;&gt;&amp;quot;SSB-E03eggs&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;distinct&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;assessid&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [1 x 5]
+
+                               assessid        tsid tsyear  tsvalue
+1 TAFI-TASGIANTCRABTAS-1990-2007-JENSEN SSB-E03eggs   1998 188.9256
+Variables not shown: &amp;quot;assessid&amp;quot; (chr)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;timeseries %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid ==&lt;span class=&quot;st&quot;&gt; &amp;quot;TAFI-TASGIANTCRABTAS-1990-2007-JENSEN&amp;quot;&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;spread&lt;/span&gt;(tsid, tsvalue) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;ssb=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;SSB-E03eggs&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;)
+
+y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid ==&lt;span class=&quot;st&quot;&gt; &amp;quot;TAFI-TASGIANTCRABTAS-1990-2007-JENSEN&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(ssb)
+&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(x,y)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] TRUE&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;No transformation has been done, hence the units of the &lt;code&gt;values&lt;/code&gt; columns vary depending on the assessment id. Nonetheless it is quite useful to have the metrics split into their corresponding 5 types rather than as 93 unique subtypes. As long as we are not comparing magnitudes across different assessments directly though, this should not be an issue.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;It would probably be useful to reconstruct the code to generate the &lt;code&gt;values&lt;/code&gt; table from the timeseries table directly. One might hope that the mappings between &lt;code&gt;tsid&lt;/code&gt; values and the five column headings in the &lt;code&gt;values&lt;/code&gt; table would be defined in the database, e.g. in perhaps the &lt;code&gt;tscategory&lt;/code&gt; column of &lt;code&gt;tsmetrics&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;unique&lt;/span&gt;(tsmetrics$tscategory)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;FISHING MORTALITY&amp;quot;                                                            
+[2] &amp;quot;TOTAL BIOMASS&amp;quot;                                                                
+[3] &amp;quot;TIME UNITS&amp;quot;                                                                   
+[4] &amp;quot;SPAWNING STOCK BIOMASS or CPUE&amp;quot;                                               
+[5] &amp;quot;RECRUITS (NOTE: RECRUITS ARE OFFSET IN TIME SERIES BY THE AGE OF RECRUITMENT)&amp;quot;
+[6] &amp;quot;CATCH or LANDINGS&amp;quot;                                                            
+[7] &amp;quot;OTHER TIME SERIES DATA&amp;quot;                                                       &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;but alas this does not quite appear to be the case (e.g. CPUE and SSB are a single category.) Some combination of this information and splitting on the &lt;code&gt;tsid&lt;/code&gt; strings would probably suffice.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;ts &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;meta %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, commonname) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;right_join&lt;/span&gt;(values)&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
  <entry>
    <title>Open Science Post Doc</title>
    <link href="http://www.carlboettiger.info/2015/04/20/open-science-post-doc.html"/>

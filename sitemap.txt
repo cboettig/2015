@@ -119,6 +119,7 @@ http://www.carlboettiger.info//sitemap.txt
 http://www.carlboettiger.info//tags.html 
 
  
+http://www.carlboettiger.info//05/08/ram-legacy-database-explore.html  
 http://www.carlboettiger.info//04/20/open-science-post-doc.html  
 http://www.carlboettiger.info//04/15/misc-notes-on-cloud-providers.html  
 http://www.carlboettiger.info//04/09/gpdd-and-kalman-exploration-continued.html  
