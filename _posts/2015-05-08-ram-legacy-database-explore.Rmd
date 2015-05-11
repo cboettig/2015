@@ -1,0 +1,249 @@
+---
+layout: post
+category: ecology
+---
+
+
+## Accessing the database
+
+
+Connect to the database (connection info is [public](http://ramlegacy.marinebiodiversity.ca/ram-legacy-stock-assessment-database/accessing-the-live-database)), works fine:
+
+```{r}
+library("dplyr")
+library("RPostgreSQL")
+library("tidyr")
+library("ggplot2")
+
+```
+
+
+```{r}
+mydb <- src_postgres(dbname = "srdb", 
+                     host="nautilus-vm.mathstat.dal.ca", 
+                     user = "srdbuser", 
+                     password =  "srd6us3r!", 
+                     port = 5432)
+mydb
+```
+
+
+However, the expected mechanism for accessing a complete table seems to fail:
+
+
+```{r error=TRUE}
+tbl(mydb, "stock")
+```
+
+Filed as a bug report in [RPostgres/#32](https://github.com/rstats-db/RPostgres/issues/32).
+
+Meanwhile, direct sql queries work (note we need the full table address, e.g. `dbname.tablename`.)
+
+
+```{r}
+tbl(mydb, sql("SELECT * FROM srdb.stock"))
+```
+
+Since these tables easily fit into memory, it is generally faster to just import them into R rather than leaving `dplyr` to just work with them remotely. The `dplyr::collect()` function does this.  So we create local copies of each table of interest like so:
+
+
+```{r}
+timeseries <- collect(tbl(mydb, sql("SELECT * FROM srdb.timeseries")))
+values <- collect(tbl(mydb, sql("SELECT * FROM srdb.timeseries_values_view")))
+
+units <- collect(tbl(mydb, sql("SELECT * FROM srdb.timeseries_units_view")))
+assessment <- collect(tbl(mydb, sql("SELECT * FROM srdb.assessment")))
+area <- collect(tbl(mydb, sql("SELECT * FROM srdb.area")))
+stock <- collect(tbl(mydb, sql("SELECT * FROM srdb.stock")))
+method <- collect(tbl(mydb, sql("SELECT * FROM srdb.assessmethod")))
+assessor <- collect(tbl(mydb, sql("SELECT * FROM srdb.assessor")))
+management  <- collect(tbl(mydb, sql("SELECT * FROM srdb.management")))
+taxonomy <- collect(tbl(mydb, sql("SELECT * FROM srdb.taxonomy")))
+
+lmerefs <- collect(tbl(mydb, sql("SELECT * FROM srdb.lmerefs")))
+lmestock <- collect(tbl(mydb, sql("SELECT * FROM srdb.lmetostocks")))
+
+
+biometrics  <- collect(tbl(mydb, sql("SELECT * FROM srdb.biometrics")))
+bioparams <- collect(tbl(mydb, sql("SELECT * FROM srdb.bioparams")))
+
+tsmetrics <- collect(tbl(mydb, sql("SELECT * FROM srdb.tsmetrics")))
+
+
+```
+
+Many of the tables contain observations of variables that describe each given assessment (`assessid`), including the species `stock` assessed, `area` assessed, the method used, and so forth.  Since these all follow the same schema of a row being a unique stock assessment and a column being an attribute of that assessment, it makes sense to combine this into a single metadata table. (Especially as these datasets fit so easily into memory anyway.)
+
+
+```{r}
+meta <- assessment %>% 
+  rename(methodshort = assessmethod) %>% 
+  left_join(method) %>% 
+  left_join(stock) %>% 
+  left_join(area) %>%
+  left_join(units) %>%
+  left_join(assessor) %>%
+  left_join(management) %>%
+  left_join(taxonomy) 
+```
+
+
+```{r}
+all_areas <- stock %>% 
+  select(stockid, areaid) %>% 
+  left_join(area) %>% 
+  right_join(lmestock) %>% 
+  left_join(lmerefs)
+
+sapply(all_areas, function(x) length(levels(factor(x))))
+
+
+```
+
+
+- `bioparams`: Fixed parameter values of a study. 
+- `biometrics`: definitions of said parameters. 
+
+The column is called `biounique` in `biometrics` table but `bioid` in `bioparams` table, so we fix that: 
+
+```{r}
+parameters <- biometrics %>% 
+  rename(bioid = biounique) %>% 
+  left_join(bioparams) 
+
+```
+
+- `tsmetrics` defines the factor levels and the units used in `timeseries` `tsid` column.
+
+
+```{r}
+tsmetrics <- tsmetrics %>% rename(tsid = tsunique)
+```
+
+For example, we can see what measurements are available 
+
+```{r}
+ids <- timeseries %>% 
+  filter(assessid == "NWFSC-COWCODSCAL-1900-2007-BRANCH") %>%
+  distinct(tsid) %>% 
+  select(tsid)
+ids
+```
+
+Looking up these ids in the `tsmetrics` table tells us what these seven time series are:
+
+```{r}
+inner_join(ids, tsmetrics) %>% select(tsshort, tslong, tsunitsshort, tsunitslong)
+````
+
+
+```{r}
+cowcod <- timeseries %>% 
+  filter(assessid == "NWFSC-COWCODSCAL-1900-2007-BRANCH") %>%
+  left_join(tsmetrics) %>%
+  ggplot(aes(tsyear, tsvalue, col=tsid)) + geom_line() 
+cowcod
+```
+
+
+```{r}
+cowcod + scale_y_log10()
+```
+
+(Note TC (total catch) and TL (total landings) are equivalent in this context, implying neglible discards.)
+
+Unfortunately, there is a lot of heterogeneity in the metrics measured by each assessment: `tsmetrics` defines 151 units, (though only 93 appear in timeseries)
+
+```{r}
+length(unique(tsmetrics$tsid))
+length(table(timeseries$tsid))
+```
+
+Most are variations differing only by units, as we see from the most commonly used metrics:
+
+```{r}
+unit_occurs <- 
+timeseries %>% 
+  group_by(tsid) %>% 
+  distinct(assessid) %>%
+  summarize(occurs = n()) %>% 
+  left_join(tsmetrics) %>% 
+  arrange(desc(occurs)) %>% 
+  select(tsid, tslong, tsunitsshort, occurs)
+unit_occurs
+```
+
+
+These are all variations of the same several variables, but measured in different units. For instance, we see many series use a catch to biomass ratio (ER) instead of a fishing mortality.
+
+
+
+```{r}
+unit_occurs %>% filter(grepl("^SSB", tsid))
+unit_occurs %>% filter(grepl("^R", tsid))
+unit_occurs %>% filter(grepl("^TC", tsid))
+unit_occurs %>% filter(grepl("^TL", tsid))
+unit_occurs %>% filter(grepl("^CPUE", tsid))
+```
+
+The `values` table appears to be derived from the `timeseries` table, presumably standardizing on consistent metrics(?)
+
+```{r}
+values
+```
+
+We can see this by transforming our example:
+
+```{r}
+x <- timeseries %>% 
+  filter(assessid == "NWFSC-COWCODSCAL-1900-2007-BRANCH") %>%
+  spread(tsid, tsvalue) %>% 
+  rename(ssb=`SSB-MT`, r = `R-E03`, total = `TB-MT`, f = `F-1/yr`, catch_landings = `TL-MT`) %>%
+  select(assessid, tsyear, ssb, r, total, f, catch_landings)
+
+```
+
+which is indeed identical to corresponding assessment in the `values` table
+
+```{r}
+y <- values %>% filter(assessid == "NWFSC-COWCODSCAL-1900-2007-BRANCH") %>% select(-pt_avail, -cpue)
+identical(x,y)
+```
+
+
+So what happens when the units differ?
+
+```{r}
+timeseries %>% filter(tsid=="SSB-E03eggs") %>% distinct("assessid")
+```
+
+
+```{r}
+x <- timeseries %>% 
+  filter(assessid == "TAFI-TASGIANTCRABTAS-1990-2007-JENSEN") %>%
+  spread(tsid, tsvalue) %>% 
+  select(ssb=`SSB-E03eggs`)
+
+y <- values %>% filter(assessid == "TAFI-TASGIANTCRABTAS-1990-2007-JENSEN") %>% select(ssb)
+identical(x,y)
+```
+
+No transformation has been done, hence the units of the `values` columns vary depending on the assessment id.  Nonetheless it is quite useful to have the metrics split into their corresponding 5 types rather than as 93 unique subtypes.  As long as we are not comparing magnitudes across different assessments directly though, this should not be an issue.
+
+
+--------------------
+
+It would probably be useful to reconstruct the code to generate the `values` table from the timeseries table directly.  One might hope that the mappings between `tsid` values and the five column headings in the `values` table would be defined in the database, e.g. in perhaps the `tscategory` column of `tsmetrics`:
+
+```{r}
+unique(tsmetrics$tscategory)
+```
+
+but alas this does not quite appear to be the case (e.g. CPUE and SSB are a single category.)  Some combination of this information and splitting on the `tsid` strings would probably suffice.
+
+----------
+
+```{r}
+ts <- meta %>% select(assessid, commonname) %>% right_join(values)
+```
+
