@@ -108,28 +108,11 @@
   <div class="col-md-7 col-md-offset-1">
     <article>
     <h2 id="a-simpler-nimble-model">A simpler Nimble model</h2>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;nimble&#39;
-## 
-## The following object is masked from &#39;package:stats&#39;:
-## 
-##     simulate</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;regimeshifts&quot;</span>)
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;regimeshifts&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)</code></pre>
-<pre><code>## Loading required package: methods</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;dplyr&#39;
-## 
-## The following object is masked from &#39;package:stats&#39;:
-## 
-##     filter
-## 
-## The following objects are masked from &#39;package:base&#39;:
-## 
-##     intersect, setdiff, setequal, union</code></pre>
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)</code></pre>
 <h2 id="lsn-version">LSN version</h2>
 <p>A further simplified version:</p>
 <ul>
@@ -173,7 +156,7 @@ sigma &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw
 data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals/sigma)
 <span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
 <figure>
-<img src="/figure/posts/2015-03-09-simpler-nimble-dai-model/detrend-1.png" alt="plot of chunk detrend" /><figcaption>plot of chunk detrend</figcaption>
+<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/detrend-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
 inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_y =</span> .<span class="dv">01</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))
@@ -187,30 +170,30 @@ mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmo
 Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)
 Cmcmc$<span class="kw">run</span>(n_iter)</code></pre>
-<pre><code>## NULL</code></pre>
+<pre><code>NULL</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
 samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:(<span class="kw">length</span>(inits) -<span class="st"> </span><span class="dv">1</span>)]
 df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <h4 id="summary-statistics">Summary statistics</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>## Source: local data frame [2 x 3]
-## 
-##       key        mean        std
-## 1       m -0.02118436 0.02327253
-## 2 sigma_y  0.01001409 0.00316794</code></pre>
+<pre><code>Source: local data frame [2 x 3]
+
+      key        mean        std
+1       m -0.02118436 0.02327253
+2 sigma_y  0.01001409 0.00316794</code></pre>
 <h4 id="traces">Traces</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df, <span class="fl">2e2</span>)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/figure/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-6-1.png" alt="plot of chunk unnamed-chunk-6" /><figcaption>plot of chunk unnamed-chunk-6</figcaption>
+<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-6-1.png" />
 </figure>
 <h4 id="posteriors">Posteriors</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/figure/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-7-1.png" alt="plot of chunk unnamed-chunk-7" /><figcaption>plot of chunk unnamed-chunk-7</figcaption>
+<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-7-1.png" />
 </figure>
 <h4 id="block-sampler">Block sampler</h4>
 <pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
@@ -219,66 +202,71 @@ Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span c
 Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
 mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>,<span class="dt">thin=</span>thin)
 mcmcspec$<span class="kw">addSampler</span>(<span class="st">&quot;RW_block&quot;</span>, <span class="kw">list</span>(<span class="dt">targetNodes=</span><span class="kw">c</span>(<span class="st">&#39;m&#39;</span>,<span class="st">&#39;sigma_y&#39;</span>), <span class="dt">adaptInterval=</span><span class="dv">100</span>))</code></pre>
-<pre><code>## [53] RW_block sampler;   targetNodes: m, sigma_y,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 100,  scale: 1,  propCov: identity</code></pre>
+<pre><code>[53] RW_block sampler;   targetNodes: m, sigma_y,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 100,  scale: 1,  propCov: identity</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)
 Cmcmc$<span class="kw">run</span>(n_iter)</code></pre>
-<pre><code>## NULL</code></pre>
+<pre><code>NULL</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
 samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:(<span class="kw">length</span>(inits)-<span class="dv">1</span>)]
 df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)
 
 df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>lsn, constants, data, inits)</code></pre>
-<pre><code>## Error in eval(expr, envir, enclos): could not find function &quot;my_mcmc&quot;</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;my_mcmc&quot;</code></pre>
 <h4 id="summary-statistics-1">Summary statistics</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>## Source: local data frame [2 x 3]
-## 
-##       key         mean         std
-## 1       m -0.025367634 0.027055911
-## 2 sigma_y  0.009965489 0.003102902</code></pre>
+<pre><code>Source: local data frame [2 x 3]
+
+      key         mean         std
+1       m -0.025367634 0.027055911
+2 sigma_y  0.009965489 0.003102902</code></pre>
 <h4 id="traces-1">Traces</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df, <span class="fl">1e3</span>)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/figure/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-10-1.png" alt="plot of chunk unnamed-chunk-10" /><figcaption>plot of chunk unnamed-chunk-10</figcaption>
+<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-10-1.png" />
 </figure>
 <h4 id="posteriors-1">Posteriors</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/figure/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-11-1.png" alt="plot of chunk unnamed-chunk-11" /><figcaption>plot of chunk unnamed-chunk-11</figcaption>
+<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-11-1.png" />
 </figure>
 <hr />
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>## R version 3.2.0 (2015-04-16)
-## Platform: x86_64-pc-linux-gnu (64-bit)
-## Running under: Debian GNU/Linux 8 (jessie)
-## 
-## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
-##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-## 
-## attached base packages:
-## [1] methods   stats     graphics  grDevices utils     datasets  base     
-## 
-## other attached packages:
-## [1] dplyr_0.4.1             ggplot2_1.0.1           tidyr_0.2.0            
-## [4] regimeshifts_0.0.0.9000 nimble_0.3-1           
-## 
-## loaded via a namespace (and not attached):
-##  [1] igraph_0.7.1     Rcpp_0.11.5      knitr_1.10       magrittr_1.5    
-##  [5] MASS_7.3-40      munsell_0.4.2    colorspace_1.2-6 stringr_0.6.2   
-##  [9] plyr_1.8.2       tools_3.2.0      parallel_3.2.0   grid_3.2.0      
-## [13] gtable_0.1.2     DBI_0.3.1        lazyeval_0.1.10  digest_0.6.8    
-## [17] assertthat_0.1   reshape2_1.4.1   formatR_1.2      codetools_0.2-11
-## [21] evaluate_0.7     labeling_0.3     scales_0.2.4     proto_0.3-10</code></pre>
+<pre><code>R version 3.2.0 (2015-04-16)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Debian GNU/Linux 8 (jessie)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] methods   stats     graphics  grDevices utils     datasets 
+[7] base     
+
+other attached packages:
+[1] dplyr_0.4.1             ggplot2_1.0.1          
+[3] tidyr_0.2.0             regimeshifts_0.0.0.9000
+[5] nimble_0.3-1            yaml_2.1.13            
+[7] knitr_1.10             
+
+loaded via a namespace (and not attached):
+ [1] igraph_0.7.1     Rcpp_0.11.5      magrittr_1.5    
+ [4] MASS_7.3-40      munsell_0.4.2    colorspace_1.2-6
+ [7] stringr_0.6.2    plyr_1.8.2       tools_3.2.0     
+[10] parallel_3.2.0   grid_3.2.0       gtable_0.1.2    
+[13] DBI_0.3.1        lazyeval_0.1.10  digest_0.6.8    
+[16] assertthat_0.1   reshape2_1.4.1   formatR_1.2     
+[19] codetools_0.2-11 evaluate_0.7     labeling_0.3    
+[22] scales_0.2.4     proto_0.3-10    </code></pre>
 
     </article>
   </div>

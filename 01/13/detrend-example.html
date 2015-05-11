@@ -108,27 +108,20 @@
   <div class="col-md-7 col-md-offset-1">
     <article>
     <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
-<span class="kw">library</span>(nimble)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;nimble&#39;
-## 
-## The following object is masked from &#39;package:stats&#39;:
-## 
-##     simulate</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(earlywarning)
-<span class="kw">library</span>(ggplot2)</code></pre>
-<pre><code>## Loading required package: methods</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyr)
+<span class="kw">library</span>(nimble)
+<span class="kw">library</span>(earlywarning)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(tidyr)
 opts_chunk$<span class="kw">set</span>(<span class="dt">dev=</span><span class="st">&#39;png&#39;</span>, <span class="dt">fig.width=</span><span class="dv">5</span>, <span class="dt">fig.height=</span><span class="dv">5</span>, <span class="dt">results=</span><span class="st">&#39;hide&#39;</span>)</code></pre>
 <p>some sample data from earlywarning:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123</span>)
 <span class="kw">data</span>(ibms)
-<span class="kw">plot</span>(ibm_critical)</code></pre>
-<figure>
-<img src="/figure/posts/2015-01-13-detrend-example/data-1.png" alt="plot of chunk data" /><figcaption>plot of chunk data</figcaption>
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r">raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
+<span class="kw">plot</span>(ibm_critical)
+raw &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(ibm_critical)
 <span class="kw">names</span>(raw) &lt;-<span class="st"> &quot;x&quot;</span></code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/data-1.png" />
+</figure>
 <p>Rather than explicitly modeling the trend element predicted by the linearization, let us simply remove it:</p>
 <pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(raw$x)
 raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
@@ -136,7 +129,7 @@ detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span cla
 data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals/<span class="kw">sqrt</span>(<span class="kw">var</span>(detrend$residuals)))
 <span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
 <figure>
-<img src="/figure/posts/2015-01-13-detrend-example/detrend-1.png" alt="plot of chunk detrend" /><figcaption>plot of chunk detrend</figcaption>
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/detrend-1.png" />
 </figure>
 <h2 id="lsn-version">LSN version</h2>
 <p>Modify the LSN model to explicitly model the changing parameter as a hidden, stochastic variable</p>
@@ -169,53 +162,58 @@ Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmode
 Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
+<pre><code>NULL</code></pre>
 <p>and examine results</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+<span class="kw">dim</span>(samples)</code></pre>
+<pre><code>[1] 5000   84</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
 long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
-<pre><code>##             m       sigma_x       sigma_y         theta 
-##  0.0003790592  1.0792385676  0.1920288851 -0.0150533955</code></pre>
+<pre><code>            m       sigma_x       sigma_y         theta 
+ 0.0003790592  1.0792385676  0.1920288851 -0.0150533955 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/figure/posts/2015-01-13-detrend-example/trace-1.png" alt="plot of chunk trace" /><figcaption>plot of chunk trace</figcaption>
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/trace-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(long) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/figure/posts/2015-01-13-detrend-example/histogram-1.png" alt="plot of chunk histogram" /><figcaption>plot of chunk histogram</figcaption>
+<img src="/2015/assets/figures/posts/2015-01-13-detrend-example/histogram-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>## R version 3.2.0 (2015-04-16)
-## Platform: x86_64-pc-linux-gnu (64-bit)
-## Running under: Debian GNU/Linux 8 (jessie)
-## 
-## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
-##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-## 
-## attached base packages:
-## [1] methods   stats     graphics  grDevices utils     datasets  base     
-## 
-## other attached packages:
-## [1] tidyr_0.2.0        ggplot2_1.0.1      earlywarning_0.0-1
-## [4] nimble_0.3-1       knitr_1.10        
-## 
-## loaded via a namespace (and not attached):
-##  [1] Rcpp_0.11.5      codetools_0.2-11 digest_0.6.8     psych_1.5.4     
-##  [5] MASS_7.3-40      grid_3.2.0       plyr_1.8.2       gtable_0.1.2    
-##  [9] formatR_1.2      scales_0.2.4     evaluate_0.7     reshape2_1.4.1  
-## [13] labeling_0.3     proto_0.3-10     deSolve_1.11     tools_3.2.0     
-## [17] stringr_0.6.2    munsell_0.4.2    igraph_0.7.1     parallel_3.2.0  
-## [21] colorspace_1.2-6 mnormt_1.5-2</code></pre>
+<pre><code>R version 3.2.0 (2015-04-16)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Debian GNU/Linux 8 (jessie)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] methods   stats     graphics  grDevices utils     datasets 
+[7] base     
+
+other attached packages:
+[1] tidyr_0.2.0        ggplot2_1.0.1      earlywarning_0.0-1
+[4] nimble_0.3-1       yaml_2.1.13        knitr_1.10        
+
+loaded via a namespace (and not attached):
+ [1] igraph_0.7.1     Rcpp_0.11.5      MASS_7.3-40     
+ [4] mnormt_1.5-2     munsell_0.4.2    colorspace_1.2-6
+ [7] stringr_0.6.2    plyr_1.8.2       tools_3.2.0     
+[10] parallel_3.2.0   grid_3.2.0       gtable_0.1.2    
+[13] psych_1.5.4      digest_0.6.8     reshape2_1.4.1  
+[16] formatR_1.2      codetools_0.2-11 deSolve_1.11    
+[19] evaluate_0.7     labeling_0.3     scales_0.2.4    
+[22] proto_0.3-10    </code></pre>
 
     </article>
   </div>
