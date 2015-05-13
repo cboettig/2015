@@ -19,4 +19,6 @@ RUN install2.r --error -r http://cran.rstudio.com -r http://r-nimble.org \
     ropensci/rgpdd \
 	&& rm -rf /tmp/downloaded_packages
 
+RUN apt-get update && apt-get install -y inkscape
+
 COPY . /data
