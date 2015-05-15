@@ -1,0 +1,38 @@
+---
+layout: post
+category: computing
+published: false
+
+---
+
+
+```{r}
+library("DiagrammeR")
+
+n <- c("archive", "index", "share", "discover", "use", "attribute")
+nodes <- create_nodes(nodes = n, shape = "circle", color = "linen", style = "filled")
+edges <- create_edges(edge_from = n, 
+                      edge_to = c(n[-1], n[1]),
+                      color = "gray", penwidth = 4)
+
+
+n <- c("a", "b", "c", "d")
+nodes <- create_nodes(nodes = n)
+edges <- create_edges(edge_from = n, 
+                      edge_to = c(n[-1], n[1]))
+
+
+graph <- create_graph(nodes = nodes, edges = edges, 
+                      graph_attrs = c(layout = "circo"))
+
+
+basename = "figure1"
+out <- render_graph(graph, output = "SVG")
+writeLines(out, paste0(basename, ".svg"))
+system(paste0("inkscape --export-png ", basename, ".png", 
+#              "-w " width, " -h ", height, 
+              " --export-dpi 300 ", 
+              basename, ".svg")) 
+system(paste0("inkscape --export-pdf ", basename, ".pdf ", basename, ".svg")) 
+
+```
