@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-05-13T04:14:39+00:00</updated>
+  <updated>2015-05-15T17:14:19+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -317,6 +317,41 @@ y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;values %&amp;gt;%&lt;s
 &lt;p&gt;but alas this does not quite appear to be the case (e.g. CPUE and SSB are a single category.) Some combination of this information and splitting on the &lt;code&gt;tsid&lt;/code&gt; strings would probably suffice.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;ts &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;meta %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, commonname) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;right_join&lt;/span&gt;(values)&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Rfishbase Notes</title>
+   <link href="http://www.carlboettiger.info/2015/04/28/rfishbase-notes.html"/>
+   <updated>2015-04-28T00:00:00+00:00</updated>
+   <id>/04/28/rfishbase-notes</id>
+   <content type="html">&lt;h3 id=&quot;kalman-filtering&quot;&gt;kalman filtering&lt;/h3&gt;
+&lt;h3 id=&quot;updates-to-drat-repo&quot;&gt;updates to drat repo&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;rescript personal deploy.R script&lt;/li&gt;
+&lt;li&gt;pull request&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;rfishbase&quot;&gt;rfishbase&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;rfishbase&lt;/code&gt; queries from users: getting “Resilience,” “Vulnerability” and “Price Category” data:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;species_info&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Labroides bicolor&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fields =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SpecCode&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;Vulnerability&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;PriceCateg&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It so happens that “Resilience” is not in that table, but in the “stocks” table instead:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;stocks&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Labroides bicolor&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fields=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SpecCode&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;Resilience&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can now merge the results:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;merge&lt;/span&gt;(x,y)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In general, you can see a list of all the columns in a given table by just omitting the “fields” argument:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;species_info&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Labroides bicolor&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Since the nearly 100 columns don’t fit in the page, the function just summarizes the column names for the ones that don’t fit. You can read through that list and spot the words “Vulnerability” and “PriceCateg”, and then use them in the ‘fields’ argument to just get those results.&lt;/p&gt;
+&lt;p&gt;Note that all of these functions can take a long list of species names instead of a single species, and thus will return a table with a row for each species and the desired columns.&lt;/p&gt;
+&lt;p&gt;Also note that we use “SpecCode”, the species code, to identify a species on fishbase. You can use the function “speciesnames” to transform this numeric code into a species name; e.g.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;data$SpecCode &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;speciesnames&lt;/span&gt;(data$SpecCode)&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;Improved sql helper script recipe.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&quot;searching-sql-for-a-field&quot;&gt;searching SQL for a field&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode sql&quot;&gt;&lt;code class=&quot;sourceCode sql&quot;&gt;
+&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;distinct&lt;/span&gt; table_name &lt;span class=&quot;kw&quot;&gt;from&lt;/span&gt; information_schema.columns &lt;span class=&quot;kw&quot;&gt;where&lt;/span&gt; column_name &lt;span class=&quot;kw&quot;&gt;in&lt;/span&gt; (&lt;span class=&quot;st&quot;&gt;&amp;#39;Resilience&amp;#39;&lt;/span&gt;) &lt;span class=&quot;kw&quot;&gt;and&lt;/span&gt; table_schema=&lt;span class=&quot;st&quot;&gt;&amp;#39;fbapp&amp;#39;&lt;/span&gt;;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and then we can do the usual&lt;/p&gt;
+&lt;pre class=&quot;sourceCode sql&quot;&gt;&lt;code class=&quot;sourceCode sql&quot;&gt;describe stocks&lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  

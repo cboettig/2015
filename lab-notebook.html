@@ -433,6 +433,51 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
         </div>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/04/28/rfishbase-notes.html">Rfishbase Notes</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 28 Apr 2015</p>
+
+<article>
+<div class="excerpt">
+<h3 id="kalman-filtering">kalman filtering</h3>
+<h3 id="updates-to-drat-repo">updates to drat repo</h3>
+<ul>
+<li>rescript personal deploy.R script</li>
+<li>pull request</li>
+</ul>
+<h3 id="rfishbase">rfishbase</h3>
+<p><code>rfishbase</code> queries from users: getting “Resilience,” “Vulnerability” and “Price Category” data:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">species_info</span>(<span class="st">&quot;Labroides bicolor&quot;</span>, <span class="dt">fields =</span> <span class="kw">c</span>(<span class="st">&quot;SpecCode&quot;</span>, <span class="st">&quot;Vulnerability&quot;</span>, <span class="st">&quot;PriceCateg&quot;</span>))</code></pre>
+<p>It so happens that “Resilience” is not in that table, but in the “stocks” table instead:</p>
+<pre class="sourceCode r"><code class="sourceCode r">y &lt;-<span class="st"> </span><span class="kw">stocks</span>(<span class="st">&quot;Labroides bicolor&quot;</span>, <span class="dt">fields=</span><span class="kw">c</span>(<span class="st">&quot;SpecCode&quot;</span>, <span class="st">&quot;Resilience&quot;</span>))</code></pre>
+<p>You can now merge the results:</p>
+<pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span><span class="kw">merge</span>(x,y)</code></pre>
+<p>In general, you can see a list of all the columns in a given table by just omitting the “fields” argument:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">species_info</span>(<span class="st">&quot;Labroides bicolor&quot;</span>)</code></pre>
+<p>Since the nearly 100 columns don’t fit in the page, the function just summarizes the column names for the ones that don’t fit. You can read through that list and spot the words “Vulnerability” and “PriceCateg”, and then use them in the ‘fields’ argument to just get those results.</p>
+<p>Note that all of these functions can take a long list of species names instead of a single species, and thus will return a table with a row for each species and the desired columns.</p>
+<p>Also note that we use “SpecCode”, the species code, to identify a species on fishbase. You can use the function “speciesnames” to transform this numeric code into a species name; e.g.</p>
+<pre class="sourceCode r"><code class="sourceCode r">data$SpecCode &lt;-<span class="st"> </span><span class="kw">speciesnames</span>(data$SpecCode)</code></pre>
+<ul>
+<li>Improved sql helper script recipe.</li>
+</ul>
+<h4 id="searching-sql-for-a-field">searching SQL for a field</h4>
+<pre class="sourceCode sql"><code class="sourceCode sql">
+<span class="kw">select</span> <span class="kw">distinct</span> table_name <span class="kw">from</span> information_schema.columns <span class="kw">where</span> column_name <span class="kw">in</span> (<span class="st">&#39;Resilience&#39;</span>) <span class="kw">and</span> table_schema=<span class="st">&#39;fbapp&#39;</span>;</code></pre>
+<p>and then we can do the usual</p>
+<pre class="sourceCode sql"><code class="sourceCode sql">describe stocks</code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/04/28/rfishbase-notes.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/04/20/open-science-post-doc.html">Open Science Post Doc</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 20 Apr 2015</p>
@@ -456,6 +501,10 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/04/15/misc-notes-on-cloud-providers.html">Misc Notes On Cloud Providers</a></h4></header>
@@ -504,10 +553,6 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/04/09/gpdd-and-kalman-exploration-continued.html">Gpdd And Kalman Exploration Continued</a></h4></header>
@@ -1142,6 +1187,10 @@ difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, funct
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/03/26/ropensci-unconf-teaching-session.html">Ropensci Unconf Teaching Session</a></h4></header>
 <p><span></span></p>
@@ -1235,10 +1284,6 @@ difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, funct
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/03/24/docker-machine-notes.html">Docker Machine Notes</a></h4></header>
@@ -1457,147 +1502,6 @@ loaded via a namespace (and not attached):
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/03/09/simpler-nimble-dai-model.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/03/04/GP-nimble-explore.html">Gp Nimble Explore</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 04 Mar 2015</p>
-
-<article>
-<div class="excerpt">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;MASS&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;mcmc&quot;</span>)</code></pre>
-<h2 id="gp-model">GP Model</h2>
-<p>A successful specification looks like this:</p>
-<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-
-   l ~<span class="st"> </span><span class="kw">dgamma</span>(<span class="dv">10</span>, <span class="dv">1</span>) 
-   sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
-   Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span><span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>diff[<span class="dv">1</span>:N, <span class="dv">1</span>:N] /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I[<span class="dv">1</span>:N, <span class="dv">1</span>:N]
-   y[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(Mu[<span class="dv">1</span>:N], <span class="dt">cov =</span> Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N])  
-
-})</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(-<span class="dv">4</span>, -<span class="dv">3</span>, -<span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">2</span>),
-                   <span class="dt">y =</span> <span class="kw">c</span>(-<span class="dv">2</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">2</span>, -<span class="dv">1</span>))
-
-N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
-diff &lt;-<span class="st"> </span><span class="kw">outer</span>(obs$x, obs$x, function(xi, xj) (xi-xj)^<span class="dv">2</span>)
-constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">diff =</span> diff, <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>)
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
-<p>We can simulate parameters from the prior:</p>
-<pre class="sourceCode r"><code class="sourceCode r">Rmodel$l</code></pre>
-<pre><code>[1] 1</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate</span>(Rmodel, <span class="st">&quot;l&quot;</span>)
-Rmodel$l</code></pre>
-<pre><code>[1] 11.48671</code></pre>
-<p>Other nodes and likelihoods are updated to reflect the new value only after we run <code>calculate()</code>, so this is the logProb of <code>l</code> originally:</p>
-<pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
-<pre><code>[1] NA</code></pre>
-<p>After we run <code>calculate()</code>, the <code>logProb</code> is updated to reflect our simulated value of <code>l</code>, as are the dependent terms (like the Sigma matrix)</p>
-<pre class="sourceCode r"><code class="sourceCode r">Sigma &lt;-<span class="st"> </span>Rmodel$Sigma
-<span class="kw">calculate</span>(Rmodel)</code></pre>
-<pre><code>[1] -30.01279</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(Sigma, Rmodel$Sigma)</code></pre>
-<pre><code>[1] FALSE</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
-<pre><code>[1] -2.31782</code></pre>
-<p>Interestingly, we don’t seem to be able to simulate actual data from the model in this way:</p>
-<pre class="sourceCode r"><code class="sourceCode r">Rmodel$y</code></pre>
-<pre><code>[1] -2  0  1  2 -1</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate</span>(Rmodel, <span class="st">&quot;y&quot;</span>)
-Rmodel$y</code></pre>
-<pre><code>[1] -2  0  1  2 -1</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(Rmodel$y, Rmodel$origData[[<span class="st">&quot;y&quot;</span>]])</code></pre>
-<pre><code>[1] TRUE</code></pre>
-<p>Note that <code>y</code> remaines fixed to the original data values. We have to do this manually:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mvrnorm</span>(<span class="dt">mu =</span> constants$Mu, <span class="dt">Sigma =</span> Rmodel$Sigma) </code></pre>
-<pre><code>[1]  8.625736 12.486449  3.002395 -4.190873 18.365414</code></pre>
-<p>Define our mcmc procedure in Nimble</p>
-<pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
-mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>)
-Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
-Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Rmodel)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
-Cmcmc$<span class="kw">run</span>(<span class="fl">1e5</span>)
-)</code></pre>
-<pre><code>   user  system elapsed 
-  0.829   0.016   0.844 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
-<h4 id="posteriors">Posteriors</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-04-GP-nimble-explore/unnamed-chunk-13-1.png" />
-</figure>
-<p>Note that <code>simulate</code> continues to draw from the prior, not the posterior:</p>
-<pre class="sourceCode r"><code class="sourceCode r">sigmas &lt;-<span class="st"> </span><span class="kw">replicate</span>(<span class="fl">1e4</span>, {
-  <span class="kw">simulate</span>(Rmodel, <span class="st">&quot;sigma.n&quot;</span>)
-  Rmodel$sigma.n
-  })
-<span class="kw">hist</span>(sigmas)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-04-GP-nimble-explore/unnamed-chunk-14-1.png" />
-</figure>
-<p>(Also note this isn’t a particularly efficient way to simulate). Conveniently drawing data, <span class="math">\(y\)</span>, from the posterior is even less obvious.</p>
-<h2 id="comparison">Comparison</h2>
-<pre class="sourceCode r"><code class="sourceCode r"> lpriors &lt;-<span class="st"> </span>function(pars){
-      <span class="kw">dgamma</span>(pars[[<span class="dv">1</span>]], <span class="dv">10</span>, <span class="dv">1</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>) +
-<span class="st">      </span><span class="kw">dunif</span>(pars[[<span class="dv">2</span>]], <span class="dv">0</span>, <span class="fl">1e5</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>) 
-  }
-  
-  posterior &lt;-<span class="st"> </span>function(pars, x, y){ 
-    l &lt;-<span class="st"> </span>pars[<span class="dv">1</span>]
-    sigma.n &lt;-<span class="st"> </span>pars[<span class="dv">2</span>]
-
-    SE &lt;-<span class="st"> </span>function(Xi,Xj, l) <span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>(Xi -<span class="st"> </span>Xj) ^<span class="st"> </span><span class="dv">2</span> /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>)
-    cov &lt;-<span class="st"> </span>function(X, Y) <span class="kw">outer</span>(X, Y, SE, l)
-    I &lt;-<span class="st"> </span><span class="kw">diag</span>(<span class="dv">1</span>, <span class="kw">length</span>(x))
-    K &lt;-<span class="st"> </span><span class="kw">cov</span>(x, x) 
-  
-    loglik &lt;-<span class="st"> </span>-<span class="st"> </span><span class="fl">0.5</span> *<span class="st"> </span><span class="kw">t</span>(y) %*%<span class="st"> </span><span class="kw">solve</span>(K +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I) %*%<span class="st"> </span>y -
-<span class="st">      </span><span class="kw">log</span>(<span class="kw">det</span>(K +<span class="st"> </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I)) -
-<span class="st">      </span><span class="kw">length</span>(y) *<span class="st"> </span><span class="kw">log</span>(<span class="dv">2</span> *<span class="st"> </span>pi) /<span class="st"> </span><span class="dv">2</span>
-    
-    loglik +<span class="st"> </span><span class="kw">lpriors</span>(pars)
-  }</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
-out &lt;-<span class="st"> </span><span class="kw">metrop</span>(posterior, <span class="dt">initial =</span> <span class="kw">c</span>(<span class="dt">l =</span> <span class="dv">1</span>,<span class="dt">sigma.n =</span> <span class="dv">10</span>), <span class="dt">nbatch =</span> <span class="fl">1e5</span>, <span class="dt">x =</span> obs$x, <span class="dt">y =</span> obs$y)  
-)</code></pre>
-<pre><code>   user  system elapsed 
- 11.923   0.000  11.960 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">burnin &lt;-<span class="st"> </span><span class="fl">1e3</span>
-thin &lt;-<span class="st"> </span><span class="fl">1e2</span>
-df &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">index=</span><span class="dv">1</span>:out$nbatch, <span class="kw">as.data.frame</span>(<span class="kw">exp</span>(out$batch)))
-s &lt;-<span class="st"> </span><span class="kw">seq</span>(burnin<span class="dv">+1</span>, out$nbatch, <span class="dt">by=</span>thin)
-df &lt;-<span class="st"> </span>df[s,]
-df &lt;-<span class="st"> </span>df[-<span class="dv">1</span>] <span class="co"># drop index</span>
-<span class="kw">names</span>(df) &lt;-<span class="st"> </span><span class="kw">names</span>(out$initial)
-df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>) +
-<span class="st">  </span><span class="kw">scale_x_log10</span>()</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-04-GP-nimble-explore/unnamed-chunk-18-1.png" />
-</figure>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/03/04/GP-nimble-explore.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
