@@ -9,12 +9,13 @@ tags:
 ---
 
 ```{r }
+library("MASS")
+library("mcmc")
 library("nimble")
 library("ggplot2")
 library("tidyr")
 library("dplyr")
-library("MASS")
-library("mcmc")
+
 knitr::opts_chunk$set(eval=FALSE)
 ```
 
@@ -22,21 +23,26 @@ knitr::opts_chunk$set(eval=FALSE)
 
 ```{r}
 set.seed(1234)
+Tobs <- 40
+f <- function(x, h, p){ 
+    x <- pmax(0,x-h)
+    x * exp(p[1] * (1 - x / p[2]) * (x - p[3]) / p[2] ) 
+}
+p <- c(2, 8, 5)
 x <- numeric(Tobs)
-x[1] <- Xo
+x[1] <- 5.5
 nz <- 1
 for(t in 1:(Tobs-1))
-  x[t+1] = z_g() * f(x[t], h=0, p=p)
+  x[t+1] = rlnorm(1, 0, 0.05) * f(x[t], h=0, p=p)
 obs <- data.frame(x = c(rep(0,nz), 
                         pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
                   y = c(rep(0,nz), 
                         x[2:Tobs]))
-
+ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 ```
 
 ## GP Model ##
 
-A successful specification looks like this:
 
 ```{r}
 code <- nimbleCode({
@@ -53,9 +59,6 @@ code <- nimbleCode({
 
 
 ```{r}
-
-
-
 N <- length(obs$x)
 diff <- outer(obs$x, obs$x, function(xi, xj) (xi-xj)^2)
 constants = list(N = N, x = obs$x, Mu = rep(0,N), diff = diff, I = diag(1,N))
@@ -69,44 +72,6 @@ data <- data.frame(y = obs$y)
 Rmodel <- nimbleModel(code = code, constants = constants, data = data, inits = inits)
 ```
 
-We can simulate parameters from the prior:
-
-```{r}
-Rmodel$l
-simulate(Rmodel, "l")
-Rmodel$l
-```
-
-Other nodes and likelihoods are updated to reflect the new value only after we run `calculate()`, so this is the logProb of `l` originally:
-
-
-```{r}
-Rmodel$logProb_l
-```
-
-After we run `calculate()`, the `logProb` is updated to reflect our simulated value of `l`, as are the dependent terms (like the Sigma matrix)
-
-```{r}
-Sigma <- Rmodel$Sigma
-calculate(Rmodel)
-identical(Sigma, Rmodel$Sigma)
-Rmodel$logProb_l
-```
-
-Interestingly, we don't seem to be able to simulate actual data from the model in this way:
-
-```{r}
-Rmodel$y
-simulate(Rmodel, "y")
-Rmodel$y
-identical(Rmodel$y, Rmodel$origData[["y"]])
-```
-
-Note that `y` remaines fixed to the original data values.  We have to do this manually:
-
-```{r}
-mvrnorm(mu = constants$Mu, Sigma = Rmodel$Sigma) 
-```
 
 Define our mcmc procedure in Nimble
 
@@ -123,7 +88,6 @@ Cmcmc$run(1e5)
 )
 ```
 
-
 ```{r}
 samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
 df <- gather(samples)
@@ -138,20 +102,8 @@ ggplot(df) +
   facet_wrap(~key, scale='free')
 ```
 
-Note that `simulate` continues to draw from the prior, not the posterior:
 
-```{r}
-sigmas <- replicate(1e4, {
-  simulate(Rmodel, "sigma.n")
-  Rmodel$sigma.n
-  })
-hist(sigmas)
-```
-
-(Also note this isn't a particularly efficient way to simulate).  Conveniently drawing data, $y$, from the posterior is even less obvious.
-
-
-
+--------------------------------------------
 
 ## Comparison
 

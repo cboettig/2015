@@ -10,29 +10,26 @@ published: false
 library("DiagrammeR")
 
 n <- c("archive", "index", "share", "discover", "use", "attribute")
-nodes <- create_nodes(nodes = n, shape = "circle", color = "linen", style = "filled")
+
+nodes <- create_nodes(nodes = c("Repository\n Roles", n, "Researcher\n Roles"), 
+                      shape = "circle", 
+                      color = c(rep("PowderBlue", 4), rep("Linen", 4)),
+                      style = "filled")
 edges <- create_edges(edge_from = n, 
                       edge_to = c(n[-1], n[1]),
                       color = "gray", penwidth = 4)
 
-
-n <- c("a", "b", "c", "d")
-nodes <- create_nodes(nodes = n)
-edges <- create_edges(edge_from = n, 
-                      edge_to = c(n[-1], n[1]))
-
-
 graph <- create_graph(nodes = nodes, edges = edges, 
-                      graph_attrs = c(layout = "circo"))
+                      graph_attrs = c("layout = circo"))
 
-
-basename = "figure1"
+basename <- "figure1"
 out <- render_graph(graph, output = "SVG")
 writeLines(out, paste0(basename, ".svg"))
 system(paste0("inkscape --export-png ", basename, ".png", 
-#              "-w " width, " -h ", height, 
+#              "-w ", width, " -h ", height, 
               " --export-dpi 300 ", 
               basename, ".svg")) 
+
 system(paste0("inkscape --export-pdf ", basename, ".pdf ", basename, ".svg")) 
 
 ```
