@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 category: ecology
 tags: 
@@ -14,6 +15,7 @@ library("tidyr")
 library("dplyr")
 library("MASS")
 library("mcmc")
+knitr::opts_chunk$set(eval=FALSE)
 ```
 
 ## sample data ##
