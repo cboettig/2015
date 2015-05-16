@@ -5,15 +5,14 @@ YEAR=2015
 set -e
 source ~/.notebook-env.sh
 
-## Consider git pull?
 
 ## always use latest images for these
 docker pull cboettig/2015-cache
 docker pull cboettig/2015
 
-## Build using cached data.  ## Consider rsync to use any local cache?
-docker create --name cache -v /data/_cache cboettig/${YEAR}-cache
-docker run --rm --volumes-from cache -v $(pwd):/data cboettig/${YEAR} Rscript -e 'servr::jekyll(serve = FALSE, script = "_build/build.R")'
+## Build using cached data.  
+docker create --name cache -v /cache cboettig/${YEAR}-cache
+docker run --rm --volumes-from cache -v $(pwd):/data cboettig/${YEAR} bash _build/build.sh 
 
 ## Deploy to GitHub
 docker run --rm -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_build/deploy.sh" cboettig/${YEAR}
