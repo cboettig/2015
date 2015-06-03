@@ -1,0 +1,28 @@
+---
+published: false
+
+---
+
+
+This is just a draft of my reply to Gavin's [thought-provoking post](http://www.fromthebottomoftheheap.net/2015/06/03/my-aversion-to-pipes/) pushing back on pipes and NSE in R.
+
+---
+
+Gavin, really nice post and discussion here.  I am still conflicted about some these issues myself. 
+
+For me, the issues of NSE are somewhat separate and above my concern with pipes.  I agree completely with your observation that intermediate assignment is easier to read than nested assignment, and not that much harder to read than a pipe chain.  However I also agree with other commenters that not having to think about intermediate assignment variables is nice (e.g. I usually do something like replacing `the_data` with `tmp` or some such in each occurrence after the first in your example to make this more explicit). But for the most part I do not find the pipe syntax to be problematic in the same way that NSE is -- indeed I can use the pipe operator with the SE versions of the same functions, or with any other SE R function.
+
+NSE to me is a whole different can of worms.  It does make the syntax much more consise and more semantic, (even while it obfuscates what is a string, a numeric, or a variable).  But this whole "don't use it in programming" thing seems very impractical to me.  When I first started R, I got the same advice -- only it was for R itself -- use it interactively, but for real programming write everything in C.  Then maybe add some R wrappers on top.  Um.. yeah, I actually did that for a few years... long ago.  Most of the time I don't even know if I'm programming or not.  Sure, it's easy to use the SE versions when working on some function you know will be part of an R package, but NSE has bitten me several times in various research scripts.  Stupid things perhaps -- where I have done things like changing a filter argument to a variable with the same name as a column (`filter(x == .5)` into a `filter(x == x)`) -- but very difficult to debug since they do not throw errors.
+
+Nevertheless, both the performance and consise abstractions of common manipulation tasks make it hard to walk away from `dplyr` and friends.  However, I find the syntax required to use the SE versions of the dplyr functions immensely cumbersome and opaque (e.g. http://www.carlboettiger.info/2015/02/06/fun-standardizing-non-standard-evaluation.html).  Some of these can be written more concisely with a different SE syntax, but having 4 different ways to introduce a variable value, not all of which cover all the same cases, is even worse to me than just sticking with the most complex.  No doubt I lack appreciation of the complexity here, but it seems like it should be possible to have a syntax that is nearly as consise as the NSE but where I can replace values with variables (e.g.  `filter("Y" == "X")` to `filter(y == x)`) without needing something like
+
+```r
+dots <- lapply(names(query), function(level){
+value <- query[[level]]
+interp(~y == x, 
+.values = list(y = as.name(level), x = value))
+})
+``` 
+
+
+Anyway, apologies for the rant -- just trying to say I share your hesitation regarding NSE but pipes don't bother me.  (I do think lazy eval on pipes is a win btw -- e.g. try testing out the same long pipe-string analysis on data coming from a remote database; say, just to check that the first 10 rows of output look right before evaluation the whole database)
