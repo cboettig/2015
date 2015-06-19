@@ -209,7 +209,7 @@ Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred
 ## 100,000 iterations
 <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 67.313   0.031  67.459 </code></pre>
+ 60.852   0.035  60.959 </code></pre>
 <p>About 25 seconds on my computer</p>
 <p>That can be improved if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
@@ -220,7 +220,7 @@ if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(s
 ## predict from GP model using posterior MCMC samples
 <span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 87.571   0.004  87.627 </code></pre>
+ 82.313   0.000  82.328 </code></pre>
 <p>About 40 seconds on my computer</p>
 <p>Again, could streamline the gpPred() function if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">## extract predictions: E and C

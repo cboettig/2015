@@ -111,10 +111,10 @@
 <span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;RPostgreSQL&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;devtools&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;ggplot&quot;</span>)
-})</code></pre>
-<pre><code>Error in library(&quot;ggplot&quot;): there is no package called &#39;ggplot&#39;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">## Perform this in data_raw to keep package dependencies minimal
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+})
+
+## Perform this in data_raw to keep package dependencies minimal
 mydb &lt;-<span class="st"> </span><span class="kw">src_postgres</span>(<span class="dt">dbname =</span> <span class="st">&quot;srdb&quot;</span>, 
                      <span class="dt">host=</span><span class="st">&quot;nautilus-vm.mathstat.dal.ca&quot;</span>, 
                      <span class="dt">user =</span> <span class="st">&quot;srdbuser&quot;</span>, 
@@ -157,7 +157,9 @@ tsmetrics &lt;-<span class="st"> </span><span class="kw">collect</span>(<span cl
 <span class="st">  </span><span class="kw">summarise</span>(<span class="dt">catch =</span> <span class="kw">sum</span>(catch_landings, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>## all units are metric tons
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, catch)) +<span class="st"> </span><span class="kw">geom_line</span>() +<span class="st"> </span>
 <span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;Catch/Landings (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-4-1.png" />
+</figure>
 <p>Note that missing data is removed, such that any assessment without catch data is treated as zero catch. This could be the case (maybe not all assessments correspond to unique catch zones.) We also assume catch reported in one assessment is not also reported in a different assement (e.g. no double-counting). Lastly, we must bear in mind that this is catch/landings data, which may include bycatch, underreporting, etc.</p>
 <hr />
 <h2 id="handling-unit-conversions">Handling unit conversions</h2>
@@ -233,39 +235,44 @@ biomass_wrong &lt;-
 <span class="st">  </span><span class="kw">geom_line</span>() +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>biomass_wrong, <span class="dt">col=</span><span class="st">&quot;blue&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>biomass_dropped, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>) +
-<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Biomass (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;ggplot&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># they may look identical but they aren&#39;t:</span>
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Biomass (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)
+  
+<span class="co"># they may look identical but they aren&#39;t:</span>
 <span class="kw">identical</span>(biomass_dropped$biomass, biomass$biomass)</code></pre>
 <pre><code>[1] FALSE</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-9-1.png" />
+</figure>
 <p>In this case, the contribution is negligible (red vs black). Even failing to convert units (blue) makes a hardly visible difference, though in general the difference could have been quite large.</p>
 <pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids, total &gt;<span class="st"> </span><span class="dv">0</span>) %&gt;%
 <span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total, <span class="dt">color=</span>assessid)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>() +
 <span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Biomass (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-10-1.png" />
+</figure>
 <hr />
 <h2 id="stock-recruitment-time-series">Stock-recruitment &amp; time-series</h2>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids[[<span class="dv">1</span>]]) %&gt;%<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span><span class="kw">geom_point</span>()</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid==<span class="st">&quot;AFWG-CODNEAR-1943-2006-MINTO&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span><span class="kw">geom_point</span>()</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids[[<span class="dv">1</span>]]) %&gt;%<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span><span class="kw">geom_point</span>()
+values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid==<span class="st">&quot;AFWG-CODNEAR-1943-2006-MINTO&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span><span class="kw">geom_point</span>()
+
+values %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +
 <span class="st">    </span><span class="kw">geom_point</span>() +
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)
+
+
+values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<p><img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-11-1.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-11-2.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-11-3.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-11-4.png" /></p>
 <p>Note that the spawning stock biomass, red, can often be significantly less than the total stock (black).</p>
 <pre class="sourceCode r"><code class="sourceCode r">herring &lt;-
 <span class="st">  </span>assessment %&gt;%<span class="st"> </span>
@@ -279,16 +286,16 @@ values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)
+
+values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>herring) %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<p><img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-12-1.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-12-2.png" /></p>
 <pre class="sourceCode r"><code class="sourceCode r">anchovy &lt;-
 <span class="st">  </span>assessment %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
@@ -301,16 +308,16 @@ values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)
+
+values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>anchovy) %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<p><img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-13-1.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-13-2.png" /></p>
 <pre class="sourceCode r"><code class="sourceCode r">bluefin &lt;-
 <span class="st">  </span>assessment %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
@@ -323,16 +330,17 @@ values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)
+
+
+values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>bluefin) %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<p><img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-14-1.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-14-2.png" /></p>
 
     </article>
   </div>
@@ -382,7 +390,7 @@ values %&gt;%<span class="st"> </span>
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/50ffcc65ae3a055f11f9fd4fa07fb5bdeab408bb/_posts/2015-06-18-RAM-explore.Rmd"> 50ffcc65ae3a055f11f9fd4fa07fb5bdeab408bb</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/77370abb5b9a73224082468ea95b86abd2100f8a/_posts/2015-06-18-RAM-explore.Rmd"> 77370abb5b9a73224082468ea95b86abd2100f8a</a></small></p>
     
   <br/>
   
