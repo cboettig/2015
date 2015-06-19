@@ -134,11 +134,20 @@ mydb &lt;-<span class="st"> </span><span class="kw">src_postgres</span>(<span cl
                      <span class="dt">password =</span>  <span class="st">&quot;srd6us3r!&quot;</span>, 
                      <span class="dt">port =</span> <span class="dv">5432</span>)
 
-
+timeseries &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries&quot;</span>)))
 values &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries_values_view&quot;</span>)))
-assessment &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessment&quot;</span>)))
-stock &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.stock&quot;</span>)))
 units &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries_units_view&quot;</span>)))
+assessment &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessment&quot;</span>)))
+area &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.area&quot;</span>)))
+stock &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.stock&quot;</span>)))
+method &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessmethod&quot;</span>)))
+assessor &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessor&quot;</span>)))
+management  &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.management&quot;</span>)))
+taxonomy &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.taxonomy&quot;</span>)))
+lmerefs &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.lmerefs&quot;</span>)))
+lmestock &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.lmetostocks&quot;</span>)))
+biometrics  &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.biometrics&quot;</span>)))
+bioparams &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.bioparams&quot;</span>)))
 tsmetrics &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.tsmetrics&quot;</span>)))</code></pre>
 <h2 id="north-atlantic-cod-data">North Atlantic Cod data</h2>
 <p>Select North Atlantic Cod, <em>Gadus morhua</em>:</p>
@@ -187,11 +196,19 @@ unit_defs &lt;-<span class="st"> </span>tsmetrics %&gt;%<span class="st"> </span
 who &lt;-<span class="st"> </span>units %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, total_unit) %&gt;%<span class="st"> </span><span class="kw">filter</span>(total_unit==<span class="st">&quot;E03&quot;</span>)
 
 <span class="co"># Find that assessid in the timeseries table, where units are written in different notation</span>
-ts_who &lt;-<span class="st"> </span>timeseries %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>who$assessid) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, tsid) %&gt;%<span class="st">  </span><span class="kw">distinct</span>(tsid)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;timeseries&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Join the tables to see the definitions</span>
+ts_who &lt;-<span class="st"> </span>timeseries %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>who$assessid) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, tsid) %&gt;%<span class="st">  </span><span class="kw">distinct</span>(tsid)
+
+<span class="co"># Join the tables to see the definitions</span>
 <span class="kw">left_join</span>(ts_who, unit_defs)</code></pre>
-<pre><code>Error in left_join(ts_who, unit_defs): object &#39;ts_who&#39; not found</code></pre>
+<pre><code>Source: local data frame [5 x 4]
+
+                      assessid   tsid
+1 NAFO-SC-COD3M-1959-2008-BAUM SSB-MT
+2 NAFO-SC-COD3M-1959-2008-BAUM TN-E03
+3 NAFO-SC-COD3M-1959-2008-BAUM  R-E03
+4 NAFO-SC-COD3M-1959-2008-BAUM  F-1/T
+5 NAFO-SC-COD3M-1959-2008-BAUM  TC-MT
+Variables not shown: tslong (chr), tsunitslong (chr)</code></pre>
 <p>and we can confirm <code>E03</code> is in this case <code>TN-E03</code> (total number, in thousands).</p>
 <hr />
 <p>Converting this to metric tons will require an average weight for cod. FishBase gives us a maximum weight (in grams):</p>
@@ -200,14 +217,33 @@ ts_who &lt;-<span class="st"> </span>timeseries %&gt;%<span class="st"> </span><
 <p>Wikipedia says the average is 5-12 kilograms, so let’s take 8.5 Kg for sake of argument. Clearly a more programmatic and more accurate solution is needed here.</p>
 <p><em>Sidenote</em> the database has some very limited data on biometrics by assessment, including some assessments that record a maximum (but not an average) weight (sometimes pulled from FishBase anyway). Even pooling across all Atlantic Cod assessments we can’t find even a maximum weight.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Find the unit code for max weight</span>
-biometrics %&gt;%<span class="st"> </span><span class="kw">filter</span>(biolong ==<span class="st"> &quot;Maximum weight&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">select</span>(biounique) %&gt;%<span class="st"> </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() -&gt;<span class="st"> </span>max_weight</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;biometrics&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># show the unit code:</span>
+biometrics %&gt;%<span class="st"> </span><span class="kw">filter</span>(biolong ==<span class="st"> &quot;Maximum weight&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">select</span>(biounique) %&gt;%<span class="st"> </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() -&gt;<span class="st"> </span>max_weight
+<span class="co"># show the unit code:</span>
 max_weight</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;max_weight&#39; not found</code></pre>
+<pre><code>[1] &quot;MAX-WGT-g&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Look up all max weight values for illustration: (not filtering on cod_ids since there are no hits)</span>
 bioparams %&gt;%<span class="st"> </span><span class="kw">filter</span>(bioid %in%<span class="st"> </span>max_weight)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;bioparams&#39; not found</code></pre>
+<pre><code>Source: local data frame [17 x 5]
+
+                                  assessid     bioid  biovalue
+1      INIDEP-ARGANCHOSARG-1992-2007-Parma MAX-WGT-g        51
+2      INIDEP-ARGANCHONARG-1989-2007-Parma MAX-WGT-g        48
+3       INIDEP-ARGHAKESARG-1985-2008-Parma MAX-WGT-g   5300.00
+4       INIDEP-ARGHAKENARG-1985-2007-Parma MAX-WGT-g   5900.00
+5  INIDEP-PATGRENADIERSARG-1983-2006-Parma MAX-WGT-g      2940
+6            ICCAT-ALBANATL-1929-2005-WORM MAX-WGT-g     60000
+7         ICCAT-ATBTUNAEATL-1969-2007-WORM MAX-WGT-g    684000
+8         ICCAT-ATBTUNAWATL-1969-2007-WORM MAX-WGT-g    684000
+9   AFSC-SABLEFEBSAIGA-1956-2008-MELNYCHUK MAX-WGT-g      6200
+10           IPHC-PHALNPAC-1988-2009-Parma MAX-WGT-g available
+11     AFSC-REYEROCKBSAI-1974-2009-STANTON MAX-WGT-g      2047
+12            NEFSC-ATHAL5YZ-1800-2007-COL MAX-WGT-g    337000
+13     NEFSC-SCUPNWATLC-1960-2007-TERCEIRO MAX-WGT-g      3000
+14     NEFSC-MONKGOMNGB-1964-2006-RICHARDS MAX-WGT-g    337000
+15      NEFSC-SURFMATLC-1965-2008-JACOBSON MAX-WGT-g      600+
+16   CSERG-ANCHOVYKILKACS-1991-2007-JENSEN MAX-WGT-g      18.4
+17        ASMFC-PANDALGOM-1960-2009-IDOINE MAX-WGT-g        23
+Variables not shown: bioyear (chr), bionotes (chr)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">e03_to_MT &lt;-<span class="st"> </span><span class="fl">7.5</span> *<span class="st"> </span><span class="fl">1e-3</span>
 
 tmpA &lt;-<span class="st"> </span>
@@ -474,7 +510,7 @@ Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred
 ## 100,000 iterations
 <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 60.852   0.035  60.959 </code></pre>
+ 60.184   0.036  60.328 </code></pre>
 <p>About 25 seconds on my computer</p>
 <p>That can be improved if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
@@ -485,7 +521,7 @@ if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(s
 ## predict from GP model using posterior MCMC samples
 <span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 82.313   0.000  82.328 </code></pre>
+ 79.848   0.000  80.024 </code></pre>
 <p>About 40 seconds on my computer</p>
 <p>Again, could streamline the gpPred() function if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">## extract predictions: E and C

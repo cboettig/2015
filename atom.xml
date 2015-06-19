@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-06-19T18:46:20+00:00</updated>
+  <updated>2015-06-19T19:07:13+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -30,11 +30,20 @@ mydb &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
                      &lt;span class=&quot;dt&quot;&gt;password =&lt;/span&gt;  &lt;span class=&quot;st&quot;&gt;&amp;quot;srd6us3r!&amp;quot;&lt;/span&gt;, 
                      &lt;span class=&quot;dt&quot;&gt;port =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5432&lt;/span&gt;)
 
-
+timeseries &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.timeseries&amp;quot;&lt;/span&gt;)))
 values &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.timeseries_values_view&amp;quot;&lt;/span&gt;)))
-assessment &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.assessment&amp;quot;&lt;/span&gt;)))
-stock &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.stock&amp;quot;&lt;/span&gt;)))
 units &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.timeseries_units_view&amp;quot;&lt;/span&gt;)))
+assessment &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.assessment&amp;quot;&lt;/span&gt;)))
+area &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.area&amp;quot;&lt;/span&gt;)))
+stock &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.stock&amp;quot;&lt;/span&gt;)))
+method &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.assessmethod&amp;quot;&lt;/span&gt;)))
+assessor &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.assessor&amp;quot;&lt;/span&gt;)))
+management  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.management&amp;quot;&lt;/span&gt;)))
+taxonomy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.taxonomy&amp;quot;&lt;/span&gt;)))
+lmerefs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.lmerefs&amp;quot;&lt;/span&gt;)))
+lmestock &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.lmetostocks&amp;quot;&lt;/span&gt;)))
+biometrics  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.biometrics&amp;quot;&lt;/span&gt;)))
+bioparams &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.bioparams&amp;quot;&lt;/span&gt;)))
 tsmetrics &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.tsmetrics&amp;quot;&lt;/span&gt;)))&lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&quot;north-atlantic-cod-data&quot;&gt;North Atlantic Cod data&lt;/h2&gt;
 &lt;p&gt;Select North Atlantic Cod, &lt;em&gt;Gadus morhua&lt;/em&gt;:&lt;/p&gt;
@@ -83,11 +92,19 @@ unit_defs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tsmetrics %&am
 who &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;units %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, total_unit) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(total_unit==&lt;span class=&quot;st&quot;&gt;&amp;quot;E03&amp;quot;&lt;/span&gt;)
 
 &lt;span class=&quot;co&quot;&gt;# Find that assessid in the timeseries table, where units are written in different notation&lt;/span&gt;
-ts_who &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;timeseries %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;who$assessid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, tsid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;distinct&lt;/span&gt;(tsid)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;timeseries&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Join the tables to see the definitions&lt;/span&gt;
+ts_who &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;timeseries %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;who$assessid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, tsid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;distinct&lt;/span&gt;(tsid)
+
+&lt;span class=&quot;co&quot;&gt;# Join the tables to see the definitions&lt;/span&gt;
 &lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(ts_who, unit_defs)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in left_join(ts_who, unit_defs): object &amp;#39;ts_who&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [5 x 4]
+
+                      assessid   tsid
+1 NAFO-SC-COD3M-1959-2008-BAUM SSB-MT
+2 NAFO-SC-COD3M-1959-2008-BAUM TN-E03
+3 NAFO-SC-COD3M-1959-2008-BAUM  R-E03
+4 NAFO-SC-COD3M-1959-2008-BAUM  F-1/T
+5 NAFO-SC-COD3M-1959-2008-BAUM  TC-MT
+Variables not shown: tslong (chr), tsunitslong (chr)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and we can confirm &lt;code&gt;E03&lt;/code&gt; is in this case &lt;code&gt;TN-E03&lt;/code&gt; (total number, in thousands).&lt;/p&gt;
 &lt;hr /&gt;
 &lt;p&gt;Converting this to metric tons will require an average weight for cod. FishBase gives us a maximum weight (in grams):&lt;/p&gt;
@@ -96,14 +113,33 @@ ts_who &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;timeseries %&amp;
 &lt;p&gt;Wikipedia says the average is 5-12 kilograms, so let’s take 8.5 Kg for sake of argument. Clearly a more programmatic and more accurate solution is needed here.&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;Sidenote&lt;/em&gt; the database has some very limited data on biometrics by assessment, including some assessments that record a maximum (but not an average) weight (sometimes pulled from FishBase anyway). Even pooling across all Atlantic Cod assessments we can’t find even a maximum weight.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Find the unit code for max weight&lt;/span&gt;
-biometrics %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(biolong ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Maximum weight&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(biounique) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unlist&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unname&lt;/span&gt;() -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;max_weight&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;biometrics&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# show the unit code:&lt;/span&gt;
+biometrics %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(biolong ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Maximum weight&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(biounique) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unlist&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unname&lt;/span&gt;() -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;max_weight
+&lt;span class=&quot;co&quot;&gt;# show the unit code:&lt;/span&gt;
 max_weight&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;max_weight&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MAX-WGT-g&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Look up all max weight values for illustration: (not filtering on cod_ids since there are no hits)&lt;/span&gt;
 bioparams %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(bioid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;max_weight)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;bioparams&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [17 x 5]
+
+                                  assessid     bioid  biovalue
+1      INIDEP-ARGANCHOSARG-1992-2007-Parma MAX-WGT-g        51
+2      INIDEP-ARGANCHONARG-1989-2007-Parma MAX-WGT-g        48
+3       INIDEP-ARGHAKESARG-1985-2008-Parma MAX-WGT-g   5300.00
+4       INIDEP-ARGHAKENARG-1985-2007-Parma MAX-WGT-g   5900.00
+5  INIDEP-PATGRENADIERSARG-1983-2006-Parma MAX-WGT-g      2940
+6            ICCAT-ALBANATL-1929-2005-WORM MAX-WGT-g     60000
+7         ICCAT-ATBTUNAEATL-1969-2007-WORM MAX-WGT-g    684000
+8         ICCAT-ATBTUNAWATL-1969-2007-WORM MAX-WGT-g    684000
+9   AFSC-SABLEFEBSAIGA-1956-2008-MELNYCHUK MAX-WGT-g      6200
+10           IPHC-PHALNPAC-1988-2009-Parma MAX-WGT-g available
+11     AFSC-REYEROCKBSAI-1974-2009-STANTON MAX-WGT-g      2047
+12            NEFSC-ATHAL5YZ-1800-2007-COL MAX-WGT-g    337000
+13     NEFSC-SCUPNWATLC-1960-2007-TERCEIRO MAX-WGT-g      3000
+14     NEFSC-MONKGOMNGB-1964-2006-RICHARDS MAX-WGT-g    337000
+15      NEFSC-SURFMATLC-1965-2008-JACOBSON MAX-WGT-g      600+
+16   CSERG-ANCHOVYKILKACS-1991-2007-JENSEN MAX-WGT-g      18.4
+17        ASMFC-PANDALGOM-1960-2009-IDOINE MAX-WGT-g        23
+Variables not shown: bioyear (chr), bionotes (chr)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;e03_to_MT &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;7.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e-3&lt;/span&gt;
 
 tmpA &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -360,7 +396,7 @@ Cpred  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 ## 100,000 iterations
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 60.852   0.035  60.959 &lt;/code&gt;&lt;/pre&gt;
+ 60.184   0.036  60.328 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 25 seconds on my computer&lt;/p&gt;
 &lt;p&gt;That can be improved if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
@@ -371,7 +407,7 @@ if(!&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(params, &lt;span cla
 ## predict from GP model using posterior MCMC samples
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 82.313   0.000  82.328 &lt;/code&gt;&lt;/pre&gt;
+ 79.848   0.000  80.024 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 40 seconds on my computer&lt;/p&gt;
 &lt;p&gt;Again, could streamline the gpPred() function if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## extract predictions: E and C
