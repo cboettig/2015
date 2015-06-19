@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
 library("dplyr")
 library("RPostgreSQL")
 library("devtools")
-library("ggplot")
+library("ggplot2")
 })
 
 ## Perform this in data_raw to keep package dependencies minimal
