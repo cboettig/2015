@@ -114,6 +114,434 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/06/18/RAM-explore.html">Ram Explore</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 18 Jun 2015</p>
+
+<article>
+<div class="excerpt">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
+<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;RPostgreSQL&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;devtools&quot;</span>)
+})
+
+## Perform this in data_raw to keep package dependencies minimal
+mydb &lt;-<span class="st"> </span><span class="kw">src_postgres</span>(<span class="dt">dbname =</span> <span class="st">&quot;srdb&quot;</span>, 
+                     <span class="dt">host=</span><span class="st">&quot;nautilus-vm.mathstat.dal.ca&quot;</span>, 
+                     <span class="dt">user =</span> <span class="st">&quot;srdbuser&quot;</span>, 
+                     <span class="dt">password =</span>  <span class="st">&quot;srd6us3r!&quot;</span>, 
+                     <span class="dt">port =</span> <span class="dv">5432</span>)
+
+
+values &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries_values_view&quot;</span>)))
+assessment &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessment&quot;</span>)))
+stock &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.stock&quot;</span>)))
+units &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries_units_view&quot;</span>)))
+tsmetrics &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.tsmetrics&quot;</span>)))</code></pre>
+<h2 id="north-atlantic-cod-data">North Atlantic Cod data</h2>
+<p>Select North Atlantic Cod, <em>Gadus morhua</em>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">cod_ids &lt;-
+<span class="st">  </span>assessment %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(scientificname==<span class="st">&quot;Gadus morhua&quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(assessid) %&gt;%
+<span class="st">  </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() <span class="co"># we need a char string, not a data.frame</span></code></pre>
+<p>(Note we could have selected on the <code>tsn==164712</code> to be less ambiguous but also less semantic, or on <code>commonname==&quot;Atlantic cod&quot;</code> to be more reader friendly but even more ambiguous. Fortunately the common and scientific names are well aligned with the <code>tsn</code> ids in this case and we get the same set of 22 stock assessments.)</p>
+<p>Before we can combine across these, we must verify that each assessment measures the quantities of interest using the same units, or otherwise correct those that do not:</p>
+<pre class="sourceCode r"><code class="sourceCode r">units %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, catch_landings_unit) %&gt;%<span class="st"> </span><span class="kw">group_by</span>(catch_landings_unit) %&gt;%<span class="st"> </span><span class="kw">summarise</span>(<span class="kw">length</span>(catch_landings_unit))</code></pre>
+<pre><code>Source: local data frame [1 x 2]
+
+  catch_landings_unit length(catch_landings_unit)
+1                  MT                          21</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">units %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, total_unit) %&gt;%<span class="st"> </span><span class="kw">group_by</span>(total_unit) %&gt;%<span class="st"> </span><span class="kw">summarise</span>(<span class="kw">length</span>(total_unit))</code></pre>
+<pre><code>Source: local data frame [3 x 2]
+
+  total_unit length(total_unit)
+1        E03                  1
+2         MT                 18
+3         NA                  2</code></pre>
+<p>All catches are in metric tons, so no concern there.</p>
+<p>Landing data we can plot immediately:</p>
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(tsyear) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">catch =</span> <span class="kw">sum</span>(catch_landings, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>## all units are metric tons
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, catch)) +<span class="st"> </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;Catch/Landings (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<p>Note that missing data is removed, such that any assessment without catch data is treated as zero catch. This could be the case (maybe not all assessments correspond to unique catch zones.) We also assume catch reported in one assessment is not also reported in a different assement (e.g. no double-counting). Lastly, we must bear in mind that this is catch/landings data, which may include bycatch, underreporting, etc.</p>
+<hr />
+<h2 id="handling-unit-conversions">Handling unit conversions</h2>
+<p>The units for <code>total</code> are more problematic. The <code>NA</code> simply indicates stocks that do not have the an estimate for <code>total</code>, but we also see one assessment has totals in <code>E03</code> (thousands) instead of metric tons.</p>
+<hr />
+<p><em>Sidebar</em> how do we know for sure that <code>E03</code> is abundance counts in thousands of fish?</p>
+<p>The database does not provide metadata for these unit definitions directly. the <code>values</code> data and its associated <code>units</code> metadata are actually derived tables from the raw <code>timeseries</code> table and the associated <code>tsmetrics</code> unit metadata, so we would have to dive in there to confirm this interpretation of <code>E03</code> in this case.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># tidy up the tsmetrics table:</span>
+unit_defs &lt;-<span class="st"> </span>tsmetrics %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">tsid =</span> tsunique) %&gt;%<span class="st"> </span><span class="kw">select</span>(tsid, tslong, tsunitslong) 
+
+<span class="co"># Find the assessid of the cod stock assessment that measures total in units of E03</span>
+who &lt;-<span class="st"> </span>units %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, total_unit) %&gt;%<span class="st"> </span><span class="kw">filter</span>(total_unit==<span class="st">&quot;E03&quot;</span>)
+
+<span class="co"># Find that assessid in the timeseries table, where units are written in different notation</span>
+ts_who &lt;-<span class="st"> </span>timeseries %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>who$assessid) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, tsid) %&gt;%<span class="st">  </span><span class="kw">distinct</span>(tsid)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;timeseries&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Join the tables to see the definitions</span>
+<span class="kw">left_join</span>(ts_who, unit_defs)</code></pre>
+<pre><code>Error in left_join(ts_who, unit_defs): object &#39;ts_who&#39; not found</code></pre>
+<p>and we can confirm <code>E03</code> is in this case <code>TN-E03</code> (total number, in thousands).</p>
+<hr />
+<p>Converting this to metric tons will require an average weight for cod. FishBase gives us a maximum weight (in grams):</p>
+<pre class="sourceCode r"><code class="sourceCode r">rfishbase::<span class="kw">species</span>(<span class="st">&quot;Gadus morhua&quot;</span>, <span class="dt">fields=</span><span class="st">&quot;Weight&quot;</span>)</code></pre>
+<pre><code>Error in loadNamespace(name): there is no package called &#39;rfishbase&#39;</code></pre>
+<p>Wikipedia says the average is 5-12 kilograms, so let’s take 8.5 Kg for sake of argument. Clearly a more programmatic and more accurate solution is needed here.</p>
+<p><em>Sidenote</em> the database has some very limited data on biometrics by assessment, including some assessments that record a maximum (but not an average) weight (sometimes pulled from FishBase anyway). Even pooling across all Atlantic Cod assessments we can’t find even a maximum weight.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Find the unit code for max weight</span>
+biometrics %&gt;%<span class="st"> </span><span class="kw">filter</span>(biolong ==<span class="st"> &quot;Maximum weight&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">select</span>(biounique) %&gt;%<span class="st"> </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() -&gt;<span class="st"> </span>max_weight</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;biometrics&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># show the unit code:</span>
+max_weight</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;max_weight&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Look up all max weight values for illustration: (not filtering on cod_ids since there are no hits)</span>
+bioparams %&gt;%<span class="st"> </span><span class="kw">filter</span>(bioid %in%<span class="st"> </span>max_weight)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;bioparams&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">e03_to_MT &lt;-<span class="st"> </span><span class="fl">7.5</span> *<span class="st"> </span><span class="fl">1e-3</span>
+
+tmpA &lt;-<span class="st"> </span>
+<span class="st">  </span>values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>who$assessid) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_mt =</span> total *<span class="st"> </span>e03_to_MT)
+
+everyone_else &lt;-<span class="st"> </span>cod_ids[!(cod_ids %in%<span class="st"> </span>who$assessid)]
+tmpB &lt;-
+<span class="st">  </span>values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>everyone_else) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_mt =</span> total)
+
+std_values &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(tmpA,tmpB)</code></pre>
+<p>(Not sure if there is a more consise way to change the values in a given column for a subset of the rows). Well, perhaps it would be simpler to treat non-standard units as missing data, but at least this illustrates a mechanism for handling the conversion.</p>
+<pre class="sourceCode r"><code class="sourceCode r">biomass &lt;-
+<span class="st">  </span>std_values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(tsyear) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">biomass =</span> <span class="kw">sum</span>(total_mt, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>## WARNING -- should check units!
+<span class="st">  </span><span class="kw">filter</span>(biomass &gt;<span class="st"> </span><span class="dv">0</span>) 
+
+biomass_dropped &lt;-
+<span class="st">  </span>values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>everyone_else) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(tsyear) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">biomass =</span> <span class="kw">sum</span>(total, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>## WARNING -- should check units!
+<span class="st">  </span><span class="kw">filter</span>(biomass &gt;<span class="st"> </span><span class="dv">0</span>) 
+
+biomass_wrong &lt;-
+<span class="st">  </span>values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(tsyear) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">biomass =</span> <span class="kw">sum</span>(total, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>## WARNING -- should check units!
+<span class="st">  </span><span class="kw">filter</span>(biomass &gt;<span class="st"> </span><span class="dv">0</span>) 
+
+<span class="kw">ggplot</span>(biomass, <span class="kw">aes</span>(tsyear, biomass)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>biomass_wrong, <span class="dt">col=</span><span class="st">&quot;blue&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>biomass_dropped, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Biomass (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># they may look identical but they aren&#39;t:</span>
+<span class="kw">identical</span>(biomass_dropped$biomass, biomass$biomass)</code></pre>
+<pre><code>[1] FALSE</code></pre>
+<p>In this case, the contribution is negligible (red vs black). Even failing to convert units (blue) makes a hardly visible difference, though in general the difference could have been quite large.</p>
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids, total &gt;<span class="st"> </span><span class="dv">0</span>) %&gt;%
+<span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total, <span class="dt">color=</span>assessid)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Biomass (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<hr />
+<h2 id="stock-recruitment-time-series">Stock-recruitment &amp; time-series</h2>
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids[[<span class="dv">1</span>]]) %&gt;%<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span><span class="kw">geom_point</span>()</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid==<span class="st">&quot;AFWG-CODNEAR-1943-2006-MINTO&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span><span class="kw">geom_point</span>()</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +
+<span class="st">    </span><span class="kw">geom_point</span>() +
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">herring &lt;-
+<span class="st">  </span>assessment %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(commonname==<span class="st">&quot;Herring&quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(assessid) %&gt;%
+<span class="st">  </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() <span class="co"># we need a char string, not a data.frame</span>
+
+values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>herring) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>herring) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">anchovy &lt;-
+<span class="st">  </span>assessment %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(commonname==<span class="st">&quot;Anchovy&quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(assessid) %&gt;%
+<span class="st">  </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() <span class="co"># we need a char string, not a data.frame</span>
+
+values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>anchovy) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>anchovy) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">bluefin &lt;-
+<span class="st">  </span>assessment %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(commonname==<span class="st">&quot;Atlantic bluefin tuna&quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(assessid) %&gt;%
+<span class="st">  </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() <span class="co"># we need a char string, not a data.frame</span>
+
+values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>bluefin) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>bluefin) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
+<pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/06/18/RAM-explore.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
+          <header><h4><a href="/2015/06/16/daniel-gp-example.html">Daniel Gp Example</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 16 Jun 2015</p>
+
+<article>
+<div class="excerpt">
+<h3 id="setup">Setup</h3>
+<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;nimble-dev/nimble&#39;</span>, <span class="dt">ref =</span> <span class="st">&#39;devel&#39;</span>, <span class="dt">subdir =</span> <span class="st">&#39;packages/nimble&#39;</span>)
+<span class="kw">library</span>(nimble)
+<span class="kw">set.seed</span>(<span class="dv">0</span>)</code></pre>
+<p>Randomly generate some sinusoidal data</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">100</span>
+y &lt;-<span class="st"> </span><span class="kw">sin</span>(x/<span class="dv">5</span>) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="fl">0.1</span>)
+ind &lt;-<span class="st"> </span><span class="kw">sort</span>(<span class="kw">sample</span>(<span class="dv">1</span>:<span class="dv">100</span>, <span class="dv">40</span>))</code></pre>
+<p>The next three lines are the only inputs required.</p>
+<pre class="sourceCode r"><code class="sourceCode r">xObs &lt;-<span class="st"> </span>x[ind]                ## input
+yObs &lt;-<span class="st"> </span>y[ind]                ## input
+xPred &lt;-<span class="st"> </span><span class="kw">c</span>(x, <span class="dv">101</span>:<span class="dv">120</span>)        ## input</code></pre>
+<p>Some initial processing</p>
+<pre class="sourceCode r"><code class="sourceCode r">nObs &lt;-<span class="st"> </span><span class="kw">length</span>(xObs)
+nPred &lt;-<span class="st"> </span><span class="kw">length</span>(xPred)
+f &lt;-<span class="st"> </span>function(xi, xj) (xi-xj)^<span class="dv">2</span>
+diffOO &lt;-<span class="st"> </span><span class="kw">outer</span>(xObs,  xObs,  f)
+diffPP &lt;-<span class="st"> </span><span class="kw">outer</span>(xPred, xPred, f)
+diffPO &lt;-<span class="st"> </span><span class="kw">outer</span>(xPred, xObs,  f)</code></pre>
+<h3 id="nimble-function-for-gp-prediction">NIMBLE function for GP prediction</h3>
+<p>Here’s the main function for doing the prediction from the GP model.</p>
+<p>It takes the MCMC samples as a <em>runtime</em> argument, so this can be iterated with running the MCMC for different numbers of iterations, initial values, or even different datasets!</p>
+<pre class="sourceCode r"><code class="sourceCode r">gpPred &lt;-<span class="st"> </span><span class="kw">nimbleFunction</span>(
+    <span class="dt">setup =</span> function(model, params) {
+        calcNodes &lt;-<span class="st"> </span>model$<span class="kw">getDependencies</span>(params, <span class="dt">determOnly =</span> <span class="ot">TRUE</span>)
+        nPred &lt;-<span class="st"> </span><span class="kw">dim</span>(model$SigPP)[<span class="dv">1</span>]
+        E &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dv">0</span>, <span class="kw">c</span>(nPred, <span class="dv">1</span>))
+        C &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dv">0</span>, <span class="kw">c</span>(nPred, nPred))
+    },
+    <span class="dt">run =</span> function(<span class="dt">samples =</span> <span class="kw">double</span>(<span class="dv">2</span>)) {
+        E &lt;&lt;-<span class="st"> </span>E *<span class="st"> </span><span class="dv">0</span>
+        C &lt;&lt;-<span class="st"> </span>C *<span class="st"> </span><span class="dv">0</span>
+        nSamples &lt;-<span class="st"> </span><span class="kw">dim</span>(samples)[<span class="dv">1</span>]
+        for(i in <span class="dv">1</span>:nSamples) {
+            <span class="kw">values</span>(model, params) &lt;&lt;-<span class="st"> </span>samples[i,]
+            <span class="kw">calculate</span>(model, calcNodes)
+            intermediate &lt;-<span class="st"> </span>model$SigPO %*%<span class="st"> </span><span class="kw">inverse</span>(model$SigOO)
+            Etemp &lt;-<span class="st"> </span>intermediate %*%<span class="st"> </span><span class="kw">asCol</span>(model$yObs)
+            Ctemp &lt;-<span class="st"> </span>model$SigPP -<span class="st"> </span>intermediate %*%<span class="st"> </span><span class="kw">t</span>(model$SigPO)
+            E &lt;&lt;-<span class="st"> </span>E +<span class="st"> </span>Etemp
+            C &lt;&lt;-<span class="st"> </span>C +<span class="st"> </span>Ctemp
+        }
+        E &lt;&lt;-<span class="st"> </span>E /<span class="st"> </span>nSamples
+        C &lt;&lt;-<span class="st"> </span>C /<span class="st"> </span>nSamples
+    },
+    <span class="dt">methods =</span> <span class="kw">list</span>(
+        <span class="dt">getE =</span> function() { <span class="kw">returnType</span>(<span class="kw">double</span>(<span class="dv">1</span>)); <span class="kw">return</span>(E[,<span class="dv">1</span>]) },
+        <span class="dt">getC =</span> function() { <span class="kw">returnType</span>(<span class="kw">double</span>(<span class="dv">2</span>)); <span class="kw">return</span>(C[, ]) }
+    )
+)</code></pre>
+<h3 id="gp-model">GP model</h3>
+<p>GP model defined here. Basically the same as your original, but I renamed some paramters more to my liking =)</p>
+<p>This is <em>not</em> as elegant as I had hoped. It still requires repeating (essentially) the same code three times. I discovered some limitations of NIMBLE while trying other approaches.</p>
+<p>Bottom line:<br />- This achieves relatively nice simplicity.<br />- There’s an efficiency hit to the MCMC sampling, but it doesn’t seem too bad.<br />- This works.</p>
+<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+   rho ~<span class="st"> </span><span class="kw">dgamma</span>(<span class="dv">10</span>, <span class="dv">1</span>)
+   sigGP ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
+   sigOE ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
+   SigOO[<span class="dv">1</span>:nObs, <span class="dv">1</span>:nObs ] &lt;-<span class="st"> </span>sigGP^<span class="dv">2</span>*<span class="kw">exp</span>(-<span class="dv">1</span>/<span class="dv">2</span>*diffOO[<span class="dv">1</span>:nObs, <span class="dv">1</span>:nObs ]/rho^<span class="dv">2</span>) +<span class="st"> </span>sigOE^<span class="dv">2</span>*IOO[<span class="dv">1</span>:nObs, <span class="dv">1</span>:nObs ]
+   SigPP[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nPred] &lt;-<span class="st"> </span>sigGP^<span class="dv">2</span>*<span class="kw">exp</span>(-<span class="dv">1</span>/<span class="dv">2</span>*diffPP[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nPred]/rho^<span class="dv">2</span>) +<span class="st"> </span>sigOE^<span class="dv">2</span>*IPP[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nPred]
+   SigPO[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nObs ] &lt;-<span class="st"> </span>sigGP^<span class="dv">2</span>*<span class="kw">exp</span>(-<span class="dv">1</span>/<span class="dv">2</span>*diffPO[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nObs ]/rho^<span class="dv">2</span>)
+   yObs[<span class="dv">1</span>:nObs] ~<span class="st"> </span><span class="kw">dmnorm</span>(mu[<span class="dv">1</span>:nObs], <span class="dt">cov =</span> SigOO[<span class="dv">1</span>:nObs,<span class="dv">1</span>:nObs])
+})
+
+constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">nObs=</span>nObs, <span class="dt">nPred=</span>nPred, <span class="dt">diffOO=</span>diffOO, <span class="dt">diffPP=</span>diffPP, <span class="dt">diffPO=</span>diffPO,
+                  <span class="dt">IOO=</span><span class="kw">diag</span>(nObs), <span class="dt">IPP=</span><span class="kw">diag</span>(nPred), <span class="dt">mu=</span><span class="kw">rep</span>(<span class="dv">0</span>,nObs))
+
+data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">yObs =</span> yObs)
+
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rho =</span> <span class="dv">1</span>, <span class="dt">sigGP =</span> <span class="dv">1</span>, <span class="dt">sigOE =</span> <span class="dv">1</span>)
+
+Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(code, constants, data, inits)</code></pre>
+<h3 id="create-compile-and-run">Create, compile, and run</h3>
+<pre class="sourceCode r"><code class="sourceCode r">## MCMC specification with no samplers
+spec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">nodes =</span> <span class="ot">NULL</span>)
+
+## this will be used for some checking, and setting up block sampler:
+params &lt;-<span class="st"> </span>Rmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>)
+
+## NOTE: the next line shouldn&#39;t work for you, since the MCMC API has changed.
+## you can rebuild from source off nimble branch &#39;devel&#39;.
+## otherwise, using last public release of NIMBLE (0.3-1), use this line instead:
+## spec$addSampler(&#39;RW_block&#39;, control = list(targetNodes = params))
+spec$<span class="kw">addSampler</span>(params, <span class="st">&#39;RW_block&#39;</span>)</code></pre>
+<pre><code>[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity</code></pre>
+<p>We can debate about univariate vs. block sampling at some point.</p>
+<pre class="sourceCode r"><code class="sourceCode r">## MCMC function
+Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(spec)
+
+## GP prediction function
+## also uses the &#39;params&#39; variable for specialization
+Rpred &lt;-<span class="st"> </span><span class="kw">gpPred</span>(Rmodel, params)
+
+## compile everything
+Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
+Cmcmc  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Rmodel)
+Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred, <span class="dt">project =</span> Rmodel)
+
+## MCMC sampling
+## 100,000 iterations
+<span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
+<pre><code>   user  system elapsed 
+ 68.737   0.033  68.796 </code></pre>
+<p>About 25 seconds on my computer</p>
+<p>That can be improved if necessary</p>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
+
+## quick check
+if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(samples))) <span class="kw">stop</span>(<span class="st">&#39;problem&#39;</span>)
+
+## predict from GP model using posterior MCMC samples
+<span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
+<pre><code>   user  system elapsed 
+ 91.252   0.000  91.296 </code></pre>
+<p>About 40 seconds on my computer</p>
+<p>Again, could streamline the gpPred() function if necessary</p>
+<pre class="sourceCode r"><code class="sourceCode r">## extract predictions: E and C
+E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()
+C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre>
+<h3 id="output">Output</h3>
+<pre class="sourceCode r"><code class="sourceCode r">E</code></pre>
+<pre><code>  [1]  1.048953470  1.063690923  1.056571565  1.025025296  0.967727602
+  [6]  0.885088092  0.779046134  0.652750089  0.510403944  0.357145489
+ [11]  0.198827230  0.041501513 -0.109026506 -0.247533773 -0.369716151
+ [16] -0.472313950 -0.553105378 -0.610874554 -0.645461105 -0.657719603
+ [21] -0.649076810 -0.621198765 -0.575868588 -0.514737033 -0.439105417
+ [26] -0.349971602 -0.248371381 -0.135451833 -0.012707283  0.117353661
+ [31]  0.251084159  0.383920114  0.510567530  0.625303732  0.722419735
+ [36]  0.796925448  0.845259818  0.865448082  0.857113606  0.821872152
+ [41]  0.763535592  0.687360014  0.599297100  0.505480001  0.411259520
+ [46]  0.320288380  0.234175561  0.152695050  0.074286902 -0.003167262
+ [51] -0.081466127 -0.161638385 -0.243673849 -0.325876291 -0.404833854
+ [56] -0.476477835 -0.536583186 -0.580993801 -0.606153844 -0.609554981
+ [61] -0.590206477 -0.548974521 -0.488316837 -0.411928777 -0.324540013
+ [66] -0.231641132 -0.139114920 -0.052860394  0.021550784  0.079331411
+ [71]  0.117042000  0.132978712  0.127078948  0.100689033  0.056355647
+ [76] -0.002485485 -0.071873133 -0.147591543 -0.225248038 -0.300383786
+ [81] -0.368679284 -0.425886710 -0.467685571 -0.489815787 -0.488669528
+ [86] -0.462038368 -0.409587331 -0.332776473 -0.234523765 -0.119090537
+ [91]  0.008395849  0.142692615  0.278921123  0.412628846  0.539726698
+ [96]  0.656454950  0.759426449  0.845730518  0.912939607  0.959256645
+[101]  0.984015990  0.987978885  0.972988593  0.941606557  0.896909969
+[106]  0.842215301  0.780777080  0.715559458  0.649099436  0.583448236
+[111]  0.520171088  0.460385520  0.404821033  0.353887176  0.307741235
+[116]  0.266350221  0.229544512  0.197062243  0.168584714  0.143763668</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">diag</span>(C)</code></pre>
+<pre><code>  [1] 1.2679882 1.2064883 1.1541432 1.1116728 1.0784248 1.0524884
+  [7] 1.0317576 1.0147224 1.0007923 0.9900904 0.9827438 0.9787769
+ [13] 0.9777564 0.9783522 0.9785871 0.9766328 0.9714366 0.9630053
+ [19] 0.9522229 0.9402332 0.9284669 0.9183767 0.9109672 0.9068412
+ [25] 0.9062843 0.9093517 0.9158928 0.9254797 0.9372421 0.9497874
+ [31] 0.9614992 0.9705821 0.9757483 0.9766685 0.9740220 0.9691475
+ [37] 0.9633160 0.9577090 0.9532083 0.9500621 0.9480639 0.9471172
+ [43] 0.9473233 0.9485876 0.9506984 0.9530274 0.9546481 0.9549896
+ [49] 0.9542985 0.9535398 0.9539394 0.9568409 0.9630692 0.9727686
+ [55] 0.9850166 0.9979048 1.0093360 1.0177498 1.0224490 1.0235779
+ [61] 1.0216894 1.0172186 1.0108482 1.0037543 0.9975825 0.9940451
+ [67] 0.9942810 0.9988192 1.0071728 1.0181157 1.0297591 1.0394083
+ [73] 1.0443944 1.0429170 1.0346484 1.0209019 1.0041130 0.9869394
+ [79] 0.9713413 0.9580174 0.9466908 0.9370265 0.9291060 0.9233148
+ [85] 0.9204774 0.9213396 0.9262437 0.9349512 0.9465634 0.9595347
+ [91] 0.9721773 0.9829212 0.9902883 0.9935894 0.9933386 0.9913798
+ [97] 0.9906718 0.9946403 1.0070336 1.0312845 1.0694759 1.1218007
+[103] 1.1866870 1.2612294 1.3418003 1.4247225 1.5067538 1.5853383
+[109] 1.6586720 1.7256456 1.7857277 1.8388290 1.8851737 1.9251909
+[115] 1.9594282 1.9884878 2.0129814 2.0334994 2.0505931 2.0647637</code></pre>
+<p>Black dots are the original ‘xObs’ and ‘yObs’</p>
+<p>Red dots are the predictions made at each ‘xPred’</p>
+<p>Red lines are plus/minus one standard error</p>
+<figure>
+<img src="/2015/assets/figures/posts/2015-06-16-daniel-gp-example/unnamed-chunk-13-1.png" />
+</figure>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/06/16/daniel-gp-example.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/05/08/ram-legacy-database-explore.html">Ram Legacy Database Explore</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 08 May 2015</p>
@@ -432,6 +860,10 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/04/28/rfishbase-notes.html">Rfishbase Notes</a></h4></header>
 <p><span></span></p>
@@ -502,10 +934,6 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/04/15/misc-notes-on-cloud-providers.html">Misc Notes On Cloud Providers</a></h4></header>
 <p><span></span></p>
@@ -553,6 +981,10 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/04/09/gpdd-and-kalman-exploration-continued.html">Gpdd And Kalman Exploration Continued</a></h4></header>
@@ -1187,10 +1619,6 @@ difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, funct
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/03/26/ropensci-unconf-teaching-session.html">Ropensci Unconf Teaching Session</a></h4></header>
 <p><span></span></p>
@@ -1279,229 +1707,6 @@ difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, funct
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/03/26/ropensci-unconf-teaching-session.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/03/24/docker-machine-notes.html">Docker Machine Notes</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 24 Mar 2015</p>
-
-<article>
-<div class="excerpt">
-<p>Docker recently released <code>docker-machine</code> to make managing multiple remote machines locally easier. Docker distributes binaries of <code>docker-machine</code> for most major architectures ready-to-go, potentially making it easier to get started on Windows and Mac as well.</p>
-<p>Set credentials in environmental variables so we don’t have to pass them on the command line each time:</p>
-<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">DIGITALOCEAN_ACCESS_TOKEN</span> = XXX</code></pre>
-<p>and create the docker-machine:</p>
-<pre><code>docker-machine create --driver digitalocean --digitalocean-size &quot;1gb&quot; server-name</code></pre>
-<p>where <code>server-name</code> is any name you want to give your server and <code>DO_PAT</code> is your access token (say, saved as an environmental variable). Here we launch a 1GB instance, the default is 512MB on digitalocean. Many other providers work just as well (including virtualbox). You need to set your terminal to use the active <code>docker-machine</code> for all <code>docker</code> commands, instead of the local <code>docker</code> installation:</p>
-<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">eval</span> <span class="st">&quot;</span><span class="ot">$(</span><span class="kw">docker-machine</span> env server-name<span class="ot">)</span><span class="st">&quot;</span></code></pre>
-<p>sets three environmental variables that point your <code>docker</code> commands to the new remote machine, <code>server-name</code>. Wow. We can now launch any service of interest:</p>
-<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker</span> run -d -p 8787:8787 -e PASSWORD=something rocker/hadleyverse</code></pre>
-<p>and it will run on the server. Get the IP address of the active machine with <code>docker-machine ip</code>, e.g. open the server in the browser (from a Ubuntu-based client)</p>
-<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">xdg-open</span> http://<span class="kw">`docker-machine</span> ip<span class="kw">`</span>:8787</code></pre>
-<p>When we’re finished with the instance, we can destroy the machine so we will no longer be billed, using the same syntax as we would for a container:</p>
-<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker-machine</span> rm -f server-name</code></pre>
-<p>If we have a locally installed docker instance, we may also want to unset the environmental variables set by machine:</p>
-<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">unset</span> <span class="ot">DOCKER_TLS_VERIFY</span>
-<span class="kw">unset</span> <span class="ot">DOCKER_CERT_PATH</span>
-<span class="kw">unset</span> <span class="ot">DOCKER_HOST</span></code></pre>
-<p>You can see a list of active machines with <code>docker-machine ls</code> and switch between machines with <code>docker-machine env</code> as shown above.</p>
-<p>Spawning a new machine adds a bit more overhead than launching a container on an existing local or remote server instance, but not much; and is easily scripted. Of course the latency is higher too: the start-up time for the DO instance takes two minutes, and pulling a sizable image onto DO machine takes another two minutes or so. <code>docker-machine</code> actually prints the start-up time in seconds as it brings up the machine, in case you want to compare between services.</p>
-<h2 id="docker-compose">Docker Compose</h2>
-<p>Docker compose is just fig, which is just a yaml config file / wrapper for (some of) the <code>docker run</code> command-line options. As with <code>docker-machine</code>, this simplicity is definitely a strength. Rather intuitively, <code>docker-machine</code> respects <code>docker-compose</code>, in that after setting the environmental variables as described above, <code>docker-compose up</code> runs on the remote machine, just like <code>docker run</code> does.</p>
-<hr />
-<h2 id="docker-swarm">Docker swarm</h2>
-<p>Docker swarm is rather analogous to CoreOS; it’s essential feature being a discovery service that allows the cluster to form. Swarm is mostly easily set up using docker-machine, though in my googling most tutorials fail to mention this. The <a href="https://docs.docker.com/machine/#using-docker-machine-with-docker-swarm">official docker-machine docs</a> are probably the best reference on this.</p>
-<p>Docker swarm provides rather limited functionality so far. A nice <a href="http://blog.docker.com/2015/02/scaling-docker-with-swarm/">docker blog post on swarm</a> In particular, it doesn’t yet support two key features found in CoreOS scheduling: fault-tolerant scheduling; which can move a container to another host if a machine goes down; nor does it yet support Master election; so the swarm breaks if the master goes down.</p>
-<p>It currently provides only relatively obvious scheduling – a bin-packing algorithm if you put constraints on resources a container can use, affinities to make sure <code>--link</code>, <code>--volumes-from</code> and other such containers end up on the same instance. Instances can be annotated with labels that can be used as constraints, such as <code>storage=ssd</code>, though it’s <a href="https://github.com/docker/machine/issues/1002">not clear</a> how to add these from docker-machine. As long as swarm does not support fault-tolerant scheduling and master election though, these features are not as essential. Dynamically moving a container when a machine has failed means that no human is around to consider what resources the swarm has and where to schedule the container. But for merely adding a new container to an existing swarm, it’s not particularly hard for a human to look at the existing resources and just pick manually where to stick the container without the help of swarm’s algorithms.</p>
-<p>Swarm doesn’t really understand docker-compose yet either, in that compose is essentially written as a single-host tool.</p>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/03/24/docker-machine-notes.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/03/09/simpler-nimble-dai-model.html">Simpler Nimble Dai Model</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 09 Mar 2015</p>
-
-<article>
-<div class="excerpt">
-<h2 id="a-simpler-nimble-model">A simpler Nimble model</h2>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;regimeshifts&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)</code></pre>
-<h2 id="lsn-version">LSN version</h2>
-<p>A further simplified version:</p>
-<ul>
-<li>fix <code>sigma_x</code> to unity and <code>theta</code> to zero, reflecting the detrending and scaling.</li>
-<li>constrain <code>sigma_y</code> with a tight prior</li>
-</ul>
-<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-<span class="co"># sigma_x ~ dunif(1e-10, 1e2)</span>
-  
-  ## highly constrained
-  sigma_y ~<span class="st"> </span><span class="kw">dgamma</span>(<span class="dv">10</span>, <span class="dv">1000</span>)
-
-  ## Uninformative
-       m ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e2</span>, <span class="fl">1e2</span>)
-    x[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>)
-    y[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">dunif</span>(-<span class="fl">1e3</span>, <span class="fl">1e3</span>) 
-
-  for(i in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
-    mu_x[i] &lt;-<span class="st"> </span>x[i] -<span class="st"> </span>y[i] *<span class="st"> </span>x[i]
-    x[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(mu_x[i], <span class="dt">sd =</span> <span class="dv">1</span>) 
-    y[i<span class="dv">+1</span>] ~<span class="st"> </span><span class="kw">dnorm</span>(y[i] +<span class="st"> </span>m *<span class="st"> </span>t[i] /<span class="st"> </span>t[N], <span class="dt">sd =</span> sigma_y) 
-    
-  }
-})</code></pre>
-<p>Generate the test data:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1000</span>)
-N &lt;-<span class="st"> </span><span class="dv">50</span>
-DF &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">2000</span>, <span class="dt">length=</span>N) <span class="co"># schedule for env degredation (increased dilution)</span>
-x &lt;-<span class="st"> </span><span class="kw">numeric</span>(N)   
-x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">1.76e5</span> <span class="co"># initial density</span>
-   
-for(day in <span class="dv">1</span>:(N<span class="dv">-1</span>)){
- x[day<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">dai</span>(x[day], <span class="dt">DF =</span> DF[day])
-}
-
-raw &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">t =</span> <span class="dv">1</span>:N, <span class="dt">x =</span> x)</code></pre>
-<p>Detrend:</p>
-<pre class="sourceCode r"><code class="sourceCode r">raw$t &lt;-<span class="st"> </span><span class="dv">1</span>:N
-detrend &lt;-<span class="st"> </span><span class="kw">loess</span>(x ~<span class="st"> </span>t, raw)
-sigma &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">var</span>(detrend$residuals))
-data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> detrend$residuals/sigma)
-<span class="kw">qplot</span>(raw$t, data$x, <span class="dt">geom=</span><span class="st">&#39;line&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/detrend-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_y =</span> .<span class="dv">01</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))
-thin &lt;-<span class="st"> </span><span class="fl">1e2</span>
-n_iter &lt;-<span class="st"> </span><span class="fl">1e6</span>
-
-Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)
-Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
-mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>, <span class="dt">thin=</span>thin)
-  
-Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
-Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)
-Cmcmc$<span class="kw">run</span>(n_iter)</code></pre>
-<pre><code>NULL</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:(<span class="kw">length</span>(inits) -<span class="st"> </span><span class="dv">1</span>)]
-df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
-<h4 id="summary-statistics">Summary statistics</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>Source: local data frame [2 x 3]
-
-      key        mean        std
-1       m -0.02118436 0.02327253
-2 sigma_y  0.01001409 0.00316794</code></pre>
-<h4 id="traces">Traces</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df, <span class="fl">2e2</span>)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-6-1.png" />
-</figure>
-<h4 id="posteriors">Posteriors</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-7-1.png" />
-</figure>
-<h4 id="block-sampler">Block sampler</h4>
-<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">t =</span> raw$t)
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">m =</span> <span class="dv">0</span>, <span class="dt">sigma_y =</span> .<span class="dv">01</span>, <span class="dt">y =</span> <span class="kw">rep</span>(<span class="dv">1</span>,N))
-Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)
-Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
-mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>,<span class="dt">thin=</span>thin)
-mcmcspec$<span class="kw">addSampler</span>(<span class="st">&quot;RW_block&quot;</span>, <span class="kw">list</span>(<span class="dt">targetNodes=</span><span class="kw">c</span>(<span class="st">&#39;m&#39;</span>,<span class="st">&#39;sigma_y&#39;</span>), <span class="dt">adaptInterval=</span><span class="dv">100</span>))</code></pre>
-<pre><code>[53] RW_block sampler;   targetNodes: m, sigma_y,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 100,  scale: 1,  propCov: identity</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
-Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)
-Cmcmc$<span class="kw">run</span>(n_iter)</code></pre>
-<pre><code>NULL</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:(<span class="kw">length</span>(inits)-<span class="dv">1</span>)]
-df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)
-
-df &lt;-<span class="st"> </span><span class="kw">my_mcmc</span>(<span class="dt">code=</span>lsn, constants, data, inits)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;my_mcmc&quot;</code></pre>
-<h4 id="summary-statistics-1">Summary statistics</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(<span class="kw">group_by</span>(df, key), <span class="dt">mean=</span><span class="kw">mean</span>(value), <span class="dt">std=</span><span class="kw">sqrt</span>(<span class="kw">var</span>(value)))</code></pre>
-<pre><code>Source: local data frame [2 x 3]
-
-      key         mean         std
-1       m -0.025367634 0.027055911
-2 sigma_y  0.009965489 0.003102902</code></pre>
-<h4 id="traces-1">Traces</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">sample_n</span>(df, <span class="fl">1e3</span>)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="kw">seq_along</span>(value), value)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-10-1.png" />
-</figure>
-<h4 id="posteriors-1">Posteriors</h4>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-03-09-simpler-nimble-dai-model/unnamed-chunk-11-1.png" />
-</figure>
-<hr />
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.2.0 (2015-04-16)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Debian GNU/Linux 8 (jessie)
-
-locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
- [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] methods   stats     graphics  grDevices utils     datasets 
-[7] base     
-
-other attached packages:
-[1] dplyr_0.4.1             ggplot2_1.0.1          
-[3] tidyr_0.2.0             regimeshifts_0.0.0.9000
-[5] nimble_0.3-1            yaml_2.1.13            
-[7] knitr_1.10             
-
-loaded via a namespace (and not attached):
- [1] igraph_0.7.1     Rcpp_0.11.5      magrittr_1.5    
- [4] MASS_7.3-40      munsell_0.4.2    colorspace_1.2-6
- [7] stringr_0.6.2    plyr_1.8.2       tools_3.2.0     
-[10] parallel_3.2.0   grid_3.2.0       gtable_0.1.2    
-[13] DBI_0.3.1        lazyeval_0.1.10  digest_0.6.8    
-[16] assertthat_0.1   reshape2_1.4.1   formatR_1.2     
-[19] codetools_0.2-11 evaluate_0.7     labeling_0.3    
-[22] scales_0.2.4     proto_0.3-10    </code></pre>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/03/09/simpler-nimble-dai-model.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 

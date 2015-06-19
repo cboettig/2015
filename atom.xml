@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-06-17T21:06:40+00:00</updated>
+  <updated>2015-06-19T17:48:43+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -11,6 +11,414 @@
   </author>
 
    
+ <entry>
+   <title>Ram Explore</title>
+   <link href="http://www.carlboettiger.info/2015/06/18/RAM-explore.html"/>
+   <updated>2015-06-18T00:00:00+00:00</updated>
+   <id>/06/18/RAM-explore</id>
+   <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;suppressPackageStartupMessages&lt;/span&gt;({
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;RPostgreSQL&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;devtools&amp;quot;&lt;/span&gt;)
+})
+
+## Perform this in data_raw to keep package dependencies minimal
+mydb &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;src_postgres&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;dbname =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;srdb&amp;quot;&lt;/span&gt;, 
+                     &lt;span class=&quot;dt&quot;&gt;host=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;nautilus-vm.mathstat.dal.ca&amp;quot;&lt;/span&gt;, 
+                     &lt;span class=&quot;dt&quot;&gt;user =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;srdbuser&amp;quot;&lt;/span&gt;, 
+                     &lt;span class=&quot;dt&quot;&gt;password =&lt;/span&gt;  &lt;span class=&quot;st&quot;&gt;&amp;quot;srd6us3r!&amp;quot;&lt;/span&gt;, 
+                     &lt;span class=&quot;dt&quot;&gt;port =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;5432&lt;/span&gt;)
+
+
+values &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.timeseries_values_view&amp;quot;&lt;/span&gt;)))
+assessment &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.assessment&amp;quot;&lt;/span&gt;)))
+stock &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.stock&amp;quot;&lt;/span&gt;)))
+units &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.timeseries_units_view&amp;quot;&lt;/span&gt;)))
+tsmetrics &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;collect&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;tbl&lt;/span&gt;(mydb, &lt;span class=&quot;kw&quot;&gt;sql&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;SELECT * FROM srdb.tsmetrics&amp;quot;&lt;/span&gt;)))&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;north-atlantic-cod-data&quot;&gt;North Atlantic Cod data&lt;/h2&gt;
+&lt;p&gt;Select North Atlantic Cod, &lt;em&gt;Gadus morhua&lt;/em&gt;:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;cod_ids &amp;lt;-
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;assessment %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(stock) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(scientificname==&lt;span class=&quot;st&quot;&gt;&amp;quot;Gadus morhua&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unlist&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unname&lt;/span&gt;() &lt;span class=&quot;co&quot;&gt;# we need a char string, not a data.frame&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;(Note we could have selected on the &lt;code&gt;tsn==164712&lt;/code&gt; to be less ambiguous but also less semantic, or on &lt;code&gt;commonname==&amp;quot;Atlantic cod&amp;quot;&lt;/code&gt; to be more reader friendly but even more ambiguous. Fortunately the common and scientific names are well aligned with the &lt;code&gt;tsn&lt;/code&gt; ids in this case and we get the same set of 22 stock assessments.)&lt;/p&gt;
+&lt;p&gt;Before we can combine across these, we must verify that each assessment measures the quantities of interest using the same units, or otherwise correct those that do not:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;units %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, catch_landings_unit) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(catch_landings_unit) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(catch_landings_unit))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [1 x 2]
+
+  catch_landings_unit length(catch_landings_unit)
+1                  MT                          21&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;units %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, total_unit) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(total_unit) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(total_unit))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Source: local data frame [3 x 2]
+
+  total_unit length(total_unit)
+1        E03                  1
+2         MT                 18
+3         NA                  2&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;All catches are in metric tons, so no concern there.&lt;/p&gt;
+&lt;p&gt;Landing data we can plot immediately:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(tsyear) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;catch =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(catch_landings, &lt;span class=&quot;dt&quot;&gt;na.rm=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;## all units are metric tons
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(tsyear, catch)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ylab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Catch/Landings (MT)&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Year&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that missing data is removed, such that any assessment without catch data is treated as zero catch. This could be the case (maybe not all assessments correspond to unique catch zones.) We also assume catch reported in one assessment is not also reported in a different assement (e.g. no double-counting). Lastly, we must bear in mind that this is catch/landings data, which may include bycatch, underreporting, etc.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;handling-unit-conversions&quot;&gt;Handling unit conversions&lt;/h2&gt;
+&lt;p&gt;The units for &lt;code&gt;total&lt;/code&gt; are more problematic. The &lt;code&gt;NA&lt;/code&gt; simply indicates stocks that do not have the an estimate for &lt;code&gt;total&lt;/code&gt;, but we also see one assessment has totals in &lt;code&gt;E03&lt;/code&gt; (thousands) instead of metric tons.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;&lt;em&gt;Sidebar&lt;/em&gt; how do we know for sure that &lt;code&gt;E03&lt;/code&gt; is abundance counts in thousands of fish?&lt;/p&gt;
+&lt;p&gt;The database does not provide metadata for these unit definitions directly. the &lt;code&gt;values&lt;/code&gt; data and its associated &lt;code&gt;units&lt;/code&gt; metadata are actually derived tables from the raw &lt;code&gt;timeseries&lt;/code&gt; table and the associated &lt;code&gt;tsmetrics&lt;/code&gt; unit metadata, so we would have to dive in there to confirm this interpretation of &lt;code&gt;E03&lt;/code&gt; in this case.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# tidy up the tsmetrics table:&lt;/span&gt;
+unit_defs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tsmetrics %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rename&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;tsid =&lt;/span&gt; tsunique) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(tsid, tslong, tsunitslong) 
+
+&lt;span class=&quot;co&quot;&gt;# Find the assessid of the cod stock assessment that measures total in units of E03&lt;/span&gt;
+who &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;units %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, total_unit) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(total_unit==&lt;span class=&quot;st&quot;&gt;&amp;quot;E03&amp;quot;&lt;/span&gt;)
+
+&lt;span class=&quot;co&quot;&gt;# Find that assessid in the timeseries table, where units are written in different notation&lt;/span&gt;
+ts_who &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;timeseries %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;who$assessid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid, tsid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;distinct&lt;/span&gt;(tsid)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;timeseries&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Join the tables to see the definitions&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(ts_who, unit_defs)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in left_join(ts_who, unit_defs): object &amp;#39;ts_who&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and we can confirm &lt;code&gt;E03&lt;/code&gt; is in this case &lt;code&gt;TN-E03&lt;/code&gt; (total number, in thousands).&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;Converting this to metric tons will require an average weight for cod. FishBase gives us a maximum weight (in grams):&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;rfishbase::&lt;span class=&quot;kw&quot;&gt;species&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Gadus morhua&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;fields=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Weight&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in loadNamespace(name): there is no package called &amp;#39;rfishbase&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Wikipedia says the average is 5-12 kilograms, so let’s take 8.5 Kg for sake of argument. Clearly a more programmatic and more accurate solution is needed here.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Sidenote&lt;/em&gt; the database has some very limited data on biometrics by assessment, including some assessments that record a maximum (but not an average) weight (sometimes pulled from FishBase anyway). Even pooling across all Atlantic Cod assessments we can’t find even a maximum weight.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Find the unit code for max weight&lt;/span&gt;
+biometrics %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(biolong ==&lt;span class=&quot;st&quot;&gt; &amp;quot;Maximum weight&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(biounique) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unlist&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unname&lt;/span&gt;() -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;max_weight&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;biometrics&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# show the unit code:&lt;/span&gt;
+max_weight&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;max_weight&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Look up all max weight values for illustration: (not filtering on cod_ids since there are no hits)&lt;/span&gt;
+bioparams %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(bioid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;max_weight)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;bioparams&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;e03_to_MT &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;7.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e-3&lt;/span&gt;
+
+tmpA &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;who$assessid) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;total_mt =&lt;/span&gt; total *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;e03_to_MT)
+
+everyone_else &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids[!(cod_ids %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;who$assessid)]
+tmpB &amp;lt;-
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;everyone_else) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;total_mt =&lt;/span&gt; total)
+
+std_values &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;bind_rows&lt;/span&gt;(tmpA,tmpB)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;(Not sure if there is a more consise way to change the values in a given column for a subset of the rows). Well, perhaps it would be simpler to treat non-standard units as missing data, but at least this illustrates a mechanism for handling the conversion.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;biomass &amp;lt;-
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;std_values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(tsyear) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;biomass =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(total_mt, &lt;span class=&quot;dt&quot;&gt;na.rm=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;## WARNING -- should check units!
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(biomass &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) 
+
+biomass_dropped &amp;lt;-
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;everyone_else) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(tsyear) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;biomass =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(total, &lt;span class=&quot;dt&quot;&gt;na.rm=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;## WARNING -- should check units!
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(biomass &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) 
+
+biomass_wrong &amp;lt;-
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(tsyear) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;summarise&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;biomass =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(total, &lt;span class=&quot;dt&quot;&gt;na.rm=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;## WARNING -- should check units!
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(biomass &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) 
+
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(biomass, &lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(tsyear, biomass)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;() +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data=&lt;/span&gt;biomass_wrong, &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;blue&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data=&lt;/span&gt;biomass_dropped, &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;red&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ylab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Biomass (MT)&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Year&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# they may look identical but they aren&amp;#39;t:&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(biomass_dropped$biomass, biomass$biomass)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] FALSE&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this case, the contribution is negligible (red vs black). Even failing to convert units (blue) makes a hardly visible difference, though in general the difference could have been quite large.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids, total &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) %&amp;gt;%
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(tsyear, total, &lt;span class=&quot;dt&quot;&gt;color=&lt;/span&gt;assessid)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;() +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ylab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Biomass (MT)&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Year&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;stock-recruitment-time-series&quot;&gt;Stock-recruitment &amp;amp; time-series&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]]) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(ssb, r)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid==&lt;span class=&quot;st&quot;&gt;&amp;quot;AFWG-CODNEAR-1943-2006-MINTO&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(ssb, r)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(!&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(r), !&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(ssb)) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(ssb, r)) +
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~assessid, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cod_ids) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(!&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(total)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(tsyear, total)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~assessid, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;herring &amp;lt;-
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;assessment %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(stock) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(commonname==&lt;span class=&quot;st&quot;&gt;&amp;quot;Herring&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unlist&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unname&lt;/span&gt;() &lt;span class=&quot;co&quot;&gt;# we need a char string, not a data.frame&lt;/span&gt;
+
+values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;herring) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(!&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(r), !&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(ssb)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(ssb, r)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~assessid, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;herring) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(!&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(total)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(tsyear, total)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~assessid, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;anchovy &amp;lt;-
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;assessment %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(stock) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(commonname==&lt;span class=&quot;st&quot;&gt;&amp;quot;Anchovy&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unlist&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unname&lt;/span&gt;() &lt;span class=&quot;co&quot;&gt;# we need a char string, not a data.frame&lt;/span&gt;
+
+values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;anchovy) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(!&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(r), !&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(ssb)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(ssb, r)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~assessid, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;anchovy) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(!&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(total)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(tsyear, total)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~assessid, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;bluefin &amp;lt;-
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;assessment %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;left_join&lt;/span&gt;(stock) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(commonname==&lt;span class=&quot;st&quot;&gt;&amp;quot;Atlantic bluefin tuna&amp;quot;&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;select&lt;/span&gt;(assessid) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unlist&lt;/span&gt;() %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unname&lt;/span&gt;() &lt;span class=&quot;co&quot;&gt;# we need a char string, not a data.frame&lt;/span&gt;
+
+values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;bluefin) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(!&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(r), !&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(ssb)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(ssb, r)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~assessid, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(assessid %in%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;bluefin) %&amp;gt;%
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;filter&lt;/span&gt;(!&lt;span class=&quot;kw&quot;&gt;is.na&lt;/span&gt;(total)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(tsyear, total)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~assessid, &lt;span class=&quot;dt&quot;&gt;scales=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;free&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in function_list[[k]](value): could not find function &amp;quot;ggplot&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Daniel Gp Example</title>
+   <link href="http://www.carlboettiger.info/2015/06/16/daniel-gp-example.html"/>
+   <updated>2015-06-16T00:00:00+00:00</updated>
+   <id>/06/16/daniel-gp-example</id>
+   <content type="html">&lt;h3 id=&quot;setup&quot;&gt;Setup&lt;/h3&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ref =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;devel&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;subdir =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;packages/nimble&amp;#39;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
+&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Randomly generate some sinusoidal data&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;
+y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sin&lt;/span&gt;(x/&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt;)
+ind &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sort&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sample&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;40&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The next three lines are the only inputs required.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;xObs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x[ind]                ## input
+yObs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;y[ind]                ## input
+xPred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(x, &lt;span class=&quot;dv&quot;&gt;101&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;120&lt;/span&gt;)        ## input&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Some initial processing&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;nObs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(xObs)
+nPred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(xPred)
+f &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(xi, xj) (xi-xj)^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;
+diffOO &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(xObs,  xObs,  f)
+diffPP &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(xPred, xPred, f)
+diffPO &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(xPred, xObs,  f)&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;nimble-function-for-gp-prediction&quot;&gt;NIMBLE function for GP prediction&lt;/h3&gt;
+&lt;p&gt;Here’s the main function for doing the prediction from the GP model.&lt;/p&gt;
+&lt;p&gt;It takes the MCMC samples as a &lt;em&gt;runtime&lt;/em&gt; argument, so this can be iterated with running the MCMC for different numbers of iterations, initial values, or even different datasets!&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;gpPred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleFunction&lt;/span&gt;(
+    &lt;span class=&quot;dt&quot;&gt;setup =&lt;/span&gt; function(model, params) {
+        calcNodes &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;model$&lt;span class=&quot;kw&quot;&gt;getDependencies&lt;/span&gt;(params, &lt;span class=&quot;dt&quot;&gt;determOnly =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)
+        nPred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(model$SigPP)[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]
+        E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(nPred, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;))
+        C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(nPred, nPred))
+    },
+    &lt;span class=&quot;dt&quot;&gt;run =&lt;/span&gt; function(&lt;span class=&quot;dt&quot;&gt;samples =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;double&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)) {
+        E &amp;lt;&amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;E *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;
+        C &amp;lt;&amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;C *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;
+        nSamples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(samples)[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]
+        for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nSamples) {
+            &lt;span class=&quot;kw&quot;&gt;values&lt;/span&gt;(model, params) &amp;lt;&amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;samples[i,]
+            &lt;span class=&quot;kw&quot;&gt;calculate&lt;/span&gt;(model, calcNodes)
+            intermediate &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;model$SigPO %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;inverse&lt;/span&gt;(model$SigOO)
+            Etemp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;intermediate %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;asCol&lt;/span&gt;(model$yObs)
+            Ctemp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;model$SigPP -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;intermediate %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;t&lt;/span&gt;(model$SigPO)
+            E &amp;lt;&amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;E +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Etemp
+            C &amp;lt;&amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;C +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Ctemp
+        }
+        E &amp;lt;&amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;E /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;nSamples
+        C &amp;lt;&amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;C /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;nSamples
+    },
+    &lt;span class=&quot;dt&quot;&gt;methods =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(
+        &lt;span class=&quot;dt&quot;&gt;getE =&lt;/span&gt; function() { &lt;span class=&quot;kw&quot;&gt;returnType&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;double&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)); &lt;span class=&quot;kw&quot;&gt;return&lt;/span&gt;(E[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]) },
+        &lt;span class=&quot;dt&quot;&gt;getC =&lt;/span&gt; function() { &lt;span class=&quot;kw&quot;&gt;returnType&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;double&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)); &lt;span class=&quot;kw&quot;&gt;return&lt;/span&gt;(C[, ]) }
+    )
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;gp-model&quot;&gt;GP model&lt;/h3&gt;
+&lt;p&gt;GP model defined here. Basically the same as your original, but I renamed some paramters more to my liking =)&lt;/p&gt;
+&lt;p&gt;This is &lt;em&gt;not&lt;/em&gt; as elegant as I had hoped. It still requires repeating (essentially) the same code three times. I discovered some limitations of NIMBLE while trying other approaches.&lt;/p&gt;
+&lt;p&gt;Bottom line:&lt;br /&gt;- This achieves relatively nice simplicity.&lt;br /&gt;- There’s an efficiency hit to the MCMC sampling, but it doesn’t seem too bad.&lt;br /&gt;- This works.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;code &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+   rho ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dgamma&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)
+   sigGP ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
+   sigOE ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
+   SigOO[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs ] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigGP^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;/&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*diffOO[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs ]/rho^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigOE^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*IOO[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs ]
+   SigPP[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigGP^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;/&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*diffPP[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred]/rho^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigOE^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*IPP[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred]
+   SigPO[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs ] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigGP^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;/&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*diffPO[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs ]/rho^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
+   yObs[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dmnorm&lt;/span&gt;(mu[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs], &lt;span class=&quot;dt&quot;&gt;cov =&lt;/span&gt; SigOO[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs])
+})
+
+constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;nObs=&lt;/span&gt;nObs, &lt;span class=&quot;dt&quot;&gt;nPred=&lt;/span&gt;nPred, &lt;span class=&quot;dt&quot;&gt;diffOO=&lt;/span&gt;diffOO, &lt;span class=&quot;dt&quot;&gt;diffPP=&lt;/span&gt;diffPP, &lt;span class=&quot;dt&quot;&gt;diffPO=&lt;/span&gt;diffPO,
+                  &lt;span class=&quot;dt&quot;&gt;IOO=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(nObs), &lt;span class=&quot;dt&quot;&gt;IPP=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(nPred), &lt;span class=&quot;dt&quot;&gt;mu=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,nObs))
+
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;yObs =&lt;/span&gt; yObs)
+
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;rho =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigGP =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigOE =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)
+
+Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(code, constants, data, inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;create-compile-and-run&quot;&gt;Create, compile, and run&lt;/h3&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## MCMC specification with no samplers
+spec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;nodes =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;NULL&lt;/span&gt;)
+
+## this will be used for some checking, and setting up block sampler:
+params &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Rmodel$&lt;span class=&quot;kw&quot;&gt;getNodeNames&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;topOnly =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)
+
+## NOTE: the next line shouldn&amp;#39;t work for you, since the MCMC API has changed.
+## you can rebuild from source off nimble branch &amp;#39;devel&amp;#39;.
+## otherwise, using last public release of NIMBLE (0.3-1), use this line instead:
+## spec$addSampler(&amp;#39;RW_block&amp;#39;, control = list(targetNodes = params))
+spec$&lt;span class=&quot;kw&quot;&gt;addSampler&lt;/span&gt;(params, &lt;span class=&quot;st&quot;&gt;&amp;#39;RW_block&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can debate about univariate vs. block sampling at some point.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## MCMC function
+Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(spec)
+
+## GP prediction function
+## also uses the &amp;#39;params&amp;#39; variable for specialization
+Rpred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gpPred&lt;/span&gt;(Rmodel, params)
+
+## compile everything
+Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)
+Cmcmc  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Rmodel)
+Cpred  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rpred, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Rmodel)
+
+## MCMC sampling
+## 100,000 iterations
+&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+ 68.737   0.033  68.796 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;About 25 seconds on my computer&lt;/p&gt;
+&lt;p&gt;That can be improved if necessary&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
+
+## quick check
+if(!&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(params, &lt;span class=&quot;kw&quot;&gt;colnames&lt;/span&gt;(samples))) &lt;span class=&quot;kw&quot;&gt;stop&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;problem&amp;#39;&lt;/span&gt;)
+
+## predict from GP model using posterior MCMC samples
+&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+ 91.252   0.000  91.296 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;About 40 seconds on my computer&lt;/p&gt;
+&lt;p&gt;Again, could streamline the gpPred() function if necessary&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## extract predictions: E and C
+E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
+C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;output&quot;&gt;Output&lt;/h3&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;E&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;  [1]  1.048953470  1.063690923  1.056571565  1.025025296  0.967727602
+  [6]  0.885088092  0.779046134  0.652750089  0.510403944  0.357145489
+ [11]  0.198827230  0.041501513 -0.109026506 -0.247533773 -0.369716151
+ [16] -0.472313950 -0.553105378 -0.610874554 -0.645461105 -0.657719603
+ [21] -0.649076810 -0.621198765 -0.575868588 -0.514737033 -0.439105417
+ [26] -0.349971602 -0.248371381 -0.135451833 -0.012707283  0.117353661
+ [31]  0.251084159  0.383920114  0.510567530  0.625303732  0.722419735
+ [36]  0.796925448  0.845259818  0.865448082  0.857113606  0.821872152
+ [41]  0.763535592  0.687360014  0.599297100  0.505480001  0.411259520
+ [46]  0.320288380  0.234175561  0.152695050  0.074286902 -0.003167262
+ [51] -0.081466127 -0.161638385 -0.243673849 -0.325876291 -0.404833854
+ [56] -0.476477835 -0.536583186 -0.580993801 -0.606153844 -0.609554981
+ [61] -0.590206477 -0.548974521 -0.488316837 -0.411928777 -0.324540013
+ [66] -0.231641132 -0.139114920 -0.052860394  0.021550784  0.079331411
+ [71]  0.117042000  0.132978712  0.127078948  0.100689033  0.056355647
+ [76] -0.002485485 -0.071873133 -0.147591543 -0.225248038 -0.300383786
+ [81] -0.368679284 -0.425886710 -0.467685571 -0.489815787 -0.488669528
+ [86] -0.462038368 -0.409587331 -0.332776473 -0.234523765 -0.119090537
+ [91]  0.008395849  0.142692615  0.278921123  0.412628846  0.539726698
+ [96]  0.656454950  0.759426449  0.845730518  0.912939607  0.959256645
+[101]  0.984015990  0.987978885  0.972988593  0.941606557  0.896909969
+[106]  0.842215301  0.780777080  0.715559458  0.649099436  0.583448236
+[111]  0.520171088  0.460385520  0.404821033  0.353887176  0.307741235
+[116]  0.266350221  0.229544512  0.197062243  0.168584714  0.143763668&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;  [1] 1.2679882 1.2064883 1.1541432 1.1116728 1.0784248 1.0524884
+  [7] 1.0317576 1.0147224 1.0007923 0.9900904 0.9827438 0.9787769
+ [13] 0.9777564 0.9783522 0.9785871 0.9766328 0.9714366 0.9630053
+ [19] 0.9522229 0.9402332 0.9284669 0.9183767 0.9109672 0.9068412
+ [25] 0.9062843 0.9093517 0.9158928 0.9254797 0.9372421 0.9497874
+ [31] 0.9614992 0.9705821 0.9757483 0.9766685 0.9740220 0.9691475
+ [37] 0.9633160 0.9577090 0.9532083 0.9500621 0.9480639 0.9471172
+ [43] 0.9473233 0.9485876 0.9506984 0.9530274 0.9546481 0.9549896
+ [49] 0.9542985 0.9535398 0.9539394 0.9568409 0.9630692 0.9727686
+ [55] 0.9850166 0.9979048 1.0093360 1.0177498 1.0224490 1.0235779
+ [61] 1.0216894 1.0172186 1.0108482 1.0037543 0.9975825 0.9940451
+ [67] 0.9942810 0.9988192 1.0071728 1.0181157 1.0297591 1.0394083
+ [73] 1.0443944 1.0429170 1.0346484 1.0209019 1.0041130 0.9869394
+ [79] 0.9713413 0.9580174 0.9466908 0.9370265 0.9291060 0.9233148
+ [85] 0.9204774 0.9213396 0.9262437 0.9349512 0.9465634 0.9595347
+ [91] 0.9721773 0.9829212 0.9902883 0.9935894 0.9933386 0.9913798
+ [97] 0.9906718 0.9946403 1.0070336 1.0312845 1.0694759 1.1218007
+[103] 1.1866870 1.2612294 1.3418003 1.4247225 1.5067538 1.5853383
+[109] 1.6586720 1.7256456 1.7857277 1.8388290 1.8851737 1.9251909
+[115] 1.9594282 1.9884878 2.0129814 2.0334994 2.0505931 2.0647637&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Black dots are the original ‘xObs’ and ‘yObs’&lt;/p&gt;
+&lt;p&gt;Red dots are the predictions made at each ‘xPred’&lt;/p&gt;
+&lt;p&gt;Red lines are plus/minus one standard error&lt;/p&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-06-16-daniel-gp-example/unnamed-chunk-13-1.png&quot; /&gt;
+&lt;/figure&gt;
+</content>
+ </entry>
+ 
  <entry>
    <title>Ram Legacy Database Explore</title>
    <link href="http://www.carlboettiger.info/2015/05/08/ram-legacy-database-explore.html"/>
