@@ -2,14 +2,14 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head prefix="dc: http://purl.org/dc/terms/ og: http://ogp.me/ns#"> <!-- namespaces used in metadata.html -->
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
-  <title>Ram Explore</title>
+  <title>Further exploration of RAM Legacy Stock Assessment data</title>
   <meta name="author" content="Carl Boettiger" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- HTML5 metadata -->
 <meta name="keywords" content="ram-fisheries" />
 <meta name="description" content="" />
 <!-- RDFa Metadata (in DublinCore) -->
-<meta property="dc:title" content="Ram Explore" />
+<meta property="dc:title" content="Further exploration of RAM Legacy Stock Assessment data" />
 <meta property="dc:creator" content="Carl Boettiger" />
 <meta property="dc:date" content="2015-06-18 00:00:00 +0000" />
 <meta property="dc:format" content="text/html" />
@@ -20,7 +20,7 @@
 <meta property="dc:subject" content="Ecology" /> 
 <meta property="dc:type" content="website" /> 
 <!-- RDFa Metadata (in OpenGraph) -->
-<meta property="og:title" content="Ram Explore" />
+<meta property="og:title" content="Further exploration of RAM Legacy Stock Assessment data" />
 <meta property="og:author" content="http://www.carlboettiger.info/index.html#me" />  <!-- Should be Liquid? URI? -->
 <meta property="http://ogp.me/ns/profile#first_name" content="Carl"/>
 <meta property="http://ogp.me/ns/profile#last_name" content="Boettiger"/>
@@ -32,7 +32,7 @@
 <!--
 <meta name="citation_author" content="Carl Boettiger"/>
 <meta name="citation_date" content="2015-06-18 00:00:00 +0000"/>
-<meta name="citation_title" content="Ram Explore"/>
+<meta name="citation_title" content="Further exploration of RAM Legacy Stock Assessment data"/>
 <meta name="citation_journal_title" content="Lab Notebook"/>
 -->
 <!--NOTE: see also the COinS Metadata in span element in footer -->
@@ -100,7 +100,7 @@
 
     <div class="container"> <!-- Responsive grid layout, doesn't jump to full-width --> 
       <header>
-        <h1 class="entry-title">Ram Explore</h1>
+        <h1 class="entry-title">Further exploration of RAM Legacy Stock Assessment data</h1>
         <h2></h2>
       </header>
 
@@ -111,9 +111,10 @@
 <span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;RPostgreSQL&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;devtools&quot;</span>)
-})
-
-## Perform this in data_raw to keep package dependencies minimal
+<span class="kw">library</span>(<span class="st">&quot;ggplot&quot;</span>)
+})</code></pre>
+<pre><code>Error in library(&quot;ggplot&quot;): there is no package called &#39;ggplot&#39;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Perform this in data_raw to keep package dependencies minimal
 mydb &lt;-<span class="st"> </span><span class="kw">src_postgres</span>(<span class="dt">dbname =</span> <span class="st">&quot;srdb&quot;</span>, 
                      <span class="dt">host=</span><span class="st">&quot;nautilus-vm.mathstat.dal.ca&quot;</span>, 
                      <span class="dt">user =</span> <span class="st">&quot;srdbuser&quot;</span>, 
@@ -261,9 +262,11 @@ biomass_wrong &lt;-
 <span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<p>Note that the spawning stock biomass, red, can often be significantly less than the total stock (black).</p>
 <pre class="sourceCode r"><code class="sourceCode r">herring &lt;-
 <span class="st">  </span>assessment %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
@@ -283,6 +286,7 @@ values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">anchovy &lt;-
@@ -304,6 +308,7 @@ values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">bluefin &lt;-
@@ -325,6 +330,7 @@ values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
 
@@ -376,7 +382,7 @@ values %&gt;%<span class="st"> </span>
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/41501ca80fe61e7c5ed46a2608bf1e2c55c49ecb/_posts/2015-06-18-RAM-explore.Rmd"> 41501ca80fe61e7c5ed46a2608bf1e2c55c49ecb</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/50ffcc65ae3a055f11f9fd4fa07fb5bdeab408bb/_posts/2015-06-18-RAM-explore.Rmd"> 50ffcc65ae3a055f11f9fd4fa07fb5bdeab408bb</a></small></p>
     
   <br/>
   
@@ -468,7 +474,7 @@ values %&gt;%<span class="st"> </span>
       title="ctx_ver=Z39.88-2004
       &amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc
       &amp;rfr_id=info%3Asid%2Focoins.info%3Agenerator
-      &amp;rft.title=Ram Explore
+      &amp;rft.title=Further exploration of RAM Legacy Stock Assessment data
       &amp;rft.creator=Carl Boettiger
       &amp;rft.date=2015-06-18
       &amp;rft.language=EN

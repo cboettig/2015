@@ -114,7 +114,7 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
-          <header><h4><a href="/2015/06/18/RAM-explore.html">Ram Explore</a></h4></header>
+          <header><h4><a href="/2015/06/18/RAM-explore.html">Further exploration of RAM Legacy Stock Assessment data</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 18 Jun 2015</p>
 
@@ -124,9 +124,10 @@
 <span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;RPostgreSQL&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;devtools&quot;</span>)
-})
-
-## Perform this in data_raw to keep package dependencies minimal
+<span class="kw">library</span>(<span class="st">&quot;ggplot&quot;</span>)
+})</code></pre>
+<pre><code>Error in library(&quot;ggplot&quot;): there is no package called &#39;ggplot&#39;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Perform this in data_raw to keep package dependencies minimal
 mydb &lt;-<span class="st"> </span><span class="kw">src_postgres</span>(<span class="dt">dbname =</span> <span class="st">&quot;srdb&quot;</span>, 
                      <span class="dt">host=</span><span class="st">&quot;nautilus-vm.mathstat.dal.ca&quot;</span>, 
                      <span class="dt">user =</span> <span class="st">&quot;srdbuser&quot;</span>, 
@@ -274,9 +275,11 @@ biomass_wrong &lt;-
 <span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
+<p>Note that the spawning stock biomass, red, can often be significantly less than the total stock (black).</p>
 <pre class="sourceCode r"><code class="sourceCode r">herring &lt;-
 <span class="st">  </span>assessment %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
@@ -296,6 +299,7 @@ values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">anchovy &lt;-
@@ -317,6 +321,7 @@ values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">bluefin &lt;-
@@ -338,6 +343,7 @@ values %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
 <pre><code>Error in function_list[[k]](value): could not find function &quot;ggplot&quot;</code></pre>
  
@@ -460,7 +466,7 @@ Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred
 ## 100,000 iterations
 <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 68.737   0.033  68.796 </code></pre>
+ 67.313   0.031  67.459 </code></pre>
 <p>About 25 seconds on my computer</p>
 <p>That can be improved if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
@@ -471,7 +477,7 @@ if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(s
 ## predict from GP model using posterior MCMC samples
 <span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 91.252   0.000  91.296 </code></pre>
+ 87.571   0.004  87.627 </code></pre>
 <p>About 40 seconds on my computer</p>
 <p>Again, could streamline the gpPred() function if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">## extract predictions: E and C
