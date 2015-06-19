@@ -21,11 +21,20 @@ mydb <- src_postgres(dbname = "srdb",
                      password =  "srd6us3r!", 
                      port = 5432)
 
-
+timeseries <- collect(tbl(mydb, sql("SELECT * FROM srdb.timeseries")))
 values <- collect(tbl(mydb, sql("SELECT * FROM srdb.timeseries_values_view")))
-assessment <- collect(tbl(mydb, sql("SELECT * FROM srdb.assessment")))
-stock <- collect(tbl(mydb, sql("SELECT * FROM srdb.stock")))
 units <- collect(tbl(mydb, sql("SELECT * FROM srdb.timeseries_units_view")))
+assessment <- collect(tbl(mydb, sql("SELECT * FROM srdb.assessment")))
+area <- collect(tbl(mydb, sql("SELECT * FROM srdb.area")))
+stock <- collect(tbl(mydb, sql("SELECT * FROM srdb.stock")))
+method <- collect(tbl(mydb, sql("SELECT * FROM srdb.assessmethod")))
+assessor <- collect(tbl(mydb, sql("SELECT * FROM srdb.assessor")))
+management  <- collect(tbl(mydb, sql("SELECT * FROM srdb.management")))
+taxonomy <- collect(tbl(mydb, sql("SELECT * FROM srdb.taxonomy")))
+lmerefs <- collect(tbl(mydb, sql("SELECT * FROM srdb.lmerefs")))
+lmestock <- collect(tbl(mydb, sql("SELECT * FROM srdb.lmetostocks")))
+biometrics  <- collect(tbl(mydb, sql("SELECT * FROM srdb.biometrics")))
+bioparams <- collect(tbl(mydb, sql("SELECT * FROM srdb.bioparams")))
 tsmetrics <- collect(tbl(mydb, sql("SELECT * FROM srdb.tsmetrics")))
 ```
 
