@@ -1,0 +1,291 @@
+---
+layout: post
+category: ecology
+tags:
+- ram-fisheries
+---
+
+```{r}
+suppressPackageStartupMessages({
+library("dplyr")
+library("RPostgreSQL")
+library("devtools")
+})
+
+## Perform this in data_raw to keep package dependencies minimal
+mydb <- src_postgres(dbname = "srdb", 
+                     host="nautilus-vm.mathstat.dal.ca", 
+                     user = "srdbuser", 
+                     password =  "srd6us3r!", 
+                     port = 5432)
+
+
+values <- collect(tbl(mydb, sql("SELECT * FROM srdb.timeseries_values_view")))
+assessment <- collect(tbl(mydb, sql("SELECT * FROM srdb.assessment")))
+stock <- collect(tbl(mydb, sql("SELECT * FROM srdb.stock")))
+units <- collect(tbl(mydb, sql("SELECT * FROM srdb.timeseries_units_view")))
+tsmetrics <- collect(tbl(mydb, sql("SELECT * FROM srdb.tsmetrics")))
+```
+
+## North Atlantic Cod data 
+
+Select North Atlantic Cod, _Gadus morhua_:
+
+```{r}
+cod_ids <-
+  assessment %>% 
+  left_join(stock) %>% 
+  filter(scientificname=="Gadus morhua") %>% 
+  select(assessid) %>%
+  unlist() %>% unname() # we need a char string, not a data.frame
+```
+
+(Note we could have selected on the `tsn==164712` to be less ambiguous but also less semantic, or on `commonname=="Atlantic cod"` to be more reader friendly but even more ambiguous.  Fortunately the common and scientific names are well aligned with the `tsn` ids in this case and we get the same set of 22 stock assessments.)
+
+Before we can combine across these, we must verify that each assessment measures the quantities of interest using the same units, or otherwise correct those that do not:
+
+```{r}
+units %>% filter(assessid %in% cod_ids) %>% select(assessid, catch_landings_unit) %>% group_by(catch_landings_unit) %>% summarise(length(catch_landings_unit))
+
+units %>% filter(assessid %in% cod_ids) %>% select(assessid, total_unit) %>% group_by(total_unit) %>% summarise(length(total_unit))
+```
+
+All catches are in metric tons, so no concern there.
+
+Landing data we can plot immediately:
+
+```{r}
+values %>% 
+  filter(assessid %in% cod_ids) %>% 
+  group_by(tsyear) %>% 
+  summarise(catch = sum(catch_landings, na.rm=TRUE)) %>% ## all units are metric tons
+  ggplot(aes(tsyear, catch)) + geom_line() + 
+    ylab("Catch/Landings (MT)") + xlab("Year")
+```
+
+
+Note that missing data is removed, such that any assessment without catch data is treated as zero catch. This could be the case (maybe not all assessments correspond to unique catch zones.)  We also assume catch reported in one assessment is not also reported in a different assement (e.g. no double-counting). Lastly, we must bear in mind that this is catch/landings data, which may include bycatch, underreporting, etc. 
+
+
+-----------
+
+## Handling unit conversions
+
+The units for `total` are more problematic.  The `NA` simply indicates stocks that do not have the an estimate for `total`, but we also see one assessment has totals in `E03` (thousands) instead of metric tons.
+
+
+
+------
+
+_Sidebar_ how do we know for sure that `E03` is abundance counts in thousands of fish?
+
+The database does not provide metadata for these unit definitions directly.  the `values` data and its associated `units` metadata are actually derived tables from the raw `timeseries` table and the associated `tsmetrics` unit metadata, so we would have to dive in there to confirm this interpretation of `E03` in this case.  
+
+```{r}
+# tidy up the tsmetrics table:
+unit_defs <- tsmetrics %>% rename(tsid = tsunique) %>% select(tsid, tslong, tsunitslong) 
+
+# Find the assessid of the cod stock assessment that measures total in units of E03
+who <- units %>% filter(assessid %in% cod_ids) %>% select(assessid, total_unit) %>% filter(total_unit=="E03")
+
+# Find that assessid in the timeseries table, where units are written in different notation
+ts_who <- timeseries %>% filter(assessid %in% who$assessid) %>% select(assessid, tsid) %>%  distinct(tsid)
+
+# Join the tables to see the definitions
+left_join(ts_who, unit_defs)
+
+```
+
+and we can confirm `E03` is in this case `TN-E03` (total number, in thousands). 
+
+------
+
+
+Converting this to metric tons will require an average weight for cod.  FishBase gives us a maximum weight (in grams):
+
+```{r}
+rfishbase::species("Gadus morhua", fields="Weight")
+```
+
+Wikipedia says the average is 5-12 kilograms, so let's take 8.5 Kg for sake of argument.  Clearly a more programmatic and more accurate solution is needed here.  
+
+_Sidenote_ the database has some very limited data on biometrics by assessment, including some assessments that record a maximum (but not an average) weight (sometimes pulled from FishBase anyway).  Even pooling across all Atlantic Cod assessments we can't find even a maximum weight.
+
+```{r}
+# Find the unit code for max weight
+biometrics %>% filter(biolong == "Maximum weight") %>% select(biounique) %>% unlist() %>% unname() -> max_weight
+# show the unit code:
+max_weight
+# Look up all max weight values for illustration: (not filtering on cod_ids since there are no hits)
+bioparams %>% filter(bioid %in% max_weight)
+```
+
+
+```{r}
+e03_to_MT <- 7.5 * 1e-3
+
+tmpA <- 
+  values %>% 
+  filter(assessid %in% who$assessid) %>% 
+  mutate(total_mt = total * e03_to_MT)
+
+everyone_else <- cod_ids[!(cod_ids %in% who$assessid)]
+tmpB <-
+  values %>% 
+  filter(assessid %in% everyone_else) %>% 
+  mutate(total_mt = total)
+
+std_values <- bind_rows(tmpA,tmpB)
+```  
+
+(Not sure if there is a more consise way to change the values in a given column for a subset of the rows).  Well, perhaps it would be simpler to treat non-standard units as missing data, but at least this illustrates a mechanism for handling the conversion. 
+
+
+```{r}
+biomass <-
+  std_values %>% 
+  filter(assessid %in% cod_ids) %>% 
+  group_by(tsyear) %>% 
+  summarise(biomass = sum(total_mt, na.rm=TRUE)) %>% ## WARNING -- should check units!
+  filter(biomass > 0) 
+
+biomass_dropped <-
+  values %>% 
+  filter(assessid %in% everyone_else) %>% 
+  group_by(tsyear) %>% 
+  summarise(biomass = sum(total, na.rm=TRUE)) %>% ## WARNING -- should check units!
+  filter(biomass > 0) 
+
+biomass_wrong <-
+  values %>% 
+  filter(assessid %in% cod_ids) %>% 
+  group_by(tsyear) %>% 
+  summarise(biomass = sum(total, na.rm=TRUE)) %>% ## WARNING -- should check units!
+  filter(biomass > 0) 
+
+ggplot(biomass, aes(tsyear, biomass)) + 
+  geom_line() +
+  geom_line(data=biomass_wrong, col="blue", lty=2) +
+  geom_line(data=biomass_dropped, col="red", lty=2) +
+  ylab("Biomass (MT)") + xlab("Year")
+  
+# they may look identical but they aren't:
+identical(biomass_dropped$biomass, biomass$biomass)
+```
+
+In this case, the contribution is negligible (red vs black). Even failing to convert units (blue) makes a hardly visible difference, though in general the difference could have been quite large.
+
+```{r}
+values %>% 
+  filter(assessid %in% cod_ids, total > 0) %>%
+ggplot(aes(tsyear, total, color=assessid)) + 
+  geom_line() +
+  ylab("Biomass (MT)") + xlab("Year")
+```
+
+
+---------------
+
+## Stock-recruitment & time-series
+
+
+```{r}
+values %>% filter(assessid %in% cod_ids[[1]]) %>% ggplot(aes(ssb, r)) + geom_point()
+values %>% filter(assessid=="AFWG-CODNEAR-1943-2006-MINTO") %>% ggplot(aes(ssb, r)) + geom_point()
+
+values %>%
+  filter(assessid %in% cod_ids) %>%
+  filter(!is.na(r), !is.na(ssb)) %>%
+  ggplot(aes(ssb, r)) +
+    geom_point() +
+    facet_wrap(~assessid, scales="free")
+
+
+values %>% 
+  filter(assessid %in% cod_ids) %>%
+  filter(!is.na(total)) %>% 
+  ggplot(aes(tsyear, total)) + 
+    geom_line() + 
+    facet_wrap(~assessid, scales="free")
+```
+
+
+
+```{r}
+herring <-
+  assessment %>% 
+  left_join(stock) %>% 
+  filter(commonname=="Herring") %>% 
+  select(assessid) %>%
+  unlist() %>% unname() # we need a char string, not a data.frame
+
+values %>% 
+  filter(assessid %in% herring) %>%
+  filter(!is.na(r), !is.na(ssb)) %>% 
+  ggplot(aes(ssb, r)) + 
+    geom_point() + 
+    facet_wrap(~assessid, scales="free")
+
+values %>% 
+  filter(assessid %in% herring) %>%
+  filter(!is.na(total)) %>% 
+  ggplot(aes(tsyear, total)) + 
+    geom_line() + 
+    facet_wrap(~assessid, scales="free")
+```
+
+
+
+```{r}
+anchovy <-
+  assessment %>% 
+  left_join(stock) %>% 
+  filter(commonname=="Anchovy") %>% 
+  select(assessid) %>%
+  unlist() %>% unname() # we need a char string, not a data.frame
+
+values %>% 
+  filter(assessid %in% anchovy) %>%
+  filter(!is.na(r), !is.na(ssb)) %>% 
+  ggplot(aes(ssb, r)) + 
+    geom_point() + 
+    facet_wrap(~assessid, scales="free")
+
+values %>% 
+  filter(assessid %in% anchovy) %>%
+  filter(!is.na(total)) %>% 
+  ggplot(aes(tsyear, total)) + 
+    geom_line() + 
+    facet_wrap(~assessid, scales="free")
+```
+
+
+
+```{r}
+bluefin <-
+  assessment %>% 
+  left_join(stock) %>% 
+  filter(commonname=="Atlantic bluefin tuna") %>% 
+  select(assessid) %>%
+  unlist() %>% unname() # we need a char string, not a data.frame
+
+values %>% 
+  filter(assessid %in% bluefin) %>%
+  filter(!is.na(r), !is.na(ssb)) %>% 
+  ggplot(aes(ssb, r)) + 
+    geom_point() + 
+    facet_wrap(~assessid, scales="free")
+
+
+values %>% 
+  filter(assessid %in% bluefin) %>%
+  filter(!is.na(total)) %>% 
+  ggplot(aes(tsyear, total)) + 
+    geom_line() + 
+    facet_wrap(~assessid, scales="free")
+```
+
+
+
+
+

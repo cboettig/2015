@@ -1,0 +1,204 @@
+---
+layout: post
+category: ecology
+tags: 
+- gp
+- nimble
+
+
+---
+
+
+### Setup
+
+```{r message=FALSE}
+devtools::install_github('nimble-dev/nimble', ref = 'devel', subdir = 'packages/nimble')
+library(nimble)
+set.seed(0)
+```
+
+Randomly generate some sinusoidal data
+
+```{r}
+x <- 1:100
+y <- sin(x/5) + rnorm(100, 0.1)
+ind <- sort(sample(1:100, 40))
+```
+
+The next three lines are the only inputs required.
+
+```{r}
+xObs <- x[ind]                ## input
+yObs <- y[ind]                ## input
+xPred <- c(x, 101:120)        ## input
+```
+
+Some initial processing
+```{r}
+nObs <- length(xObs)
+nPred <- length(xPred)
+f <- function(xi, xj) (xi-xj)^2
+diffOO <- outer(xObs,  xObs,  f)
+diffPP <- outer(xPred, xPred, f)
+diffPO <- outer(xPred, xObs,  f)
+```
+
+
+
+### NIMBLE function for GP prediction
+
+Here's the main function for doing the prediction from the GP model.
+
+It takes the MCMC samples as a *runtime* argument, so this can be iterated with running the MCMC for different numbers of iterations, initial values, or even different datasets!
+
+```{r, warning=FALSE}
+gpPred <- nimbleFunction(
+    setup = function(model, params) {
+        calcNodes <- model$getDependencies(params, determOnly = TRUE)
+        nPred <- dim(model$SigPP)[1]
+        E <- array(0, c(nPred, 1))
+        C <- array(0, c(nPred, nPred))
+    },
+    run = function(samples = double(2)) {
+        E <<- E * 0
+        C <<- C * 0
+        nSamples <- dim(samples)[1]
+        for(i in 1:nSamples) {
+            values(model, params) <<- samples[i,]
+            calculate(model, calcNodes)
+            intermediate <- model$SigPO %*% inverse(model$SigOO)
+            Etemp <- intermediate %*% asCol(model$yObs)
+            Ctemp <- model$SigPP - intermediate %*% t(model$SigPO)
+            E <<- E + Etemp
+            C <<- C + Ctemp
+        }
+        E <<- E / nSamples
+        C <<- C / nSamples
+    },
+    methods = list(
+        getE = function() { returnType(double(1)); return(E[,1]) },
+        getC = function() { returnType(double(2)); return(C[, ]) }
+    )
+)
+```
+
+
+### GP model
+
+GP model defined here.  Basically the same as your original, but I renamed some paramters more to my liking =)
+
+This is *not* as elegant as I had hoped.  It still requires repeating (essentially) the same code three times.  I discovered some limitations of NIMBLE while trying other approaches.
+
+Bottom line:  
+- This achieves relatively nice simplicity.  
+- There's an efficiency hit to the MCMC sampling, but it doesn't seem too bad.  
+- This works.  
+
+```{r, message=FALSE}
+code <- nimbleCode({
+   rho ~ dgamma(10, 1)
+   sigGP ~ dunif(0, 1e5)
+   sigOE ~ dunif(0, 1e5)
+   SigOO[1:nObs, 1:nObs ] <- sigGP^2*exp(-1/2*diffOO[1:nObs, 1:nObs ]/rho^2) + sigOE^2*IOO[1:nObs, 1:nObs ]
+   SigPP[1:nPred,1:nPred] <- sigGP^2*exp(-1/2*diffPP[1:nPred,1:nPred]/rho^2) + sigOE^2*IPP[1:nPred,1:nPred]
+   SigPO[1:nPred,1:nObs ] <- sigGP^2*exp(-1/2*diffPO[1:nPred,1:nObs ]/rho^2)
+   yObs[1:nObs] ~ dmnorm(mu[1:nObs], cov = SigOO[1:nObs,1:nObs])
+})
+
+constants <- list(nObs=nObs, nPred=nPred, diffOO=diffOO, diffPP=diffPP, diffPO=diffPO,
+                  IOO=diag(nObs), IPP=diag(nPred), mu=rep(0,nObs))
+
+data <- list(yObs = yObs)
+
+inits <- list(rho = 1, sigGP = 1, sigOE = 1)
+
+Rmodel <- nimbleModel(code, constants, data, inits)
+```
+
+
+### Create, compile, and run
+
+```{r, message=FALSE}
+
+## MCMC specification with no samplers
+spec <- configureMCMC(Rmodel, nodes = NULL)
+
+## this will be used for some checking, and setting up block sampler:
+params <- Rmodel$getNodeNames(topOnly = TRUE)
+
+## NOTE: the next line shouldn't work for you, since the MCMC API has changed.
+## you can rebuild from source off nimble branch 'devel'.
+## otherwise, using last public release of NIMBLE (0.3-1), use this line instead:
+## spec$addSampler('RW_block', control = list(targetNodes = params))
+spec$addSampler(params, 'RW_block')
+```
+
+We can debate about univariate vs. block sampling at some point.
+
+```{r, message=FALSE}
+## MCMC function
+Rmcmc <- buildMCMC(spec)
+
+## GP prediction function
+## also uses the 'params' variable for specialization
+Rpred <- gpPred(Rmodel, params)
+
+## compile everything
+Cmodel <- compileNimble(Rmodel)
+Cmcmc  <- compileNimble(Rmcmc, project = Rmodel)
+Cpred  <- compileNimble(Rpred, project = Rmodel)
+
+## MCMC sampling
+## 100,000 iterations
+system.time(Cmcmc$run(100000))
+```
+
+About 25 seconds on my computer
+
+That can be improved if necessary
+
+```{r, message=FALSE}
+samples <- as.matrix(Cmcmc$mvSamples)
+
+## quick check
+if(!identical(params, colnames(samples))) stop('problem')
+
+## predict from GP model using posterior MCMC samples
+system.time(Cpred$run(samples))
+```
+
+About 40 seconds on my computer
+
+Again, could streamline the gpPred() function if necessary
+
+```{r, message=FALSE}
+## extract predictions: E and C
+E <- Cpred$getE()
+C <- Cpred$getC()
+```
+
+
+
+### Output
+
+```{r}
+E
+```
+
+```{r}
+diag(C)
+```
+
+Black dots are the original 'xObs' and 'yObs'
+
+Red dots are the predictions made at each 'xPred'
+
+Red lines are plus/minus one standard error
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+plot(xObs, yObs, type='b', pch=19, xlim=range(c(xObs,xPred)), ylim=range(c(yObs,E)))
+points(xPred, E, pch=20, col='red')
+segments(x0=xPred, y0=E-sqrt(diag(C)), y1=E+sqrt(diag(C)), col='red')
+```
+
+
