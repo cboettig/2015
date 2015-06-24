@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-06-19T19:07:13+00:00</updated>
+  <updated>2015-06-24T23:50:18+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -295,7 +295,7 @@ values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
    <updated>2015-06-16T00:00:00+00:00</updated>
    <id>/06/16/daniel-gp-example</id>
    <content type="html">&lt;h3 id=&quot;setup&quot;&gt;Setup&lt;/h3&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ref =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;devel&amp;#39;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;subdir =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;packages/nimble&amp;#39;&lt;/span&gt;)
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
 &lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Randomly generate some sinusoidal data&lt;/p&gt;
@@ -396,7 +396,7 @@ Cpred  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 ## 100,000 iterations
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 60.184   0.036  60.328 &lt;/code&gt;&lt;/pre&gt;
+ 66.706   0.024  66.795 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 25 seconds on my computer&lt;/p&gt;
 &lt;p&gt;That can be improved if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
@@ -407,7 +407,7 @@ if(!&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(params, &lt;span cla
 ## predict from GP model using posterior MCMC samples
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 79.848   0.000  80.024 &lt;/code&gt;&lt;/pre&gt;
+ 86.759   0.004  86.858 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 40 seconds on my computer&lt;/p&gt;
 &lt;p&gt;Again, could streamline the gpPred() function if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## extract predictions: E and C
