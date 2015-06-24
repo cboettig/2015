@@ -19,6 +19,7 @@ RUN install2.r --error -r http://cran.rstudio.com -r http://r-nimble.org \
     cboettig/regimeshifts  \
     ropensci/rgpdd \
     cboettig/nonparametric-bayes \
+    cboettig/pmc \
   && rm -rf /tmp/downloaded_packages
 
 
