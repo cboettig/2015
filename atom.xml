@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-06-24T23:50:18+00:00</updated>
+  <updated>2015-06-24T23:50:38+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -396,7 +396,7 @@ Cpred  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 ## 100,000 iterations
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 66.706   0.024  66.795 &lt;/code&gt;&lt;/pre&gt;
+ 65.848   0.035  66.044 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 25 seconds on my computer&lt;/p&gt;
 &lt;p&gt;That can be improved if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
@@ -407,7 +407,7 @@ if(!&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(params, &lt;span cla
 ## predict from GP model using posterior MCMC samples
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 86.759   0.004  86.858 &lt;/code&gt;&lt;/pre&gt;
+ 85.653   0.004  85.815 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 40 seconds on my computer&lt;/p&gt;
 &lt;p&gt;Again, could streamline the gpPred() function if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## extract predictions: E and C
