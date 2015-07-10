@@ -25,32 +25,40 @@ f <- function(x, h, p){
 }
 p <- c(a = 6, b = 0.05)
 
-profit <- function(x, h) min(x,h)  # vectorized for x
-x_grid <- seq(0, 150, length = 51)
-h_grid <- seq(0, 150,length = 51)
-delta <- 0.05
-sigma_g <- 0.0
+profit <- function(x, h) pmin(x,h) - 0.1 * h  # vectorized for x
+x_grid <- seq(0, 150, length = 10)
+h_grid <- c(0,50,100)
+delta <- 0.001
+sigma_g <- 0.01
 z_g <- function() 1 + rlnorm(1, 0, sigma_g)
 pdfn <- function(P, s) dlnorm(P, 0, s)
 ```
 
+```{r}
+M <- pdgControl::determine_SDP_matrix(f, p, x_grid, h_grid, sigma_g, pdfn)
+out <- pdgControl::value_iteration(M, x_grid, h_grid, 1, 0, profit, delta)
+
+```
 
 Building the transition probability matrix: 
 
 ```{r}
-determine_SDP_matrix <- function(f, p, x_grid, h_grid, sigma_g,
+transition_matrix <- function(f, p, x_grid, h_grid, sigma_g,
                                  pdfn=function(P, s) dlnorm(P, 0, s)){
-  gridsize <- length(x_grid)
-  SDP_Mat <- lapply(h_grid, function(h){
-    SDP_matrix <- matrix(0, nrow=gridsize, ncol=gridsize)
+  n_x <- length(x_grid)
+  n_h <- length(h_grid)
+  SDP_matrix <-  array(0, c(length(x_grid), length(x_grid),length(h_grid)))
+  
+  for(h_i in 1:n_h){
+    h <- h_grid[h_i]
     # Cycle over x values
-    for(i in 1:gridsize){ 
+    for(i in 1:n_x){ 
       ## Calculate the expected transition  
       x1 <- x_grid[i]
       x2_expected <- f(x1, h, p)
       ## If expected 0, go to 0 with probabilty 1
       if( x2_expected == 0) 
-        SDP_matrix[i,1] <- 1  
+        SDP_matrix[i,1,h_i] <- 1  
       else {
         # relative probability of a transition to that state
         ProportionalChance <- x_grid / x2_expected
@@ -58,14 +66,16 @@ determine_SDP_matrix <- function(f, p, x_grid, h_grid, sigma_g,
         
         if(sum(Prob) > 0)
         # Store normalized probabilities in row
-          SDP_matrix[i,] <- Prob/sum(Prob)
+          SDP_matrix[i,,h_i] <- Prob/sum(Prob)
         else 
-          SDP_matrix[i,] <- c(1, numeric(gridsize-1))
+          SDP_matrix[i,,h_i] <- c(1, numeric(n_x-1))
+        
+        if(anyNA(SDP_matrix[i,,h_i]))
+          recover()
       }
     }
-    t(SDP_matrix)
-  })
-  SDP_Mat
+  }
+  SDP_matrix
 }
 
 
@@ -84,7 +94,7 @@ R <- t(sapply(x_grid, function(x)
 Note that in $f$ we must define the harvesting take place before the population recruits.
 
 ```{r}
-P <- determine_SDP_matrix(f, p, x_grid, h_grid, sigma_g, pdfn)
+P <- transition_matrix(f, p, x_grid, h_grid, sigma_g, pdfn)
 ```
 
 
@@ -92,22 +102,26 @@ P <- determine_SDP_matrix(f, p, x_grid, h_grid, sigma_g, pdfn)
 x0 <- (p[[1]]-1)/p[[2]]
 i <- which.min(abs(x_grid-x0))
 
-V0 <- R[i,]
+V0 <- rep(0, length(x_grid))
 ```
 
 ```{r}
 mdp_check(P=P,R=R)
 
-testthat::expect_equal(sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))), 0)
+
 ```
 
 ```{r}
-out <- mdp_value_iteration(P, R, discount=delta, epsilon=0.001, max_iter = 1e4, V0=V0)
+out <- mdp_value_iteration(P, R, discount=delta, epsilon=0.001, max_iter = 5e3, V0=V0)
+policy <- out$policy
+
+out <- mdp_finite_horizon(P, R, discount=delta, 10)
+policy <- out$policy[,1]
 ```
 
 
 Whoops, this doesn't look right:
 
 ```{r}
-plot(x_grid, h_grid[out$policy])
+plot(x_grid, h_grid[policy])
 ```
