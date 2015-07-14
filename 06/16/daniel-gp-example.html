@@ -108,9 +108,14 @@
   <div class="col-md-7 col-md-offset-1">
     <article>
     <h3 id="setup">Setup</h3>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;nimble-dev/nimble/packages/nimble@devel&#39;</span>)
-<span class="kw">library</span>(nimble)
-<span class="kw">set.seed</span>(<span class="dv">0</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;nimble-dev/nimble/packages/nimble@devel&#39;</span>)</code></pre>
+<pre><code>
+The downloaded source packages are in
+    &#39;/tmp/RtmpFlFQ0I/downloaded_packages&#39;</code></pre>
+<pre><code>Error: Command failed (1)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nimble)</code></pre>
+<pre><code>Error: package or namespace load failed for &#39;nimble&#39;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">0</span>)</code></pre>
 <p>Randomly generate some sinusoidal data</p>
 <pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">100</span>
 y &lt;-<span class="st"> </span><span class="kw">sin</span>(x/<span class="dv">5</span>) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="fl">0.1</span>)
@@ -157,6 +162,7 @@ diffPO &lt;-<span class="st"> </span><span class="kw">outer</span>(xPred, xObs, 
         <span class="dt">getC =</span> function() { <span class="kw">returnType</span>(<span class="kw">double</span>(<span class="dv">2</span>)); <span class="kw">return</span>(C[, ]) }
     )
 )</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;nimbleFunction&quot;</code></pre>
 <h3 id="gp-model">GP model</h3>
 <p>GP model defined here. Basically the same as your original, but I renamed some paramters more to my liking =)</p>
 <p>This is <em>not</em> as elegant as I had hoped. It still requires repeating (essentially) the same code three times. I discovered some limitations of NIMBLE while trying other approaches.</p>
@@ -169,9 +175,9 @@ diffPO &lt;-<span class="st"> </span><span class="kw">outer</span>(xPred, xObs, 
    SigPP[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nPred] &lt;-<span class="st"> </span>sigGP^<span class="dv">2</span>*<span class="kw">exp</span>(-<span class="dv">1</span>/<span class="dv">2</span>*diffPP[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nPred]/rho^<span class="dv">2</span>) +<span class="st"> </span>sigOE^<span class="dv">2</span>*IPP[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nPred]
    SigPO[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nObs ] &lt;-<span class="st"> </span>sigGP^<span class="dv">2</span>*<span class="kw">exp</span>(-<span class="dv">1</span>/<span class="dv">2</span>*diffPO[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nObs ]/rho^<span class="dv">2</span>)
    yObs[<span class="dv">1</span>:nObs] ~<span class="st"> </span><span class="kw">dmnorm</span>(mu[<span class="dv">1</span>:nObs], <span class="dt">cov =</span> SigOO[<span class="dv">1</span>:nObs,<span class="dv">1</span>:nObs])
-})
-
-constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">nObs=</span>nObs, <span class="dt">nPred=</span>nPred, <span class="dt">diffOO=</span>diffOO, <span class="dt">diffPP=</span>diffPP, <span class="dt">diffPO=</span>diffPO,
+})</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;nimbleCode&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">nObs=</span>nObs, <span class="dt">nPred=</span>nPred, <span class="dt">diffOO=</span>diffOO, <span class="dt">diffPP=</span>diffPP, <span class="dt">diffPO=</span>diffPO,
                   <span class="dt">IOO=</span><span class="kw">diag</span>(nObs), <span class="dt">IPP=</span><span class="kw">diag</span>(nPred), <span class="dt">mu=</span><span class="kw">rep</span>(<span class="dv">0</span>,nObs))
 
 data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">yObs =</span> yObs)
@@ -179,106 +185,69 @@ data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt"
 inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rho =</span> <span class="dv">1</span>, <span class="dt">sigGP =</span> <span class="dv">1</span>, <span class="dt">sigOE =</span> <span class="dv">1</span>)
 
 Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(code, constants, data, inits)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;nimbleModel&quot;</code></pre>
 <h3 id="create-compile-and-run">Create, compile, and run</h3>
 <pre class="sourceCode r"><code class="sourceCode r">## MCMC specification with no samplers
-spec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">nodes =</span> <span class="ot">NULL</span>)
-
-## this will be used for some checking, and setting up block sampler:
-params &lt;-<span class="st"> </span>Rmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>)
-
-## NOTE: the next line shouldn&#39;t work for you, since the MCMC API has changed.
+spec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">nodes =</span> <span class="ot">NULL</span>)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;configureMCMC&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## this will be used for some checking, and setting up block sampler:
+params &lt;-<span class="st"> </span>Rmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;Rmodel&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## NOTE: the next line shouldn&#39;t work for you, since the MCMC API has changed.
 ## you can rebuild from source off nimble branch &#39;devel&#39;.
 ## otherwise, using last public release of NIMBLE (0.3-1), use this line instead:
 ## spec$addSampler(&#39;RW_block&#39;, control = list(targetNodes = params))
 spec$<span class="kw">addSampler</span>(params, <span class="st">&#39;RW_block&#39;</span>)</code></pre>
-<pre><code>[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;spec&#39; not found</code></pre>
 <p>We can debate about univariate vs. block sampling at some point.</p>
 <pre class="sourceCode r"><code class="sourceCode r">## MCMC function
-Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(spec)
-
-## GP prediction function
+Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(spec)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;buildMCMC&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## GP prediction function
 ## also uses the &#39;params&#39; variable for specialization
-Rpred &lt;-<span class="st"> </span><span class="kw">gpPred</span>(Rmodel, params)
-
-## compile everything
-Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
-Cmcmc  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Rmodel)
-Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred, <span class="dt">project =</span> Rmodel)
-
-## MCMC sampling
+Rpred &lt;-<span class="st"> </span><span class="kw">gpPred</span>(Rmodel, params)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;gpPred&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## compile everything
+Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;compileNimble&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">Cmcmc  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Rmodel)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;compileNimble&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred, <span class="dt">project =</span> Rmodel)</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;compileNimble&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## MCMC sampling
 ## 100,000 iterations
 <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
-<pre><code>   user  system elapsed 
- 65.848   0.035  66.044 </code></pre>
+<pre><code>Error in system.time(Cmcmc$run(1e+05)): object &#39;Cmcmc&#39; not found</code></pre>
+<pre><code>Timing stopped at: 0 0 0 </code></pre>
 <p>About 25 seconds on my computer</p>
 <p>That can be improved if necessary</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
-
-## quick check
-if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(samples))) <span class="kw">stop</span>(<span class="st">&#39;problem&#39;</span>)
-
-## predict from GP model using posterior MCMC samples
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)</code></pre>
+<pre><code>Error in as.matrix(Cmcmc$mvSamples): object &#39;Cmcmc&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## quick check
+if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(samples))) <span class="kw">stop</span>(<span class="st">&#39;problem&#39;</span>)</code></pre>
+<pre><code>Error in identical(params, colnames(samples)): object &#39;params&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## predict from GP model using posterior MCMC samples
 <span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
-<pre><code>   user  system elapsed 
- 85.653   0.004  85.815 </code></pre>
+<pre><code>Error in system.time(Cpred$run(samples)): object &#39;Cpred&#39; not found</code></pre>
+<pre><code>Timing stopped at: 0 0 0 </code></pre>
 <p>About 40 seconds on my computer</p>
 <p>Again, could streamline the gpPred() function if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">## extract predictions: E and C
-E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()
-C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre>
+E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;Cpred&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;Cpred&#39; not found</code></pre>
 <h3 id="output">Output</h3>
 <pre class="sourceCode r"><code class="sourceCode r">E</code></pre>
-<pre><code>  [1]  1.048953470  1.063690923  1.056571565  1.025025296  0.967727602
-  [6]  0.885088092  0.779046134  0.652750089  0.510403944  0.357145489
- [11]  0.198827230  0.041501513 -0.109026506 -0.247533773 -0.369716151
- [16] -0.472313950 -0.553105378 -0.610874554 -0.645461105 -0.657719603
- [21] -0.649076810 -0.621198765 -0.575868588 -0.514737033 -0.439105417
- [26] -0.349971602 -0.248371381 -0.135451833 -0.012707283  0.117353661
- [31]  0.251084159  0.383920114  0.510567530  0.625303732  0.722419735
- [36]  0.796925448  0.845259818  0.865448082  0.857113606  0.821872152
- [41]  0.763535592  0.687360014  0.599297100  0.505480001  0.411259520
- [46]  0.320288380  0.234175561  0.152695050  0.074286902 -0.003167262
- [51] -0.081466127 -0.161638385 -0.243673849 -0.325876291 -0.404833854
- [56] -0.476477835 -0.536583186 -0.580993801 -0.606153844 -0.609554981
- [61] -0.590206477 -0.548974521 -0.488316837 -0.411928777 -0.324540013
- [66] -0.231641132 -0.139114920 -0.052860394  0.021550784  0.079331411
- [71]  0.117042000  0.132978712  0.127078948  0.100689033  0.056355647
- [76] -0.002485485 -0.071873133 -0.147591543 -0.225248038 -0.300383786
- [81] -0.368679284 -0.425886710 -0.467685571 -0.489815787 -0.488669528
- [86] -0.462038368 -0.409587331 -0.332776473 -0.234523765 -0.119090537
- [91]  0.008395849  0.142692615  0.278921123  0.412628846  0.539726698
- [96]  0.656454950  0.759426449  0.845730518  0.912939607  0.959256645
-[101]  0.984015990  0.987978885  0.972988593  0.941606557  0.896909969
-[106]  0.842215301  0.780777080  0.715559458  0.649099436  0.583448236
-[111]  0.520171088  0.460385520  0.404821033  0.353887176  0.307741235
-[116]  0.266350221  0.229544512  0.197062243  0.168584714  0.143763668</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;E&#39; not found</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">diag</span>(C)</code></pre>
-<pre><code>  [1] 1.2679882 1.2064883 1.1541432 1.1116728 1.0784248 1.0524884
-  [7] 1.0317576 1.0147224 1.0007923 0.9900904 0.9827438 0.9787769
- [13] 0.9777564 0.9783522 0.9785871 0.9766328 0.9714366 0.9630053
- [19] 0.9522229 0.9402332 0.9284669 0.9183767 0.9109672 0.9068412
- [25] 0.9062843 0.9093517 0.9158928 0.9254797 0.9372421 0.9497874
- [31] 0.9614992 0.9705821 0.9757483 0.9766685 0.9740220 0.9691475
- [37] 0.9633160 0.9577090 0.9532083 0.9500621 0.9480639 0.9471172
- [43] 0.9473233 0.9485876 0.9506984 0.9530274 0.9546481 0.9549896
- [49] 0.9542985 0.9535398 0.9539394 0.9568409 0.9630692 0.9727686
- [55] 0.9850166 0.9979048 1.0093360 1.0177498 1.0224490 1.0235779
- [61] 1.0216894 1.0172186 1.0108482 1.0037543 0.9975825 0.9940451
- [67] 0.9942810 0.9988192 1.0071728 1.0181157 1.0297591 1.0394083
- [73] 1.0443944 1.0429170 1.0346484 1.0209019 1.0041130 0.9869394
- [79] 0.9713413 0.9580174 0.9466908 0.9370265 0.9291060 0.9233148
- [85] 0.9204774 0.9213396 0.9262437 0.9349512 0.9465634 0.9595347
- [91] 0.9721773 0.9829212 0.9902883 0.9935894 0.9933386 0.9913798
- [97] 0.9906718 0.9946403 1.0070336 1.0312845 1.0694759 1.1218007
-[103] 1.1866870 1.2612294 1.3418003 1.4247225 1.5067538 1.5853383
-[109] 1.6586720 1.7256456 1.7857277 1.8388290 1.8851737 1.9251909
-[115] 1.9594282 1.9884878 2.0129814 2.0334994 2.0505931 2.0647637</code></pre>
+<pre><code>Error in as.integer(x): cannot coerce type &#39;closure&#39; to vector of type &#39;integer&#39;</code></pre>
 <p>Black dots are the original ‘xObs’ and ‘yObs’</p>
 <p>Red dots are the predictions made at each ‘xPred’</p>
 <p>Red lines are plus/minus one standard error</p>
-<figure>
-<img src="/2015/assets/figures/posts/2015-06-16-daniel-gp-example/unnamed-chunk-13-1.png" />
-</figure>
+<pre><code>Error in plot.default(xObs, yObs, type = &quot;b&quot;, pch = 19, xlim = range(c(xObs, : object &#39;E&#39; not found</code></pre>
+<pre><code>Error in xy.coords(x, y): object &#39;E&#39; not found</code></pre>
+<pre><code>Error in segments(x0 = xPred, y0 = E - sqrt(diag(C)), y1 = E + sqrt(diag(C)), : object &#39;E&#39; not found</code></pre>
 
     </article>
   </div>

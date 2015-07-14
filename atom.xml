@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-06-24T23:50:38+00:00</updated>
+  <updated>2015-07-14T23:54:15+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -11,6 +11,351 @@
   </author>
 
    
+ <entry>
+   <title>Mdptoolbox Ex 2</title>
+   <link href="http://www.carlboettiger.info/2015/07/14/mdptoolbox-ex-2.html"/>
+   <updated>2015-07-14T00:00:00+00:00</updated>
+   <id>/07/14/mdptoolbox-ex-2</id>
+   <content type="html">&lt;p&gt;Adapted from MARESCOT ET AL. APPENDIX 5&lt;/p&gt;
+&lt;h2 id=&quot;step-1-define-objectives&quot;&gt;STEP 1: DEFINE OBJECTIVES&lt;/h2&gt;
+&lt;p&gt;This is a conceptual step which does not require coding&lt;/p&gt;
+&lt;h2 id=&quot;step-2-define-states&quot;&gt;STEP 2: DEFINE STATES&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;K &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt; &lt;span class=&quot;co&quot;&gt;# state space limit&lt;/span&gt;
+states &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K &lt;span class=&quot;co&quot;&gt;# Vector of all possible states&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;step-3-define-control-actions&quot;&gt;STEP 3: DEFINE CONTROL ACTIONS&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Vector of actions: harvest&lt;/span&gt;
+H &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;states&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;step-4-define-dynamic-model-with-demographic-parameters&quot;&gt;STEP 4: DEFINE DYNAMIC MODEL (WITH DEMOGRAPHIC PARAMETERS)&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;p &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;,&lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;)
+f &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x, h){
+  A &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;p[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] 
+  B &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;p[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;] 
+  s &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;pmax&lt;/span&gt;(x-h, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)
+  A *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;s/(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;B *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;s)
+}
+
+sigma_g =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h1 id=&quot;step-5-define-utility&quot;&gt;STEP 5: DEFINE UTILITY&lt;/h1&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Utility function&lt;/span&gt;
+get_utility &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x,h) {
+    &lt;span class=&quot;kw&quot;&gt;pmin&lt;/span&gt;(x,h)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;step-6-solve-bellman-equation-with-value-iteration&quot;&gt;STEP 6: SOLVE BELLMAN EQUATION WITH VALUE ITERATION&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Initialize transition matrix&lt;/span&gt;
+transition &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;dim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)))
+
+&lt;span class=&quot;co&quot;&gt;# Initialize utility matrix&lt;/span&gt;
+utility &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;dim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Fill in the transition and utility matrix&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# Loop on all states&lt;/span&gt;
+for (k in &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K) {
+
+    &lt;span class=&quot;co&quot;&gt;# Loop on all actions&lt;/span&gt;
+    for (i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)) {
+
+&lt;span class=&quot;co&quot;&gt;# Calculate the transition state at the next step, given the &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# current state k and the harvest H[i]&lt;/span&gt;
+        nextpop &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(k, H[i])
+        if(nextpop &amp;lt;=&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)
+          transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, , i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states) -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;))
+    &lt;span class=&quot;co&quot;&gt;# Implement demographic stochasticity by drawing &lt;/span&gt;
+  &lt;span class=&quot;co&quot;&gt;# probability from a density function&lt;/span&gt;
+        else {
+        
+        &lt;span class=&quot;co&quot;&gt;# We need to correct this density for the final capping state (&amp;quot;Pile on boundary&amp;quot;)&lt;/span&gt;
+        &lt;span class=&quot;co&quot;&gt;# For discrete probability distribution, this is easy if `states` includes all possible&lt;/span&gt;
+        &lt;span class=&quot;co&quot;&gt;# discrete states below the capping state (e.g. all non-negative integers less than K).  &lt;/span&gt;
+        &lt;span class=&quot;co&quot;&gt;# For a continous distribution, this is more problematic as we have to first normalize the densities.&lt;/span&gt;
+        &lt;span class=&quot;co&quot;&gt;# EDIT: this can be negative, due to floating-point errors. so we take max(v,0) to avoid&lt;/span&gt;
+        
+          &lt;span class=&quot;co&quot;&gt;# Get long-tailed denominator as normalizing factor (continuous distributions only):&lt;/span&gt;
+          fine_states &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;min&lt;/span&gt;(states), &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;max&lt;/span&gt;(states), &lt;span class=&quot;dt&quot;&gt;by =&lt;/span&gt; states[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]-states[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;])
+        N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;dlnorm&lt;/span&gt;(fine_states, &lt;span class=&quot;kw&quot;&gt;log&lt;/span&gt;(nextpop), &lt;span class=&quot;dt&quot;&gt;sdlog =&lt;/span&gt; sigma_g))
+
+      transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, , i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dlnorm&lt;/span&gt;(states, &lt;span class=&quot;kw&quot;&gt;log&lt;/span&gt;(nextpop), &lt;span class=&quot;dt&quot;&gt;sdlog =&lt;/span&gt; sigma_g) /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;N
+      
+        &lt;span class=&quot;co&quot;&gt;# We need to correct this density for the final capping state (&amp;quot;Pile on boundary&amp;quot;)&lt;/span&gt;
+        transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, K&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;max&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, -(K&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;), i]), &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)
+
+        }
+        
+        &lt;span class=&quot;co&quot;&gt;# Compute utility&lt;/span&gt;
+        utility[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;get_utility&lt;/span&gt;(k, H[i])
+
+    } &lt;span class=&quot;co&quot;&gt;# end of action loop&lt;/span&gt;
+} &lt;span class=&quot;co&quot;&gt;# end of state loop&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Discount factor&lt;/span&gt;
+discount &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.95&lt;/span&gt;
+
+&lt;span class=&quot;co&quot;&gt;# Action value vector at tmax&lt;/span&gt;
+Vtmax &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
+
+&lt;span class=&quot;co&quot;&gt;# Action value vector at t and t+1&lt;/span&gt;
+Vt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
+Vtplus &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
+
+&lt;span class=&quot;co&quot;&gt;# Optimal policy vector&lt;/span&gt;
+D &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
+
+&lt;span class=&quot;co&quot;&gt;# Time horizon&lt;/span&gt;
+Tmax &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;solution-calculated-explicitly&quot;&gt;Solution calculated explicitly:&lt;/h2&gt;
+&lt;p&gt;The backward iteration consists in storing action values in the vector Vt which is the maximum of utility plus the future action values for all possible next states. Knowing the final action values, we can then backwardly reset the next action value Vtplus to the new value Vt. We start The backward iteration at time T-1 since we already defined the action value at Tmax.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;for (t in (Tmax -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;):&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) {
+
+&lt;span class=&quot;co&quot;&gt;# We define a matrix Q that stores the updated action values for &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# all states (rows)&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# actions (columns)&lt;/span&gt;
+    Q &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;dim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)))
+    
+    for (i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)) {
+    
+&lt;span class=&quot;co&quot;&gt;# For each harvest rate we fill for all states values (row) &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# the ith column (Action) of matrix Q&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# The utility of the ith action recorded for all states is &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# added to the product of the transition matrix of the ith &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# action by the action value of all states &lt;/span&gt;
+        Q[,i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;utility[, i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;discount *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(transition[,,i] %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Vtplus)
+    
+    } &lt;span class=&quot;co&quot;&gt;# end of the harvest loop&lt;/span&gt;
+
+    &lt;span class=&quot;co&quot;&gt;# Find the optimal action value at time t is the maximum of Q&lt;/span&gt;
+    Vt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(Q, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, max)
+
+&lt;span class=&quot;co&quot;&gt;# After filling vector Vt of the action values at all states, we &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# update the vector Vt+1 to Vt and we go to the next step standing &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# for previous time t-1, since we iterate backward&lt;/span&gt;
+    Vtplus &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Vt
+
+} &lt;span class=&quot;co&quot;&gt;# end of the time loop&lt;/span&gt;
+
+&lt;span class=&quot;co&quot;&gt;# Find optimal action for each state&lt;/span&gt;
+for (k in &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K) {
+&lt;span class=&quot;co&quot;&gt;# We look for each state which column of Q corresponds to the #maximum of the last updated value &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# of Vt (the one at time t + 1). If the index vector is longer than 1 #(if there is more than one optimal value we chose the minimum &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# harvest rate)&lt;/span&gt;
+    D[k +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;H[(&lt;span class=&quot;kw&quot;&gt;min&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;which&lt;/span&gt;(Q[k +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, ] ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Vt[k +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;])))]
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;plot-solution&quot;&gt;PLOT SOLUTION&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;D, &lt;span class=&quot;dt&quot;&gt;xlab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Escapement&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-9-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;proof-of-optimality-compare-with-analytical-solution&quot;&gt;PROOF OF OPTIMALITY: COMPARE WITH ANALYTICAL SOLUTION&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fun &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x) -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(x,&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;discount
+out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;optimize&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;f =&lt;/span&gt; fun, &lt;span class=&quot;dt&quot;&gt;interval =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,K))
+S_star &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;out$minimum
+
+exact_policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(states, 
+                       function(x) 
+                        if(x &amp;lt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;S_star) &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;
+                        else x -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;S_star)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# The difference between Bellman equation solution and the analytical #solution is small:&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;exact_policy)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;using-toolbox&quot;&gt;Using toolbox&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;MDPtoolbox&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;mdp_check&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;P =&lt;/span&gt; transition, &lt;span class=&quot;dt&quot;&gt;R =&lt;/span&gt; utility)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(transition, utility, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; discount, &lt;span class=&quot;dt&quot;&gt;epsilon =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0 =&lt;/span&gt; Vtmax)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;H[out$policy], &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;red&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Mdptoolbox Ex</title>
+   <link href="http://www.carlboettiger.info/2015/07/14/mdptoolbox-ex.html"/>
+   <updated>2015-07-14T00:00:00+00:00</updated>
+   <id>/07/14/mdptoolbox-ex</id>
+   <content type="html">&lt;p&gt;Adapted from MARESCOT ET AL. APPENDIX 5&lt;/p&gt;
+&lt;h2 id=&quot;step-1-define-objectives&quot;&gt;STEP 1: DEFINE OBJECTIVES&lt;/h2&gt;
+&lt;p&gt;This is a conceptual step which does not require coding&lt;/p&gt;
+&lt;h2 id=&quot;step-2-define-states&quot;&gt;STEP 2: DEFINE STATES&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;K &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;250&lt;/span&gt; &lt;span class=&quot;co&quot;&gt;# state space limit&lt;/span&gt;
+states &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K &lt;span class=&quot;co&quot;&gt;# Vector of all possible states&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;step-3-define-control-actions&quot;&gt;STEP 3: DEFINE CONTROL ACTIONS&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Vector of actions: rate of the population that can be removed, ranging #from 0 to 1&lt;/span&gt;
+H &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;/(K&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;step-4-define-dynamic-model-with-demographic-parameters&quot;&gt;STEP 4: DEFINE DYNAMIC MODEL (WITH DEMOGRAPHIC PARAMETERS)&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Population growth rate&lt;/span&gt;
+lambda &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1.25&lt;/span&gt;
+
+&lt;span class=&quot;co&quot;&gt;# Function for the exponential growth of the dynamic model&lt;/span&gt;
+dynamic &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(actualpop, action) {
+    nextpop &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;actualpop*lambda*(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;-action)
+    &lt;span class=&quot;kw&quot;&gt;return&lt;/span&gt;(nextpop)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;h1 id=&quot;step-5-define-utility&quot;&gt;STEP 5: DEFINE UTILITY&lt;/h1&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Maximum objective threshold for population abundance&lt;/span&gt;
+Nmax &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;250&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# Minimum objective threshold for population abundance&lt;/span&gt;
+Nmin &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;
+
+&lt;span class=&quot;co&quot;&gt;# Utility function&lt;/span&gt;
+get_utility &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x) {
+    &lt;span class=&quot;kw&quot;&gt;return&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;ifelse&lt;/span&gt;(x &amp;lt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Nmin |&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Nmax, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, x))
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;step-6-solve-bellman-equation-with-value-iteration&quot;&gt;STEP 6: SOLVE BELLMAN EQUATION WITH VALUE ITERATION&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Initialize transition matrix&lt;/span&gt;
+transition &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;dim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)))
+
+&lt;span class=&quot;co&quot;&gt;# Initialize utility matrix&lt;/span&gt;
+utility &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;dim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Fill in the transition and utility matrix&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# Loop on all states&lt;/span&gt;
+for (k in &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K) {
+
+    &lt;span class=&quot;co&quot;&gt;# Loop on all actions&lt;/span&gt;
+    for (i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)) {
+
+&lt;span class=&quot;co&quot;&gt;# Calculate the transition state at the next step, given the &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# current state k and the harvest Hi&lt;/span&gt;
+        nextpop &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dynamic&lt;/span&gt;(k, H[i])
+        
+    &lt;span class=&quot;co&quot;&gt;# Implement demographic stochasticity by drawing &lt;/span&gt;
+  &lt;span class=&quot;co&quot;&gt;# probability from a Poisson density function&lt;/span&gt;
+        transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, , i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dpois&lt;/span&gt;(states,nextpop)
+        &lt;span class=&quot;co&quot;&gt;# We need to correct this density for the final capping state &lt;/span&gt;
+        &lt;span class=&quot;co&quot;&gt;# EDIT: this can be negative, due to floating-point errors. so we take max(v,0) to avoid&lt;/span&gt;
+        transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, K&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;max&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, -(K&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;), i]),&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)
+        
+        &lt;span class=&quot;co&quot;&gt;# Compute utility&lt;/span&gt;
+        utility[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;get_utility&lt;/span&gt;(nextpop)
+
+    } &lt;span class=&quot;co&quot;&gt;# end of action loop&lt;/span&gt;
+} &lt;span class=&quot;co&quot;&gt;# end of state loop&lt;/span&gt;
+
+&lt;span class=&quot;co&quot;&gt;# Discount factor&lt;/span&gt;
+discount &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.9&lt;/span&gt;
+
+&lt;span class=&quot;co&quot;&gt;# Action value vector at tmax&lt;/span&gt;
+Vtmax &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
+
+&lt;span class=&quot;co&quot;&gt;# Action value vector at t and t+1&lt;/span&gt;
+Vt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
+Vtplus &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
+
+&lt;span class=&quot;co&quot;&gt;# Optimal policy vector&lt;/span&gt;
+D &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
+
+&lt;span class=&quot;co&quot;&gt;# Time horizon&lt;/span&gt;
+Tmax &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;solution-calculated-explicitly&quot;&gt;Solution calculated explicitly:&lt;/h2&gt;
+&lt;p&gt;The backward iteration consists in storing action values in the vector Vt which is the maximum of utility plus the future action values for all possible next states. Knowing the final action values, we can then backwardly reset the next action value Vtplus to the new value Vt. We start The backward iteration at time T-1 since we already defined the action value at Tmax.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;for (t in (Tmax -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;):&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) {
+
+&lt;span class=&quot;co&quot;&gt;# We define a matrix Q that stores the updated action values for &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# all states (rows)&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# actions (columns)&lt;/span&gt;
+    Q &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;dim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)))
+    
+    for (i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)) {
+    
+&lt;span class=&quot;co&quot;&gt;# For each harvest rate we fill for all states values (row) &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# the ith column (Action) of matrix Q&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# The utility of the ith action recorded for all states is &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# added to the product of the transition matrix of the ith &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# action by the action value of all states &lt;/span&gt;
+        Q[,i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;utility[, i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;discount *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(transition[,,i] %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Vtplus)
+    
+    } &lt;span class=&quot;co&quot;&gt;# end of the harvest loop&lt;/span&gt;
+
+    &lt;span class=&quot;co&quot;&gt;# Find the optimal action value at time t is the maximum of Q&lt;/span&gt;
+    Vt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(Q, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, max)
+
+&lt;span class=&quot;co&quot;&gt;# After filling vector Vt of the action values at all states, we &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# update the vector Vt+1 to Vt and we go to the next step standing &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# for previous time t-1, since we iterate backward&lt;/span&gt;
+    Vtplus &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Vt
+
+} &lt;span class=&quot;co&quot;&gt;# end of the time loop&lt;/span&gt;
+
+&lt;span class=&quot;co&quot;&gt;# Find optimal action for each state&lt;/span&gt;
+for (k in &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K) {
+&lt;span class=&quot;co&quot;&gt;# We look for each state which column of Q corresponds to the #maximum of the last updated value &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# of Vt (the one at time t + 1). If the index vector is longer than 1 #(if there is more than one optimal value we chose the minimum &lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;# harvest rate)&lt;/span&gt;
+    D[k +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;H[(&lt;span class=&quot;kw&quot;&gt;min&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;which&lt;/span&gt;(Q[k +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, ] ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Vt[k +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;])))]
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;plot-solution&quot;&gt;PLOT SOLUTION&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(states, D, &lt;span class=&quot;dt&quot;&gt;xlab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;harvest rate&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex/unnamed-chunk-8-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;proof-of-optimality-compare-with-analytical-solution&quot;&gt;PROOF OF OPTIMALITY: COMPARE WITH ANALYTICAL SOLUTION&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;exact_policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,K)
+for (k in &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K) {
+    exact_policy[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;max&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;K/(k*lambda))
+}
+
+&lt;span class=&quot;co&quot;&gt;# The difference between Bellman equation solution and the analytical #solution is small:&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, exact_policy)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;D -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;exact_policy&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;  [1] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+  [6] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [11] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [16] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [21] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [26] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [31] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [36] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [41] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [46] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [51] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [56] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [61] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [66] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [71] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [76] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [81] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [86] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [91] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [96] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[101] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[106] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[111] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[116] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[121] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[126] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[131] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[136] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[141] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[146] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[151] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[156] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[161] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[166] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[171] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[176] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[181] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[186] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[191] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[196] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[201] 0.0000000000 0.0029930031 0.0020512011 0.0011579299 0.0003124756
+[206] 0.0034982023 0.0027462964 0.0020401486 0.0013790990 0.0007625002
+[211] 0.0001897173 0.0036441910 0.0031571826 0.0027121561 0.0023085229
+[216] 0.0019457055 0.0016231371 0.0013402611 0.0010965313 0.0008914115
+[221] 0.0007243752 0.0005949054 0.0005024945 0.0004466439 0.0004268640
+[226] 0.0004426737 0.0004936008 0.0005791811 0.0006989586 0.0008524853
+[231] 0.0010393210 0.0012590331 0.0015111966 0.0017953935 0.0021112133
+[236] 0.0024582521 0.0028361132 0.0032444063 0.0036827480 0.0001666972
+[241] 0.0006640106 0.0011902597 0.0017450858 0.0023281360 0.0029390634
+[246] 0.0035775266 0.0002591261 0.0009516590 0.0016707364 0.0024160387
+[251] 0.0031872510&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;using-toolbox&quot;&gt;Using toolbox&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;MDPtoolbox&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;mdp_check&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;P =&lt;/span&gt; transition, &lt;span class=&quot;dt&quot;&gt;R =&lt;/span&gt; utility)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(transition, utility, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; discount, &lt;span class=&quot;dt&quot;&gt;epsilon =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0 =&lt;/span&gt; Vtmax)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, H[out$policy], &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;red&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
  <entry>
    <title>Further exploration of RAM Legacy Stock Assessment data</title>
    <link href="http://www.carlboettiger.info/2015/06/18/RAM-explore.html"/>
@@ -295,9 +640,14 @@ values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
    <updated>2015-06-16T00:00:00+00:00</updated>
    <id>/06/16/daniel-gp-example</id>
    <content type="html">&lt;h3 id=&quot;setup&quot;&gt;Setup&lt;/h3&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
-&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;
+The downloaded source packages are in
+    &amp;#39;/tmp/RtmpFlFQ0I/downloaded_packages&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error: Command failed (1)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error: package or namespace load failed for &amp;#39;nimble&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Randomly generate some sinusoidal data&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;
 y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sin&lt;/span&gt;(x/&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt;)
@@ -344,6 +694,7 @@ diffPO &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
         &lt;span class=&quot;dt&quot;&gt;getC =&lt;/span&gt; function() { &lt;span class=&quot;kw&quot;&gt;returnType&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;double&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)); &lt;span class=&quot;kw&quot;&gt;return&lt;/span&gt;(C[, ]) }
     )
 )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;nimbleFunction&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&quot;gp-model&quot;&gt;GP model&lt;/h3&gt;
 &lt;p&gt;GP model defined here. Basically the same as your original, but I renamed some paramters more to my liking =)&lt;/p&gt;
 &lt;p&gt;This is &lt;em&gt;not&lt;/em&gt; as elegant as I had hoped. It still requires repeating (essentially) the same code three times. I discovered some limitations of NIMBLE while trying other approaches.&lt;/p&gt;
@@ -356,9 +707,9 @@ diffPO &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
    SigPP[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigGP^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;/&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*diffPP[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred]/rho^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigOE^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*IPP[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred]
    SigPO[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs ] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigGP^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;/&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*diffPO[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nPred,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs ]/rho^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
    yObs[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dmnorm&lt;/span&gt;(mu[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs], &lt;span class=&quot;dt&quot;&gt;cov =&lt;/span&gt; SigOO[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:nObs])
-})
-
-constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;nObs=&lt;/span&gt;nObs, &lt;span class=&quot;dt&quot;&gt;nPred=&lt;/span&gt;nPred, &lt;span class=&quot;dt&quot;&gt;diffOO=&lt;/span&gt;diffOO, &lt;span class=&quot;dt&quot;&gt;diffPP=&lt;/span&gt;diffPP, &lt;span class=&quot;dt&quot;&gt;diffPO=&lt;/span&gt;diffPO,
+})&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;nimbleCode&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;constants &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;nObs=&lt;/span&gt;nObs, &lt;span class=&quot;dt&quot;&gt;nPred=&lt;/span&gt;nPred, &lt;span class=&quot;dt&quot;&gt;diffOO=&lt;/span&gt;diffOO, &lt;span class=&quot;dt&quot;&gt;diffPP=&lt;/span&gt;diffPP, &lt;span class=&quot;dt&quot;&gt;diffPO=&lt;/span&gt;diffPO,
                   &lt;span class=&quot;dt&quot;&gt;IOO=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(nObs), &lt;span class=&quot;dt&quot;&gt;IPP=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(nPred), &lt;span class=&quot;dt&quot;&gt;mu=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,nObs))
 
 data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;yObs =&lt;/span&gt; yObs)
@@ -366,106 +717,69 @@ data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;rho =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigGP =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigOE =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)
 
 Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(code, constants, data, inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;nimbleModel&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&quot;create-compile-and-run&quot;&gt;Create, compile, and run&lt;/h3&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## MCMC specification with no samplers
-spec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;nodes =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;NULL&lt;/span&gt;)
-
-## this will be used for some checking, and setting up block sampler:
-params &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Rmodel$&lt;span class=&quot;kw&quot;&gt;getNodeNames&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;topOnly =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)
-
-## NOTE: the next line shouldn&amp;#39;t work for you, since the MCMC API has changed.
+spec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;nodes =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;NULL&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;configureMCMC&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## this will be used for some checking, and setting up block sampler:
+params &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Rmodel$&lt;span class=&quot;kw&quot;&gt;getNodeNames&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;topOnly =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;Rmodel&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## NOTE: the next line shouldn&amp;#39;t work for you, since the MCMC API has changed.
 ## you can rebuild from source off nimble branch &amp;#39;devel&amp;#39;.
 ## otherwise, using last public release of NIMBLE (0.3-1), use this line instead:
 ## spec$addSampler(&amp;#39;RW_block&amp;#39;, control = list(targetNodes = params))
 spec$&lt;span class=&quot;kw&quot;&gt;addSampler&lt;/span&gt;(params, &lt;span class=&quot;st&quot;&gt;&amp;#39;RW_block&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;spec&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can debate about univariate vs. block sampling at some point.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## MCMC function
-Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(spec)
-
-## GP prediction function
+Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(spec)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;buildMCMC&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## GP prediction function
 ## also uses the &amp;#39;params&amp;#39; variable for specialization
-Rpred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gpPred&lt;/span&gt;(Rmodel, params)
-
-## compile everything
-Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)
-Cmcmc  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Rmodel)
-Cpred  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rpred, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Rmodel)
-
-## MCMC sampling
+Rpred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gpPred&lt;/span&gt;(Rmodel, params)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;gpPred&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## compile everything
+Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;compileNimble&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmcmc  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Rmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;compileNimble&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cpred  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rpred, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Rmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): could not find function &amp;quot;compileNimble&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## MCMC sampling
 ## 100,000 iterations
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 65.848   0.035  66.044 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in system.time(Cmcmc$run(1e+05)): object &amp;#39;Cmcmc&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Timing stopped at: 0 0 0 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 25 seconds on my computer&lt;/p&gt;
 &lt;p&gt;That can be improved if necessary&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
-
-## quick check
-if(!&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(params, &lt;span class=&quot;kw&quot;&gt;colnames&lt;/span&gt;(samples))) &lt;span class=&quot;kw&quot;&gt;stop&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;problem&amp;#39;&lt;/span&gt;)
-
-## predict from GP model using posterior MCMC samples
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in as.matrix(Cmcmc$mvSamples): object &amp;#39;Cmcmc&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## quick check
+if(!&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(params, &lt;span class=&quot;kw&quot;&gt;colnames&lt;/span&gt;(samples))) &lt;span class=&quot;kw&quot;&gt;stop&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;problem&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in identical(params, colnames(samples)): object &amp;#39;params&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## predict from GP model using posterior MCMC samples
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 85.653   0.004  85.815 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in system.time(Cpred$run(samples)): object &amp;#39;Cpred&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Timing stopped at: 0 0 0 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 40 seconds on my computer&lt;/p&gt;
 &lt;p&gt;Again, could streamline the gpPred() function if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## extract predictions: E and C
-E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
-C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;Cpred&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;Cpred&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&quot;output&quot;&gt;Output&lt;/h3&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;E&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;  [1]  1.048953470  1.063690923  1.056571565  1.025025296  0.967727602
-  [6]  0.885088092  0.779046134  0.652750089  0.510403944  0.357145489
- [11]  0.198827230  0.041501513 -0.109026506 -0.247533773 -0.369716151
- [16] -0.472313950 -0.553105378 -0.610874554 -0.645461105 -0.657719603
- [21] -0.649076810 -0.621198765 -0.575868588 -0.514737033 -0.439105417
- [26] -0.349971602 -0.248371381 -0.135451833 -0.012707283  0.117353661
- [31]  0.251084159  0.383920114  0.510567530  0.625303732  0.722419735
- [36]  0.796925448  0.845259818  0.865448082  0.857113606  0.821872152
- [41]  0.763535592  0.687360014  0.599297100  0.505480001  0.411259520
- [46]  0.320288380  0.234175561  0.152695050  0.074286902 -0.003167262
- [51] -0.081466127 -0.161638385 -0.243673849 -0.325876291 -0.404833854
- [56] -0.476477835 -0.536583186 -0.580993801 -0.606153844 -0.609554981
- [61] -0.590206477 -0.548974521 -0.488316837 -0.411928777 -0.324540013
- [66] -0.231641132 -0.139114920 -0.052860394  0.021550784  0.079331411
- [71]  0.117042000  0.132978712  0.127078948  0.100689033  0.056355647
- [76] -0.002485485 -0.071873133 -0.147591543 -0.225248038 -0.300383786
- [81] -0.368679284 -0.425886710 -0.467685571 -0.489815787 -0.488669528
- [86] -0.462038368 -0.409587331 -0.332776473 -0.234523765 -0.119090537
- [91]  0.008395849  0.142692615  0.278921123  0.412628846  0.539726698
- [96]  0.656454950  0.759426449  0.845730518  0.912939607  0.959256645
-[101]  0.984015990  0.987978885  0.972988593  0.941606557  0.896909969
-[106]  0.842215301  0.780777080  0.715559458  0.649099436  0.583448236
-[111]  0.520171088  0.460385520  0.404821033  0.353887176  0.307741235
-[116]  0.266350221  0.229544512  0.197062243  0.168584714  0.143763668&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;E&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;  [1] 1.2679882 1.2064883 1.1541432 1.1116728 1.0784248 1.0524884
-  [7] 1.0317576 1.0147224 1.0007923 0.9900904 0.9827438 0.9787769
- [13] 0.9777564 0.9783522 0.9785871 0.9766328 0.9714366 0.9630053
- [19] 0.9522229 0.9402332 0.9284669 0.9183767 0.9109672 0.9068412
- [25] 0.9062843 0.9093517 0.9158928 0.9254797 0.9372421 0.9497874
- [31] 0.9614992 0.9705821 0.9757483 0.9766685 0.9740220 0.9691475
- [37] 0.9633160 0.9577090 0.9532083 0.9500621 0.9480639 0.9471172
- [43] 0.9473233 0.9485876 0.9506984 0.9530274 0.9546481 0.9549896
- [49] 0.9542985 0.9535398 0.9539394 0.9568409 0.9630692 0.9727686
- [55] 0.9850166 0.9979048 1.0093360 1.0177498 1.0224490 1.0235779
- [61] 1.0216894 1.0172186 1.0108482 1.0037543 0.9975825 0.9940451
- [67] 0.9942810 0.9988192 1.0071728 1.0181157 1.0297591 1.0394083
- [73] 1.0443944 1.0429170 1.0346484 1.0209019 1.0041130 0.9869394
- [79] 0.9713413 0.9580174 0.9466908 0.9370265 0.9291060 0.9233148
- [85] 0.9204774 0.9213396 0.9262437 0.9349512 0.9465634 0.9595347
- [91] 0.9721773 0.9829212 0.9902883 0.9935894 0.9933386 0.9913798
- [97] 0.9906718 0.9946403 1.0070336 1.0312845 1.0694759 1.1218007
-[103] 1.1866870 1.2612294 1.3418003 1.4247225 1.5067538 1.5853383
-[109] 1.6586720 1.7256456 1.7857277 1.8388290 1.8851737 1.9251909
-[115] 1.9594282 1.9884878 2.0129814 2.0334994 2.0505931 2.0647637&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in as.integer(x): cannot coerce type &amp;#39;closure&amp;#39; to vector of type &amp;#39;integer&amp;#39;&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Black dots are the original ‘xObs’ and ‘yObs’&lt;/p&gt;
 &lt;p&gt;Red dots are the predictions made at each ‘xPred’&lt;/p&gt;
 &lt;p&gt;Red lines are plus/minus one standard error&lt;/p&gt;
-&lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-06-16-daniel-gp-example/unnamed-chunk-13-1.png&quot; /&gt;
-&lt;/figure&gt;
+&lt;pre&gt;&lt;code&gt;Error in plot.default(xObs, yObs, type = &amp;quot;b&amp;quot;, pch = 19, xlim = range(c(xObs, : object &amp;#39;E&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in xy.coords(x, y): object &amp;#39;E&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in segments(x0 = xPred, y0 = E - sqrt(diag(C)), y1 = E + sqrt(diag(C)), : object &amp;#39;E&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
@@ -2940,27 +3254,32 @@ chown -R mysql:mysql /var/lib/mysql&lt;/code&gt;&lt;/pre&gt;
 }
 p &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;a =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;b =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;)
 
-profit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x, h) &lt;span class=&quot;kw&quot;&gt;min&lt;/span&gt;(x,h)  &lt;span class=&quot;co&quot;&gt;# vectorized for x&lt;/span&gt;
-x_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;51&lt;/span&gt;)
-h_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;,&lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;51&lt;/span&gt;)
-delta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;
-sigma_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.0&lt;/span&gt;
+profit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x, h) &lt;span class=&quot;kw&quot;&gt;pmin&lt;/span&gt;(x,h) -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;h  &lt;span class=&quot;co&quot;&gt;# vectorized for x&lt;/span&gt;
+x_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
+h_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
+delta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;
+sigma_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.01&lt;/span&gt;
 z_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function() &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rlnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, sigma_g)
 pdfn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(P, s) &lt;span class=&quot;kw&quot;&gt;dlnorm&lt;/span&gt;(P, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, s)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;M &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;pdgControl::&lt;span class=&quot;kw&quot;&gt;determine_SDP_matrix&lt;/span&gt;(f, p, x_grid, h_grid, sigma_g, pdfn)
+out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;pdgControl::&lt;span class=&quot;kw&quot;&gt;value_iteration&lt;/span&gt;(M, x_grid, h_grid, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, profit, delta)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Building the transition probability matrix:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;determine_SDP_matrix &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(f, p, x_grid, h_grid, sigma_g,
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;transition_matrix &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(f, p, x_grid, h_grid, sigma_g,
                                  &lt;span class=&quot;dt&quot;&gt;pdfn=&lt;/span&gt;function(P, s) &lt;span class=&quot;kw&quot;&gt;dlnorm&lt;/span&gt;(P, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, s)){
-  gridsize &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(x_grid)
-  SDP_Mat &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(h_grid, function(h){
-    SDP_matrix &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;nrow=&lt;/span&gt;gridsize, &lt;span class=&quot;dt&quot;&gt;ncol=&lt;/span&gt;gridsize)
+  n_x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(x_grid)
+  n_h &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(h_grid)
+  SDP_matrix &amp;lt;-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(x_grid), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(x_grid),&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(h_grid)))
+  
+  for(h_i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:n_h){
+    h &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;h_grid[h_i]
     &lt;span class=&quot;co&quot;&gt;# Cycle over x values&lt;/span&gt;
-    for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:gridsize){ 
+    for(i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:n_x){ 
       ## Calculate the expected transition  
       x1 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x_grid[i]
       x2_expected &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(x1, h, p)
       ## If expected 0, go to 0 with probabilty 1
       if( x2_expected ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) 
-        SDP_matrix[i,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;  
+        SDP_matrix[i,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,h_i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;  
       else {
         &lt;span class=&quot;co&quot;&gt;# relative probability of a transition to that state&lt;/span&gt;
         ProportionalChance &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x_grid /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x2_expected
@@ -2968,14 +3287,16 @@ pdfn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(P, s) &lt;
         
         if(&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(Prob) &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)
         &lt;span class=&quot;co&quot;&gt;# Store normalized probabilities in row&lt;/span&gt;
-          SDP_matrix[i,] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Prob/&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(Prob)
+          SDP_matrix[i,,h_i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Prob/&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(Prob)
         else 
-          SDP_matrix[i,] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(gridsize&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;))
+          SDP_matrix[i,,h_i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(n_x&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;))
+        
+        if(&lt;span class=&quot;kw&quot;&gt;anyNA&lt;/span&gt;(SDP_matrix[i,,h_i]))
+          &lt;span class=&quot;kw&quot;&gt;recover&lt;/span&gt;()
       }
     }
-    &lt;span class=&quot;kw&quot;&gt;t&lt;/span&gt;(SDP_matrix)
-  })
-  SDP_Mat
+  }
+  SDP_matrix
 }&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Building the reward matrix:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# [S, A] array&lt;/span&gt;
@@ -2985,22 +3306,24 @@ R &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;k
   &lt;span class=&quot;kw&quot;&gt;profit&lt;/span&gt;(x,h)
 )))&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Note that in &lt;span class=&quot;math&quot;&gt;\(f\)&lt;/span&gt; we must define the harvesting take place before the population recruits.&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;P &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;determine_SDP_matrix&lt;/span&gt;(f, p, x_grid, h_grid, sigma_g, pdfn)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;P &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;transition_matrix&lt;/span&gt;(f, p, x_grid, h_grid, sigma_g, pdfn)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(p[[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]]-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)/p[[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]]
 i &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;which.min&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;abs&lt;/span&gt;(x_grid-x0))
 
-V0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;R[i,]&lt;/code&gt;&lt;/pre&gt;
+V0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(x_grid))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mdp_check&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;P=&lt;/span&gt;P,&lt;span class=&quot;dt&quot;&gt;R=&lt;/span&gt;R)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in if (max(abs(rowSums(X) - rep(1, s2))) &amp;gt; 10^(-12)) {: missing value where TRUE/FALSE needed&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;testthat::&lt;span class=&quot;kw&quot;&gt;expect_equal&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(P, function(x) &lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(x, &lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, is.nan)))), &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error: sum(sapply(P, function(x) sum(apply(x, 2, is.nan)))) not equal to 0
-Mean absolute difference: 130&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P, R, &lt;span class=&quot;dt&quot;&gt;discount=&lt;/span&gt;delta, &lt;span class=&quot;dt&quot;&gt;epsilon=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1e4&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0=&lt;/span&gt;V0)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox WARNING: max_iter is bounded by  5000&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in if (variation &amp;lt; thresh) {: missing value where TRUE/FALSE needed&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P, R, &lt;span class=&quot;dt&quot;&gt;discount=&lt;/span&gt;delta, &lt;span class=&quot;dt&quot;&gt;epsilon=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0=&lt;/span&gt;V0)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;out$policy
+
+out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_finite_horizon&lt;/span&gt;(P, R, &lt;span class=&quot;dt&quot;&gt;discount=&lt;/span&gt;delta, &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
+policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;out$policy[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Whoops, this doesn’t look right:&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(x_grid, h_grid[out$policy])&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in xy.coords(x, y, xlabel, ylabel, log): object &amp;#39;out&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(x_grid, h_grid[policy])&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-01-23-mdptoolbox-ex/unnamed-chunk-9-1.png&quot; /&gt;
+&lt;/figure&gt;
 </content>
  </entry>
  

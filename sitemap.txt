@@ -119,6 +119,8 @@ http://www.carlboettiger.info//sitemap.txt
 http://www.carlboettiger.info//tags.html 
 
  
+http://www.carlboettiger.info//07/14/mdptoolbox-ex-2.html  
+http://www.carlboettiger.info//07/14/mdptoolbox-ex.html  
 http://www.carlboettiger.info//06/18/RAM-explore.html  
 http://www.carlboettiger.info//06/16/daniel-gp-example.html  
 http://www.carlboettiger.info//05/08/ram-legacy-database-explore.html  
