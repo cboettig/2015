@@ -287,6 +287,208 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
         </div>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/07/14/mdptoolbox-ex.html">Mdptoolbox Ex</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 14 Jul 2015</p>
+
+<article>
+<div class="excerpt">
+<p>Adapted from MARESCOT ET AL. APPENDIX 5</p>
+<h2 id="step-1-define-objectives">STEP 1: DEFINE OBJECTIVES</h2>
+<p>This is a conceptual step which does not require coding</p>
+<h2 id="step-2-define-states">STEP 2: DEFINE STATES</h2>
+<pre class="sourceCode r"><code class="sourceCode r">K &lt;-<span class="st"> </span><span class="dv">250</span> <span class="co"># state space limit</span>
+states &lt;-<span class="st"> </span><span class="dv">0</span>:K <span class="co"># Vector of all possible states</span></code></pre>
+<h2 id="step-3-define-control-actions">STEP 3: DEFINE CONTROL ACTIONS</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Vector of actions: rate of the population that can be removed, ranging #from 0 to 1</span>
+H &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>/(K<span class="dv">+1</span>))</code></pre>
+<h2 id="step-4-define-dynamic-model-with-demographic-parameters">STEP 4: DEFINE DYNAMIC MODEL (WITH DEMOGRAPHIC PARAMETERS)</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Population growth rate</span>
+lambda &lt;-<span class="st"> </span><span class="fl">1.25</span>
+
+<span class="co"># Function for the exponential growth of the dynamic model</span>
+dynamic &lt;-<span class="st"> </span>function(actualpop, action) {
+    nextpop &lt;-<span class="st"> </span>actualpop*lambda*(<span class="dv">1</span>-action)
+    <span class="kw">return</span>(nextpop)
+}</code></pre>
+<h1 id="step-5-define-utility">STEP 5: DEFINE UTILITY</h1>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Maximum objective threshold for population abundance</span>
+Nmax &lt;-<span class="st"> </span><span class="dv">250</span>
+<span class="co"># Minimum objective threshold for population abundance</span>
+Nmin &lt;-<span class="st"> </span><span class="dv">50</span>
+
+<span class="co"># Utility function</span>
+get_utility &lt;-<span class="st"> </span>function(x) {
+    <span class="kw">return</span>(<span class="kw">ifelse</span>(x &lt;<span class="st"> </span>Nmin |<span class="st"> </span>x &gt;<span class="st"> </span>Nmax, <span class="dv">0</span>, x))
+}</code></pre>
+<h2 id="step-6-solve-bellman-equation-with-value-iteration">STEP 6: SOLVE BELLMAN EQUATION WITH VALUE ITERATION</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Initialize transition matrix</span>
+transition &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dv">0</span>, <span class="dt">dim =</span> <span class="kw">c</span>(<span class="kw">length</span>(states), <span class="kw">length</span>(states), <span class="kw">length</span>(H)))
+
+<span class="co"># Initialize utility matrix</span>
+utility &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dv">0</span>, <span class="dt">dim =</span> <span class="kw">c</span>(<span class="kw">length</span>(states), <span class="kw">length</span>(H)))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Fill in the transition and utility matrix</span>
+<span class="co"># Loop on all states</span>
+for (k in <span class="dv">0</span>:K) {
+
+    <span class="co"># Loop on all actions</span>
+    for (i in <span class="dv">1</span>:<span class="kw">length</span>(H)) {
+
+<span class="co"># Calculate the transition state at the next step, given the </span>
+<span class="co"># current state k and the harvest Hi</span>
+        nextpop &lt;-<span class="st"> </span><span class="kw">dynamic</span>(k, H[i])
+        
+    <span class="co"># Implement demographic stochasticity by drawing </span>
+  <span class="co"># probability from a Poisson density function</span>
+        transition[k<span class="dv">+1</span>, , i] &lt;-<span class="st"> </span><span class="kw">dpois</span>(states,nextpop)
+        <span class="co"># We need to correct this density for the final capping state </span>
+        <span class="co"># EDIT: this can be negative, due to floating-point errors. so we take max(v,0) to avoid</span>
+        transition[k<span class="dv">+1</span>, K<span class="dv">+1</span>, i] &lt;-<span class="st"> </span><span class="kw">max</span>(<span class="dv">1</span> -<span class="st"> </span><span class="kw">sum</span>(transition[k<span class="dv">+1</span>, -(K<span class="dv">+1</span>), i]),<span class="dv">0</span>)
+        
+        <span class="co"># Compute utility</span>
+        utility[k<span class="dv">+1</span>, i] &lt;-<span class="st"> </span><span class="kw">get_utility</span>(nextpop)
+
+    } <span class="co"># end of action loop</span>
+} <span class="co"># end of state loop</span>
+
+<span class="co"># Discount factor</span>
+discount &lt;-<span class="st"> </span><span class="fl">0.9</span>
+
+<span class="co"># Action value vector at tmax</span>
+Vtmax &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(states))
+
+<span class="co"># Action value vector at t and t+1</span>
+Vt &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(states))
+Vtplus &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(states))
+
+<span class="co"># Optimal policy vector</span>
+D &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(states))
+
+<span class="co"># Time horizon</span>
+Tmax &lt;-<span class="st"> </span><span class="dv">150</span></code></pre>
+<h2 id="solution-calculated-explicitly">Solution calculated explicitly:</h2>
+<p>The backward iteration consists in storing action values in the vector Vt which is the maximum of utility plus the future action values for all possible next states. Knowing the final action values, we can then backwardly reset the next action value Vtplus to the new value Vt. We start The backward iteration at time T-1 since we already defined the action value at Tmax.</p>
+<pre class="sourceCode r"><code class="sourceCode r">for (t in (Tmax -<span class="st"> </span><span class="dv">1</span>):<span class="dv">1</span>) {
+
+<span class="co"># We define a matrix Q that stores the updated action values for </span>
+<span class="co"># all states (rows)</span>
+<span class="co"># actions (columns)</span>
+    Q &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dv">0</span>, <span class="dt">dim =</span> <span class="kw">c</span>(<span class="kw">length</span>(states), <span class="kw">length</span>(H)))
+    
+    for (i in <span class="dv">1</span>:<span class="kw">length</span>(H)) {
+    
+<span class="co"># For each harvest rate we fill for all states values (row) </span>
+<span class="co"># the ith column (Action) of matrix Q</span>
+<span class="co"># The utility of the ith action recorded for all states is </span>
+<span class="co"># added to the product of the transition matrix of the ith </span>
+<span class="co"># action by the action value of all states </span>
+        Q[,i] &lt;-<span class="st"> </span>utility[, i] +<span class="st"> </span>discount *<span class="st"> </span>(transition[,,i] %*%<span class="st"> </span>Vtplus)
+    
+    } <span class="co"># end of the harvest loop</span>
+
+    <span class="co"># Find the optimal action value at time t is the maximum of Q</span>
+    Vt &lt;-<span class="st"> </span><span class="kw">apply</span>(Q, <span class="dv">1</span>, max)
+
+<span class="co"># After filling vector Vt of the action values at all states, we </span>
+<span class="co"># update the vector Vt+1 to Vt and we go to the next step standing </span>
+<span class="co"># for previous time t-1, since we iterate backward</span>
+    Vtplus &lt;-<span class="st"> </span>Vt
+
+} <span class="co"># end of the time loop</span>
+
+<span class="co"># Find optimal action for each state</span>
+for (k in <span class="dv">0</span>:K) {
+<span class="co"># We look for each state which column of Q corresponds to the #maximum of the last updated value </span>
+<span class="co"># of Vt (the one at time t + 1). If the index vector is longer than 1 #(if there is more than one optimal value we chose the minimum </span>
+<span class="co"># harvest rate)</span>
+    D[k +<span class="st"> </span><span class="dv">1</span>] &lt;-<span class="st"> </span>H[(<span class="kw">min</span>(<span class="kw">which</span>(Q[k +<span class="st"> </span><span class="dv">1</span>, ] ==<span class="st"> </span>Vt[k +<span class="st"> </span><span class="dv">1</span>])))]
+}</code></pre>
+<h2 id="plot-solution">PLOT SOLUTION</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, D, <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;harvest rate&quot;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex/unnamed-chunk-8-1.png" />
+</figure>
+<h2 id="proof-of-optimality-compare-with-analytical-solution">PROOF OF OPTIMALITY: COMPARE WITH ANALYTICAL SOLUTION</h2>
+<pre class="sourceCode r"><code class="sourceCode r">exact_policy &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>,K)
+for (k in <span class="dv">0</span>:K) {
+    exact_policy[k<span class="dv">+1</span>] &lt;-<span class="st"> </span><span class="kw">max</span>(<span class="dv">0</span>, <span class="dv">1</span> -<span class="st"> </span>K/(k*lambda))
+}
+
+<span class="co"># The difference between Bellman equation solution and the analytical #solution is small:</span>
+<span class="kw">lines</span>(states, exact_policy)</code></pre>
+<pre><code>Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">D -<span class="st"> </span>exact_policy</code></pre>
+<pre><code>  [1] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+  [6] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [11] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [16] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [21] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [26] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [31] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [36] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [41] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [46] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [51] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [56] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [61] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [66] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [71] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [76] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [81] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [86] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [91] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+ [96] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[101] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[106] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[111] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[116] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[121] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[126] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[131] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[136] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[141] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[146] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[151] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[156] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[161] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[166] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[171] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[176] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[181] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[186] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[191] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[196] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
+[201] 0.0000000000 0.0029930031 0.0020512011 0.0011579299 0.0003124756
+[206] 0.0034982023 0.0027462964 0.0020401486 0.0013790990 0.0007625002
+[211] 0.0001897173 0.0036441910 0.0031571826 0.0027121561 0.0023085229
+[216] 0.0019457055 0.0016231371 0.0013402611 0.0010965313 0.0008914115
+[221] 0.0007243752 0.0005949054 0.0005024945 0.0004466439 0.0004268640
+[226] 0.0004426737 0.0004936008 0.0005791811 0.0006989586 0.0008524853
+[231] 0.0010393210 0.0012590331 0.0015111966 0.0017953935 0.0021112133
+[236] 0.0024582521 0.0028361132 0.0032444063 0.0036827480 0.0001666972
+[241] 0.0006640106 0.0011902597 0.0017450858 0.0023281360 0.0029390634
+[246] 0.0035775266 0.0002591261 0.0009516590 0.0016707364 0.0024160387
+[251] 0.0031872510</code></pre>
+<h2 id="using-toolbox">Using toolbox</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;MDPtoolbox&quot;</span>)
+<span class="kw">mdp_check</span>(<span class="dt">P =</span> transition, <span class="dt">R =</span> utility)</code></pre>
+<pre><code>[1] &quot;&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(transition, utility, <span class="dt">discount =</span> discount, <span class="dt">epsilon =</span> <span class="fl">0.001</span>, <span class="dt">max_iter =</span> <span class="fl">5e3</span>, <span class="dt">V0 =</span> Vtmax)</code></pre>
+<pre><code>[1] &quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lines</span>(states, H[out$policy], <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>)</code></pre>
+<pre><code>Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet</code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/07/14/mdptoolbox-ex.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/06/18/RAM-explore.html">Further exploration of RAM Legacy Stock Assessment data</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 18 Jun 2015</p>
@@ -574,6 +776,10 @@ values %&gt;%<span class="st"> </span>
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/06/16/daniel-gp-example.html">Daniel Gp Example</a></h4></header>
 <p><span></span></p>
@@ -585,7 +791,7 @@ values %&gt;%<span class="st"> </span>
 <pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;nimble-dev/nimble/packages/nimble@devel&#39;</span>)</code></pre>
 <pre><code>
 The downloaded source packages are in
-    &#39;/tmp/RtmpBuz3nz/downloaded_packages&#39;</code></pre>
+    &#39;/tmp/RtmpLBlzk6/downloaded_packages&#39;</code></pre>
 <pre><code>Error: Command failed (1)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nimble)</code></pre>
 <pre><code>Error: package or namespace load failed for &#39;nimble&#39;</code></pre>
@@ -732,10 +938,6 @@ E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()</code></pre
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/05/08/ram-legacy-database-explore.html">Ram Legacy Database Explore</a></h4></header>
@@ -1101,6 +1303,10 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/04/20/open-science-post-doc.html">Open Science Post Doc</a></h4></header>
 <p><span></span></p>
@@ -1125,10 +1331,6 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/04/15/misc-notes-on-cloud-providers.html">Misc Notes On Cloud Providers</a></h4></header>
@@ -1437,374 +1639,6 @@ combined &lt;-<span class="st"> </span><span class="kw">rbind</span>(
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/04/09/gpdd-and-kalman-exploration-continued.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/04/06/gpdd-explore.html">Gpdd Explore</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 06 Apr 2015</p>
-
-<article>
-<div class="excerpt">
-<h3 id="setup">setup</h3>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;rgpdd&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;FKF&quot;</span>)</code></pre>
-<p>Working through <a href="http://doi.org/10.1111/j.1461-0248.2011.01702.x">10.1111/j.1461-0248.2011.01702.x</a> provides a nice way to play around with the GPDD data and Kalman filtering. More interested in exploring the data and methods than in just replicating the results, which are important but also rather intuitive and thus I expect rather robust – as we add (observational) uncertainty, or indeed, any additional parameters that must be ended, we should expect to have less power to pin down a particular parameter associated with density dependence, as the paper illustrates rather nicely.</p>
-<hr />
-<h2 id="data-preparation">Data preparation</h2>
-<blockquote>
-<p>627 time series with population indices obtained from the GPDD (NERC Centre for Population Biology 1999). Data sets were filtered out from the database by removing harvest and non-index based data, data sampled at non-annual intervals and time series taking less than 15 unique values.</p>
-</blockquote>
-<p>Excluding time-series shorter than a minimum length is intuitive. Excluding harvest data makes some sense, as these aren’t scientific samples; in particular, they do not necessarily reflect a uniform sampling effort over time. Not quite clear why one would exclude non-annual intervals. Not really clear what “non-index based data” even means. Note that this 2012 paper still cites the original 1999 version instead of the 2010 version, which adds 123 datasets (for a total of 5,156).</p>
-<p>Anyway, we can roughly infer what these filters mean in terms of the columns and values defined in the “MAIN” table of the GPDD, as described in the <a href="http://www3.imperial.ac.uk/cpb/databases/gpdd">GPDD User Manual</a>. <code>dplyr</code> makes it quick to implement these filters in R:</p>
-<pre class="sourceCode r"><code class="sourceCode r">gpdd_main %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(SamplingProtocol ==<span class="st"> &quot;Count&quot;</span>,
-         SourceDimension %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Count&quot;</span>, <span class="st">&quot;Index&quot;</span>), 
-         SamplingFrequency ==<span class="st"> &quot;1&quot;</span>,
-         DatasetLength &gt;=<span class="st"> </span><span class="dv">15</span>) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(MainID) %&gt;%
-<span class="st">  </span><span class="kw">arrange</span>(MainID) -&gt;
-filtered</code></pre>
-<p>Note that we might imagine different selection criteria, looking a bit more closely at the relevant fields.</p>
-<hr />
-<p>Unfortunately these don’t quite align with the paper, even allowing for the 123 additional datasets. Most obviously, we have 1749 matches instead of 627. Not only have we somehow grabbed more datasets than expected, but the Knape et al list includes quite a few datasets that do not meet these criteria:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">source</span>(<span class="st">&quot;http://ropensci.github.io/rgpdd/data/knape.R&quot;</span>)
-gpdd_main %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(MainID %in%<span class="st"> </span>knape_ids) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(MainID, SamplingProtocol, SourceDimension, SamplingFrequency, DatasetLength)  %&gt;%
-<span class="st">  </span><span class="kw">arrange</span>(MainID) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">as.tbl</span>() -&gt;<span class="st"> </span>knape_data
-
-<span class="kw">tail</span>(<span class="kw">sort</span>(<span class="kw">table</span>(knape_data$SourceDimension)))</code></pre>
-<pre><code>
-Count (estimated)        Mean Count             Index 
-                5                 8                15 
-          Density Transformed Count             Count 
-               20               110               459 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(<span class="kw">sort</span>(<span class="kw">table</span>(knape_data$SamplingProtocol)))</code></pre>
-<pre><code>
-    Count (millions)              Harvest              Unknown 
-                   1                    1                    1 
-  Index of abundance Index of territories                Count 
-                   2                    6                  616 </code></pre>
-<p>Those summaries show data with attributes we excluded, including Harvest as a sampling protocol. We see over 100 such data sets:</p>
-<pre class="sourceCode r"><code class="sourceCode r">gpdd_main %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(MainID %in%<span class="st"> </span>knape_ids) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(SamplingProtocol ==<span class="st"> &quot;Count&quot;</span>,
-         SourceDimension %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Count&quot;</span>, <span class="st">&quot;Index&quot;</span>), 
-         SamplingFrequency ==<span class="st"> &quot;1&quot;</span>,
-         DatasetLength &gt;=<span class="st"> </span><span class="dv">15</span>) %&gt;%<span class="st"> </span><span class="kw">dim</span>()</code></pre>
-<pre><code>[1] 468  25</code></pre>
-<p>The reason for this discrepancy isn’t clear, but we can proceed with our filtered data instead.</p>
-<hr />
-<p>Selecting the time-series identified by our filter, we also add a column for <span class="math">\(\log(N)\)</span> population:</p>
-<pre class="sourceCode r"><code class="sourceCode r">gpdd_data %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(MainID %in%<span class="st"> </span>filtered$MainID) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(MainID, Population, SampleYear) %&gt;%
-<span class="st">  </span><span class="kw">group_by</span>(MainID) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">logN =</span> <span class="kw">log</span>(Population)) -&gt;
-df</code></pre>
-<p>Interestingly there are no missing data reported:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(<span class="kw">sapply</span>(df$Population, is.na))</code></pre>
-<pre><code>[1] 0</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">filter</span>(Population &lt;<span class="st"> </span><span class="dv">0</span>) <span class="co"># -9999 is elsewhere used for missing data</span></code></pre>
-<pre><code>Source: local data frame [0 x 4]
-Groups: MainID
-
-Variables not shown: MainID (int), Population (dbl), SampleYear
-  (int), logN (dbl)</code></pre>
-<p>but some population values are equal to 0, creating some <code>-Inf</code> terms in our log data, which will create trouble in fitting the models. The authors don’t say how they handled this case. We will manually set them to the smallest value observed:</p>
-<pre class="sourceCode r"><code class="sourceCode r">i &lt;-<span class="st"> </span><span class="kw">which</span>(df$logN ==<span class="st"> </span>-<span class="ot">Inf</span>)
-df$logN[i] &lt;-<span class="st"> </span><span class="kw">min</span>(df$logN[-i])-<span class="dv">1</span></code></pre>
-<h2 id="gompertz-model">Gompertz model</h2>
-<blockquote>
-<p>We use the stochastic Gompertz population model to analyse the strength of density dependence in the data.The model is defined through</p>
-</blockquote>
-<p><span class="math">\[N_{t+1} = N_t \exp(a - b \log N_t + \epsilon_t)\]</span></p>
-<blockquote>
-<p>where <span class="math">\(N_t\)</span> is population density or size in year <span class="math">\(t\)</span>, <span class="math">\(a\)</span> is an intercept, <span class="math">\(b\)</span> is a measure of the strength of density dependence and <span class="math">\(\eta\)</span> is normally distributed process error with mean zero and standard deviation <span class="math">\(\tau\)</span>. By log transforming the population abundance and putting <span class="math">\(x_t = \log N_t\)</span> this simplifies to</p>
-</blockquote>
-<p><span class="math">\[x_{t+1} = a + c x_t + \epsilon_t\]</span></p>
-<blockquote>
-<p>where <span class="math">\(c = 1 - b\)</span> is the lag 1 autocorrelation of the log transformed population abundance when the process is stationary.</p>
-</blockquote>
-<p>and uncertainty in measurements, <span class="math">\(y_t\)</span> are simply normal random variates around <span class="math">\(x_t\)</span>:</p>
-<p><span class="math">\[y_t = x_t + \eta_t \]</span></p>
-<p>where <span class="math">\(\eta_t \sim N(0,\sigma^2)\)</span></p>
-<h2 id="kalman-filtering">Kalman Filtering</h2>
-<p>Since the model is linear we can compute the likelihood directly by means of a Kalman filter. There are various ways of going about this, and the paper provides some general details:</p>
-<blockquote>
-<p>The Kalman filter was initiated by assuming a wide prior distribution on the initial state centred around the first observation, <span class="math">\(x_1 \sim N( y_1, 10)\)</span>. For each model and data set the numerical maximisation (using the BFGS algorithm implemented in the optim function) was repeated for 50 random starting values to ensure that we found the global optimum</p>
-</blockquote>
-<p>Some useful detail here, but still a bit vague for our purposes, or are things we might have done differently.</p>
-<ul>
-<li><p>Doesn’t state which Kalman filter (their are a few algorithms and several packages, but the differences seem quite small: <a href="http://www.jstatsoft.org/v39/i02">this JSS paper</a> has a good overview.)</p></li>
-<li><p>Not clear that we wouldn’t want to scale the prior variance by the data sample, e.g. <code>var(y)</code>, but since we’re on a log scale <code>10</code> is indeed pretty wide.</p></li>
-<li><p><code>BFGS</code> doesn’t seem as robust as some alternatives; (e.g. gives a rather different result than Nelder-Meade or <code>StructTS()</code> model on the classic Nile data set example from the FKF package).</p></li>
-<li><p>Also challenging are the “50 random starting values”, which does not tell us from what distribution they were drawn. Too wide a distribution will start to include values for which the likelihood cannot be evaluated, while too narrow serves little purpose. –Moreover it is unclear if this is really preferable to simply using fewer starting points and a more robust algorithm. For simplicity, we’ll ignore this and just choose justifiable starting conditions.– we’ll add this as well.</p></li>
-</ul>
-<blockquote>
-<p>Four variants of the model defined by (1) and (2) were fitted to each data set; a full model with both uncertainty about population abundance and density dependence denoted by SSG (state space Gompertz), a model with uncertainty about population abundance, but no density dependence (c fixed to one) denoted SSRW (state space random walk), a model with density dependence, but no uncertainty about population abundance (r2 fixed to zero) denoted G (Gompertz) and a model with neither uncertainty about population abundance nor density dependence (c fixed to one and r2 fixed to zero) denoted RW (random walk)</p>
-</blockquote>
-<p>This is both clear and straight forward, we define each of the models as described. Note that we define the models here in the notation of FKF:</p>
-<p><span class="math">\[\alpha_{t+1} = d_t + T_t \alpha_t H_t \eta_t\]</span></p>
-<p><span class="math">\[y_t = c_t + Z_t \alpha_t + G_t \eta_t\]</span></p>
-<p>Where</p>
-<p><span class="math">\[\begin{align*}
-c &amp;\to&amp; T_t \\
-a &amp;\to&amp; d_t \\
-\sigma^2 &amp;\to&amp; G_t&#39;G_t \\
-\tau^2 &amp;\to&amp; H_t&#39;H_t 
-\end{align*}\]</span></p>
-<p>So here we define these models in R code just as described above. Using the <code>FKF</code> package we define each model by an optimization routine that returns the parameters that maximize the likelihood for the given model.</p>
-<pre class="sourceCode r"><code class="sourceCode r">fit_ssg &lt;-<span class="st"> </span>function(y, 
-                    <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, 
-                             <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>)),
-                    ...){
-    o &lt;-<span class="st"> </span><span class="kw">optim</span>(init,
-                 <span class="dt">fn =</span>  function(par, ...)
-                   -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]),
-                        <span class="dt">Tt =</span> <span class="kw">matrix</span>(par[<span class="dv">2</span>]),
-                        <span class="dt">HHt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">3</span>])), 
-                        <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">4</span>])), 
-                        ...)$logLik,   
-                 <span class="dt">a0 =</span> y[<span class="dv">1</span>], 
-                 <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), 
-                 <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>),
-                 <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), 
-                 <span class="dt">yt =</span> <span class="kw">rbind</span>(y), 
-                 <span class="dt">check.input =</span> <span class="ot">FALSE</span>, 
-                 ...)
-  o$par[[<span class="st">&quot;HHt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;HHt&quot;</span>]])
-  o$par[[<span class="st">&quot;GGt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;GGt&quot;</span>]])
-  <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
-}
-
-fit_ssrw &lt;-<span class="st"> </span>function(y, 
-                     <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt=</span><span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), 
-                              <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>)), 
-                     ...){
-    o &lt;-<span class="st"> </span><span class="kw">optim</span>(init,
-                 <span class="dt">fn =</span>  function(par, ...)
-                   -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), <span class="dt">HHt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">2</span>])), 
-                        <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">3</span>])), ...)$logLik,   
-                 <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Tt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>),
-                 <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, ...)
-  o$par[[<span class="st">&quot;HHt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;HHt&quot;</span>]])
-  o$par[[<span class="st">&quot;GGt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;GGt&quot;</span>]])
-  <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
-}
-
-fit_g &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt=</span><span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y))), ...){
-  o &lt;-<span class="st"> </span><span class="kw">optim</span>(init,
-                 <span class="dt">fn =</span>  function(par, ...)
-                   -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), <span class="dt">Tt =</span> <span class="kw">matrix</span>(par[<span class="dv">2</span>]), 
-                        <span class="dt">HHt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">3</span>])), ...)$logLik,   
-                 <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="dv">0</span>),
-                 <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, ...)
-  o$par[[<span class="st">&quot;HHt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;HHt&quot;</span>]])  
-  <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
-}
-
-fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt=</span><span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y))), ...){
- o &lt;-<span class="st">  </span><span class="kw">optim</span>(init, 
-                 <span class="dt">fn =</span>  function(par, ...)
-                   -<span class="kw">fkf</span>(<span class="dt">dt =</span> <span class="kw">matrix</span>(par[<span class="dv">1</span>]), 
-                        <span class="dt">HHt =</span> <span class="kw">matrix</span>(<span class="kw">exp</span>(par[<span class="dv">2</span>])), ...)$logLik,   
-                 <span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">P0 =</span> <span class="kw">matrix</span>(<span class="dv">10</span>), <span class="dt">ct =</span> <span class="kw">matrix</span>(<span class="dv">0</span>),
-                 <span class="dt">Tt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>), <span class="dt">GGt =</span> <span class="kw">matrix</span>(<span class="dv">0</span>), <span class="dt">Zt =</span> <span class="kw">matrix</span>(<span class="dv">1</span>),
-                 <span class="dt">yt =</span> <span class="kw">rbind</span>(y), <span class="dt">check.input =</span> <span class="ot">FALSE</span>, ...)
-  o$par[[<span class="st">&quot;HHt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">exp</span>(o$par[[<span class="st">&quot;HHt&quot;</span>]])
-  <span class="kw">c</span>(o, <span class="kw">list</span>(<span class="dt">a0 =</span> y[<span class="dv">1</span>], <span class="dt">n =</span> <span class="kw">length</span>(y)))
-}</code></pre>
-<p>Note that <code>fkf</code> will return finite (even “optimal”) log likelihoods for negative values of <code>HHt</code> and <code>GGt</code>, so we have log-transformed these parameters. Using <code>L-BFGS-B</code> with a <code>0</code> lower bound still causes <code>optim</code> to error with non-finite log-likelihoods. It isn’t clear how the authors dealt with this constraint, though <code>log</code>-transform trick has advantages and drawbacks.</p>
-<p>Once we have defined the optimization routines to fit each model, we can define a summary function that runs each model on a given data set and collects the results into a <code>data.frame</code>. This could be made a bit more general and elegant as discussed later. We will also define this function such that it will fit each model <span class="math">\(N = 50\)</span> times and take the best fit, as the authors suggest for having a better chance of finding the global optimum. (We’ll look at the variation in MLE estimates in these models as footnote as well).</p>
-<pre class="sourceCode r"><code class="sourceCode r">robust_fit &lt;-<span class="st"> </span>function(<span class="dt">model =</span> <span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;ssrw&quot;</span>, <span class="st">&quot;g&quot;</span>, <span class="st">&quot;rw&quot;</span>), y, <span class="dt">N =</span> <span class="dv">50</span>, <span class="dt">all =</span> <span class="ot">FALSE</span>, ...){
-  
-  ## Set the model and the mean initial condition
-  m &lt;-<span class="st"> </span>switch(model,
-              <span class="dt">ssg =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_ssg, 
-                         <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, 
-                                 <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
-              <span class="dt">ssrw =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_ssrw, 
-                          <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>), 
-                                   <span class="dt">GGt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
-              <span class="dt">g =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_g, 
-                       <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">Tt =</span> <span class="dv">1</span>, <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))),
-              <span class="dt">rw =</span> <span class="kw">list</span>(<span class="dt">fit =</span> fit_rw, 
-                        <span class="dt">init =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="kw">mean</span>(y), <span class="dt">HHt =</span> <span class="kw">log</span>(<span class="kw">var</span>(y)/<span class="dv">2</span>))))  
-  
-  
-  ## Create the inital conditions
-  inits &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">sapply</span>(m$init, 
-                      function(m) <span class="kw">rnorm</span>(N, m, <span class="kw">sqrt</span>(<span class="kw">abs</span>(m)) ) ))
-  
-  ## Attempt the requested fit or return NAs
-  f &lt;-<span class="st"> </span>function(init){
-    o &lt;-<span class="st"> </span><span class="kw">tryCatch</span>(
-      m$<span class="kw">fit</span>(y, <span class="dt">init =</span> init), 
-      <span class="dt">error =</span> function(e) <span class="kw">list</span>(<span class="dt">par =</span> <span class="kw">c</span>(<span class="dt">dt =</span> <span class="ot">NA</span>, <span class="dt">Tt=</span><span class="ot">NA</span>, <span class="dt">HHt =</span> <span class="ot">NA</span>, <span class="dt">GGt=</span> <span class="ot">NA</span>),
-                               <span class="dt">value=</span><span class="ot">NA</span>, <span class="dt">convergence=</span><span class="dv">1</span>, <span class="dt">n=</span><span class="kw">length</span>(y), <span class="dt">a0=</span>y[<span class="dv">1</span>]))
-    <span class="kw">data.frame</span>(<span class="kw">t</span>(<span class="kw">c</span>(o$par, <span class="dt">mloglik =</span> o$value, <span class="dt">converge =</span>
-                   <span class="kw">as.numeric</span>(o$convergence), <span class="dt">n=</span>o$n, <span class="dt">a0=</span>o$a0)))
-  }
-  
-  ## Apply the function to each initial condition, 
-  inits %&gt;%<span class="st"> </span><span class="kw">rowwise</span>() %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">f</span>(.)) -&gt;<span class="st"> </span>output
-  
-  if(!all) ## drop unconverged, and select only the best scoring run
-    output %&gt;%<span class="st"> </span><span class="kw">filter</span>(converge ==<span class="st"> </span><span class="dv">0</span>) %&gt;%<span class="st"> </span><span class="kw">slice</span>(<span class="kw">which.min</span>(mloglik)) -&gt;<span class="st"> </span>output
-  
-  output
-}</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">kalman &lt;-<span class="st"> </span>function(df, ...){
-  y &lt;-<span class="st"> </span>df$logN
-  ssg &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>, y, ...) 
-  ssrw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;ssrw&quot;</span>, y, ...) 
-  g &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;g&quot;</span>, y, ...) 
-  rw &lt;-<span class="st"> </span><span class="kw">robust_fit</span>(<span class="st">&quot;rw&quot;</span>, y, ...)
-  <span class="kw">options</span>(<span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>)
-  <span class="kw">rbind</span>(<span class="kw">data.frame</span>(<span class="dt">model =</span><span class="st">&quot;ssg&quot;</span>, <span class="kw">gather</span>(ssg, parameter, value)),
-        <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;ssrw&quot;</span>, <span class="kw">gather</span>(ssrw, parameter, value)),
-        <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;g&quot;</span>, <span class="kw">gather</span>(g, parameter, value)),
-        <span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="st">&quot;rw&quot;</span>, <span class="kw">gather</span>(rw, parameter, value)))
-                              
-}</code></pre>
-<p>Having defined a function that takes and returns a <code>data.frame</code>, <code>dplyr::do</code> gives us a consise syntax to apply this by group (recall <code>df</code> is already <code>group_by(MainID)</code>.) As the authors note, the robust fitting procedure is computationally intensive, though easily parallelized.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
-df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits
-)</code></pre>
-<pre><code>    user   system  elapsed 
-4278.742  123.188 4402.113 </code></pre>
-<hr />
-<p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization (despite the documentation of <code>dplyr::init_cluster()</code> describing parallel <code>dplyr::do()</code> use, this feature is not actually implemented yet). Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># not run</span>
-<span class="kw">library</span>(parallel)
-<span class="kw">options</span>(<span class="dt">mc.cores =</span> <span class="kw">detectCores</span>())
-
-## turn grouped data.frame to a list of data.frames by MainID
-list_data &lt;-<span class="st"> </span><span class="kw">mclapply</span>(<span class="kw">unique</span>(df$MainID), function(id) <span class="kw">filter_</span>(df, <span class="dt">.dots =</span> ~MainID==id))
-
-## Actually do the fitting in parallel
-fits_list &lt;-<span class="st"> </span><span class="kw">mclapply</span>(list_data, kalman, <span class="dt">method=</span><span class="st">&quot;BFGS&quot;</span>)
-
-## reshape outputs back to a data.frame
-fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_list, <span class="dt">id=</span><span class="kw">names</span>(fits_list[[<span class="dv">1</span>]])) %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">MainID =</span> L1) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()</code></pre>
-<hr />
-<p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
-<pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
-<pre><code>Source: local data frame [45,724 x 4]
-Groups: MainID
-
-   MainID model parameter         value
-1       3   ssg        dt  3.467438e+00
-2       3   ssg        Tt -1.335810e-01
-3       3   ssg       HHt  6.383566e-02
-4       3   ssg       GGt  1.766069e-01
-5       3   ssg   mloglik  2.050357e+01
-6       3   ssg  converge  0.000000e+00
-7       3   ssg         n  2.700000e+01
-8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.431098e-04
-10      3  ssrw       HHt  9.975410e-10
-..    ...   ...       ...           ...</code></pre>
-<p>and here is our version then of Figure 1b, comparing the estimate of the density-dependence coefficent with and without the uncertainty in observations:</p>
-<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%
-<span class="st">  </span><span class="kw">spread</span>(model, value) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(g, ssg)) +
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.2</span>) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">1</span>) +
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;c estimates&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1b-1.png" />
-</figure>
-<p>Likewise we can compute a version of Figure 1a; which calculates the absolute value of the difference between the estimates of density-dependence with and without the uncertainty, and then plots how frequently we observe a difference larger than a given amount in the data. (The paper finds around 20% having a difference larger than 0.5)</p>
-<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;g&quot;</span>), parameter ==<span class="st"> &quot;Tt&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%
-<span class="st">  </span><span class="kw">spread</span>(model, value) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">difference =</span> <span class="kw">abs</span>(g-ssg)) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(difference) -&gt;<span class="st"> </span>diffs
-  
-s &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">length=</span><span class="dv">100</span>)
-difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, function(s_i) <span class="kw">mean</span>(diffs$difference &gt;<span class="st"> </span>s_i))
-<span class="kw">qplot</span>(s, difference) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Difference bewteen estimates&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Proportion of data sets&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/figure1a-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(model %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;ssg&quot;</span>, <span class="st">&quot;ssrw&quot;</span>), parameter ==<span class="st"> &quot;GGt&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(model, value, MainID) %&gt;%
-<span class="st">  </span><span class="kw">spread</span>(model, value) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssg, ssrw)) +
-<span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;sigma^2 (obs error)&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-12-1.png" />
-</figure>
-<hr />
-<h2 id="aside-further-exploring-numerical-issues">Aside: further exploring numerical issues</h2>
-<p>Numerical optimization can be tricky, particularly in this unsupervised manner. The robust (multiple) fitting strategy goes some ways to addressing this; though ideally one would at least show that the resulting estimates change little if N is increased further.</p>
-<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span><span class="kw">filter</span>(MainID==<span class="dv">5</span>) %&gt;%
-<span class="st">  </span><span class="kw">do</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN, <span class="dt">all=</span><span class="ot">TRUE</span>)) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%
-<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
-
-<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-13-1.png" />
-</figure>
-<pre class="sourceCode r"><code class="sourceCode r">df %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(MainID==<span class="dv">1998</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">do</span>(<span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>.$logN, <span class="dt">all=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%<span class="st"> </span>
-<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value, -MainID) -&gt;<span class="st"> </span>all
-
-<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-14-1.png" />
-</figure>
-<p>Also compare also to the classic example used in most Kalman filter packages, the Nile river flows time series:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">robust_fit</span>(<span class="st">&quot;ssg&quot;</span>,  <span class="dt">y=</span>Nile, <span class="dt">all=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(dt, Tt, HHt, GGt, mloglik) %&gt;%
-<span class="st">  </span>tidyr::<span class="kw">gather</span>(parameter, value) -&gt;<span class="st"> </span>all
-<span class="kw">ggplot</span>(all) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span><span class="kw">facet_wrap</span>(~parameter, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-04-06-gpdd-explore/unnamed-chunk-15-1.png" />
-</figure>
-<hr />
-<h2 id="side-note-on-coding-strategy">Side note on coding strategy</h2>
-<p><code>dplyr</code> makes the data filtering steps fast, consise, and clear. Dealing with model outputs here is actually far less straight forward than cleaning the raw data. For instance, I have collected the output of each model fit into it’s own row. The models have different numbers of parameters, so I must add the fixed parameters to avoid rows of different length; but clearly this does not generalize to the case where the different models can have arbitrarily different parameters.</p>
-<p><a href="https://github.com/dgrtwo">David Robinson</a> has done an excellent job in starting to tackle this thorny problem in a package called <code>broom</code> with much the same elegance and care that Hadley has done with <code>dplyr</code>. David argues very persuasively that it makes more sense to summarize parameter estimates from each model fit in two columns - a column for parameter names and a column for values. He has now added support for <code>optim()</code> output to the <code>broom::tidy()</code> function, which does just that.</p>
-<p>This doesn’t translate immediately to my use case here, since I need to keep track of the likelihood and convergence which are not captured by <code>broom::tidy()</code>. As these are scalar valued outputs of the model fit, instead of a vector like parameters, they are extracted and summarized in <code>broom::glance()</code> as a single row. An easy generalization would just be to <code>cbind</code> the outputs of <code>glance()</code> and <code>tidy()</code>; though David argues for a different approach in which we defer any manipulation of model output. Instead, he suggests an <code>expand.grid</code> over the names of the groups (models and datasets):</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># not run</span>
-
-<span class="kw">expand.grid</span>(<span class="dt">model =</span> <span class="kw">names</span>(models),
-            <span class="dt">dataset =</span> <span class="kw">names</span>(datasets)) %&gt;%
-<span class="st">    </span><span class="kw">group_by</span>(model, dataset) %&gt;%
-<span class="st">    </span><span class="kw">do</span>(<span class="dt">o =</span> <span class="kw">optim_func</span>(.$model, .$dataset)) -&gt;<span class="st"> </span>david</code></pre>
-<p>Where <code>optim_func</code> uses the name of the model and name of the dataset to apply <code>optim()</code>, rather than passing the data explicitly. We can then use <code>glance</code> and <code>tidy</code> on the resulting output, though we would need to <code>inner_join</code> the results instead of <code>cbind</code>. This is indeed an elegant, more generic approach. Still, neither of us much like the need to defer the tidy step to the complex object at the end.</p>
-<p>Here, I have ended up adopting the column-wise parameter, value, approach, though for a reason not just related to elegance. My <code>robust_fit()</code> error-handling seems to end up very occassionally with some kind of race conditions<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> that cause some of the sub-models to report an NA for one of their fixed parameters, instead of ommitting the parameter entirely. When adding the fixed value back in to keep rows of a uniform length, this meant I might get some rows with a duplicated column, such as a <code>GGt</code> column with value <code>NA</code> and another, appended column with the fixed value <code>0</code> in the <code>g</code> or <code>rw</code> models. The columnwise structure avoids this and prevents the code execution from failing.</p>
-<section class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>I could only ever reproduce this by re-running large batch jobs – isolating the examples where error occurred and re-running had no effect, hence my worry about some race conditions between the error reporting. However, the stochastic initial conditions might also contribute to this, as I didn’t standardize seed over the parallelization; though in priciple any unusual initial conditions should only generate fit failures that are already handled in the error handling.<a href="#fnref1">↩</a></p></li>
-</ol>
-</section>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/04/06/gpdd-explore.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
