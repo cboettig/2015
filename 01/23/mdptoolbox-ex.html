@@ -117,7 +117,7 @@
 p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">a =</span> <span class="dv">6</span>, <span class="dt">b =</span> <span class="fl">0.05</span>)
 
 profit &lt;-<span class="st"> </span>function(x, h) <span class="kw">pmin</span>(x,h) -<span class="st"> </span><span class="fl">0.1</span> *<span class="st"> </span>h  <span class="co"># vectorized for x</span>
-x_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">150</span>, <span class="dt">length =</span> <span class="dv">10</span>)
+x_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">150</span>, <span class="dt">length =</span> <span class="dv">151</span>)
 h_grid &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">50</span>,<span class="dv">100</span>)
 delta &lt;-<span class="st"> </span><span class="fl">0.001</span>
 sigma_g &lt;-<span class="st"> </span><span class="fl">0.01</span>
@@ -175,12 +175,12 @@ i &lt;-<span class="st"> </span><span class="kw">which.min</span>(<span class="k
 V0 &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(x_grid))</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mdp_check</span>(<span class="dt">P=</span>P,<span class="dt">R=</span>R)</code></pre>
 <pre><code>[1] &quot;&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, <span class="dt">discount=</span>delta, <span class="dt">epsilon=</span><span class="fl">0.001</span>, <span class="dt">max_iter =</span> <span class="fl">5e3</span>, <span class="dt">V0=</span>V0)</code></pre>
-<pre><code>[1] &quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, <span class="dt">discount =</span> <span class="dv">1</span> /<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span>delta), <span class="dt">epsilon=</span><span class="fl">0.001</span>, <span class="dt">max_iter =</span> <span class="fl">5e3</span>, <span class="dt">V0=</span>V0)</code></pre>
+<pre><code>[1] &quot;MDP Toolbox: iterations stopped by maximum number of iteration condition&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">policy &lt;-<span class="st"> </span>out$policy
 
-out &lt;-<span class="st"> </span><span class="kw">mdp_finite_horizon</span>(P, R, <span class="dt">discount=</span>delta, <span class="dv">10</span>)
-policy &lt;-<span class="st"> </span>out$policy[,<span class="dv">1</span>]</code></pre>
+<span class="co">#out &lt;- mdp_finite_horizon(P, R, discount=1 / (1 + delta), 10)</span>
+<span class="co">#policy &lt;- out$policy[,1]</span></code></pre>
 <p>Whoops, this doesn’t look right:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(x_grid, h_grid[policy])</code></pre>
 <figure>
@@ -235,7 +235,7 @@ policy &lt;-<span class="st"> </span>out$policy[,<span class="dv">1</span>]</cod
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/45ca4f9b78b4be7a1103075677349540104588cf/_posts/2015-01-23-mdptoolbox-ex.Rmd"> 45ca4f9b78b4be7a1103075677349540104588cf</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/96b672a7e6d75e9abd81e2cc9d171aad0e2eaf73/_posts/2015-01-23-mdptoolbox-ex.Rmd"> 96b672a7e6d75e9abd81e2cc9d171aad0e2eaf73</a></small></p>
     
   <br/>
   

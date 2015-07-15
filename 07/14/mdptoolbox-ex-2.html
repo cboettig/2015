@@ -107,7 +107,7 @@
       <div class="row">
   <div class="col-md-7 col-md-offset-1">
     <article>
-    <p>Adapted from MARESCOT ET AL. APPENDIX 5</p>
+    <p>Adapted from Marescot et al. appendix 5, to Reed optimal control problem.</p>
 <h2 id="step-1-define-objectives">STEP 1: DEFINE OBJECTIVES</h2>
 <p>This is a conceptual step which does not require coding</p>
 <h2 id="step-2-define-states">STEP 2: DEFINE STATES</h2>
@@ -191,7 +191,7 @@ D &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw"
 <span class="co"># Time horizon</span>
 Tmax &lt;-<span class="st"> </span><span class="dv">150</span></code></pre>
 <h2 id="solution-calculated-explicitly">Solution calculated explicitly:</h2>
-<p>The backward iteration consists in storing action values in the vector Vt which is the maximum of utility plus the future action values for all possible next states. Knowing the final action values, we can then backwardly reset the next action value Vtplus to the new value Vt. We start The backward iteration at time T-1 since we already defined the action value at Tmax.</p>
+<p>The backward iteration consists in storing action values in the vector <code>Vt</code> which is the maximum of utility plus the future action values for all possible next states. Knowing the final action values, we can then backwardly reset the next action value <code>Vtplus</code> to the new value <code>Vt</code>. We start The backward iteration at time <code>T-1</code> since we already defined the action value at <code>Tmax</code>.</p>
 <pre class="sourceCode r"><code class="sourceCode r">for (t in (Tmax -<span class="st"> </span><span class="dv">1</span>):<span class="dv">1</span>) {
 
 <span class="co"># We define a matrix Q that stores the updated action values for </span>
@@ -233,6 +233,9 @@ for (k in <span class="dv">0</span>:K) {
 <img src="/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-9-1.png" />
 </figure>
 <h2 id="proof-of-optimality-compare-with-analytical-solution">PROOF OF OPTIMALITY: COMPARE WITH ANALYTICAL SOLUTION</h2>
+<p>From Reed (1979) we know that the optimal solution is a constant-escapement rule:</p>
+<p><span class="math">\[f&#39;(s^*) = 1/\alpha\]</span></p>
+<p>For growth-rate function <span class="math">\(f\)</span>, where <span class="math">\(\alpha\)</span> is the discount factor and <span class="math">\(s^*\)</span> the stock size for the constant escapement. Analytic solutions are clearly possible for certain growth functions, but here I’ve just implemented a generic numerical solution.</p>
 <pre class="sourceCode r"><code class="sourceCode r">fun &lt;-<span class="st"> </span>function(x) -<span class="st"> </span><span class="kw">f</span>(x,<span class="dv">0</span>) +<span class="st"> </span>x /<span class="st"> </span>discount
 out &lt;-<span class="st"> </span><span class="kw">optimize</span>(<span class="dt">f =</span> fun, <span class="dt">interval =</span> <span class="kw">c</span>(<span class="dv">0</span>,K))
 S_star &lt;-<span class="st"> </span>out$minimum
@@ -241,17 +244,24 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
                        function(x) 
                         if(x &lt;<span class="st"> </span>S_star) <span class="dv">0</span>
                         else x -<span class="st"> </span>S_star)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The difference between Bellman equation solution and the analytical #solution is small:</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>D, <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)
+
+<span class="co"># The difference between Bellman equation solution and the analytical #solution is small:</span>
 <span class="kw">lines</span>(states, states -<span class="st"> </span>exact_policy)</code></pre>
-<pre><code>Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-11-1.png" />
+</figure>
 <h2 id="using-toolbox">Using toolbox</h2>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;MDPtoolbox&quot;</span>)
 <span class="kw">mdp_check</span>(<span class="dt">P =</span> transition, <span class="dt">R =</span> utility)</code></pre>
 <pre><code>[1] &quot;&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(transition, utility, <span class="dt">discount =</span> discount, <span class="dt">epsilon =</span> <span class="fl">0.001</span>, <span class="dt">max_iter =</span> <span class="fl">5e3</span>, <span class="dt">V0 =</span> Vtmax)</code></pre>
 <pre><code>[1] &quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lines</span>(states, states -<span class="st"> </span>H[out$policy], <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>)</code></pre>
-<pre><code>Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>D, <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)
+<span class="kw">lines</span>(states, states -<span class="st"> </span>H[out$policy], <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-13-1.png" />
+</figure>
 
     </article>
   </div>
@@ -267,7 +277,7 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
  <br />
 
   
-	<p><a class="btn btn-default" rel="prev" href='/2015/07/14/mdptoolbox-ex.html'><i class="icon-chevron-left"></i> prev</a>
+	<p><a class="btn btn-default" rel="prev" href='/2015/06/18/RAM-explore.html'><i class="icon-chevron-left"></i> prev</a>
   
   
     </p>
@@ -297,7 +307,7 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/fe79369fee961ab365659f215405cd67af9aa92d/_posts/2015-07-14-mdptoolbox-ex-2.Rmd"> fe79369fee961ab365659f215405cd67af9aa92d</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/96b672a7e6d75e9abd81e2cc9d171aad0e2eaf73/_posts/2015-07-14-mdptoolbox-ex-2.Rmd"> 96b672a7e6d75e9abd81e2cc9d171aad0e2eaf73</a></small></p>
     
   <br/>
   

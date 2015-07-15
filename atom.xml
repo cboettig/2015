@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-07-14T23:54:15+00:00</updated>
+  <updated>2015-07-15T17:42:13+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -16,7 +16,7 @@
    <link href="http://www.carlboettiger.info/2015/07/14/mdptoolbox-ex-2.html"/>
    <updated>2015-07-14T00:00:00+00:00</updated>
    <id>/07/14/mdptoolbox-ex-2</id>
-   <content type="html">&lt;p&gt;Adapted from MARESCOT ET AL. APPENDIX 5&lt;/p&gt;
+   <content type="html">&lt;p&gt;Adapted from Marescot et al. appendix 5, to Reed optimal control problem.&lt;/p&gt;
 &lt;h2 id=&quot;step-1-define-objectives&quot;&gt;STEP 1: DEFINE OBJECTIVES&lt;/h2&gt;
 &lt;p&gt;This is a conceptual step which does not require coding&lt;/p&gt;
 &lt;h2 id=&quot;step-2-define-states&quot;&gt;STEP 2: DEFINE STATES&lt;/h2&gt;
@@ -100,7 +100,7 @@ D &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;k
 &lt;span class=&quot;co&quot;&gt;# Time horizon&lt;/span&gt;
 Tmax &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&quot;solution-calculated-explicitly&quot;&gt;Solution calculated explicitly:&lt;/h2&gt;
-&lt;p&gt;The backward iteration consists in storing action values in the vector Vt which is the maximum of utility plus the future action values for all possible next states. Knowing the final action values, we can then backwardly reset the next action value Vtplus to the new value Vt. We start The backward iteration at time T-1 since we already defined the action value at Tmax.&lt;/p&gt;
+&lt;p&gt;The backward iteration consists in storing action values in the vector &lt;code&gt;Vt&lt;/code&gt; which is the maximum of utility plus the future action values for all possible next states. Knowing the final action values, we can then backwardly reset the next action value &lt;code&gt;Vtplus&lt;/code&gt; to the new value &lt;code&gt;Vt&lt;/code&gt;. We start The backward iteration at time &lt;code&gt;T-1&lt;/code&gt; since we already defined the action value at &lt;code&gt;Tmax&lt;/code&gt;.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;for (t in (Tmax -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;):&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) {
 
 &lt;span class=&quot;co&quot;&gt;# We define a matrix Q that stores the updated action values for &lt;/span&gt;
@@ -142,6 +142,9 @@ for (k in &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K) {
 &lt;img src=&quot;/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-9-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;h2 id=&quot;proof-of-optimality-compare-with-analytical-solution&quot;&gt;PROOF OF OPTIMALITY: COMPARE WITH ANALYTICAL SOLUTION&lt;/h2&gt;
+&lt;p&gt;From Reed (1979) we know that the optimal solution is a constant-escapement rule:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[f&amp;#39;(s^*) = 1/\alpha\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;For growth-rate function &lt;span class=&quot;math&quot;&gt;\(f\)&lt;/span&gt;, where &lt;span class=&quot;math&quot;&gt;\(\alpha\)&lt;/span&gt; is the discount factor and &lt;span class=&quot;math&quot;&gt;\(s^*\)&lt;/span&gt; the stock size for the constant escapement. Analytic solutions are clearly possible for certain growth functions, but here I’ve just implemented a generic numerical solution.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fun &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x) -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(x,&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;discount
 out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;optimize&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;f =&lt;/span&gt; fun, &lt;span class=&quot;dt&quot;&gt;interval =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,K))
 S_star &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;out$minimum
@@ -150,209 +153,24 @@ exact_policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span cl
                        function(x) 
                         if(x &amp;lt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;S_star) &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;
                         else x -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;S_star)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# The difference between Bellman equation solution and the analytical #solution is small:&lt;/span&gt;
-&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;exact_policy)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;using-toolbox&quot;&gt;Using toolbox&lt;/h2&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;MDPtoolbox&amp;quot;&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;mdp_check&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;P =&lt;/span&gt; transition, &lt;span class=&quot;dt&quot;&gt;R =&lt;/span&gt; utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] &amp;quot;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(transition, utility, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; discount, &lt;span class=&quot;dt&quot;&gt;epsilon =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0 =&lt;/span&gt; Vtmax)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;H[out$policy], &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;red&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet&lt;/code&gt;&lt;/pre&gt;
-</content>
- </entry>
- 
- <entry>
-   <title>Mdptoolbox Ex</title>
-   <link href="http://www.carlboettiger.info/2015/07/14/mdptoolbox-ex.html"/>
-   <updated>2015-07-14T00:00:00+00:00</updated>
-   <id>/07/14/mdptoolbox-ex</id>
-   <content type="html">&lt;p&gt;Adapted from MARESCOT ET AL. APPENDIX 5&lt;/p&gt;
-&lt;h2 id=&quot;step-1-define-objectives&quot;&gt;STEP 1: DEFINE OBJECTIVES&lt;/h2&gt;
-&lt;p&gt;This is a conceptual step which does not require coding&lt;/p&gt;
-&lt;h2 id=&quot;step-2-define-states&quot;&gt;STEP 2: DEFINE STATES&lt;/h2&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;K &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;250&lt;/span&gt; &lt;span class=&quot;co&quot;&gt;# state space limit&lt;/span&gt;
-states &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K &lt;span class=&quot;co&quot;&gt;# Vector of all possible states&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;step-3-define-control-actions&quot;&gt;STEP 3: DEFINE CONTROL ACTIONS&lt;/h2&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Vector of actions: rate of the population that can be removed, ranging #from 0 to 1&lt;/span&gt;
-H &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;/(K&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;step-4-define-dynamic-model-with-demographic-parameters&quot;&gt;STEP 4: DEFINE DYNAMIC MODEL (WITH DEMOGRAPHIC PARAMETERS)&lt;/h2&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Population growth rate&lt;/span&gt;
-lambda &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1.25&lt;/span&gt;
-
-&lt;span class=&quot;co&quot;&gt;# Function for the exponential growth of the dynamic model&lt;/span&gt;
-dynamic &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(actualpop, action) {
-    nextpop &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;actualpop*lambda*(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;-action)
-    &lt;span class=&quot;kw&quot;&gt;return&lt;/span&gt;(nextpop)
-}&lt;/code&gt;&lt;/pre&gt;
-&lt;h1 id=&quot;step-5-define-utility&quot;&gt;STEP 5: DEFINE UTILITY&lt;/h1&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Maximum objective threshold for population abundance&lt;/span&gt;
-Nmax &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;250&lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# Minimum objective threshold for population abundance&lt;/span&gt;
-Nmin &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;
-
-&lt;span class=&quot;co&quot;&gt;# Utility function&lt;/span&gt;
-get_utility &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x) {
-    &lt;span class=&quot;kw&quot;&gt;return&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;ifelse&lt;/span&gt;(x &amp;lt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Nmin |&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x &amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Nmax, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, x))
-}&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;step-6-solve-bellman-equation-with-value-iteration&quot;&gt;STEP 6: SOLVE BELLMAN EQUATION WITH VALUE ITERATION&lt;/h2&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Initialize transition matrix&lt;/span&gt;
-transition &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;dim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)))
-
-&lt;span class=&quot;co&quot;&gt;# Initialize utility matrix&lt;/span&gt;
-utility &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;dim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# Fill in the transition and utility matrix&lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# Loop on all states&lt;/span&gt;
-for (k in &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K) {
-
-    &lt;span class=&quot;co&quot;&gt;# Loop on all actions&lt;/span&gt;
-    for (i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)) {
-
-&lt;span class=&quot;co&quot;&gt;# Calculate the transition state at the next step, given the &lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# current state k and the harvest Hi&lt;/span&gt;
-        nextpop &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dynamic&lt;/span&gt;(k, H[i])
-        
-    &lt;span class=&quot;co&quot;&gt;# Implement demographic stochasticity by drawing &lt;/span&gt;
-  &lt;span class=&quot;co&quot;&gt;# probability from a Poisson density function&lt;/span&gt;
-        transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, , i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dpois&lt;/span&gt;(states,nextpop)
-        &lt;span class=&quot;co&quot;&gt;# We need to correct this density for the final capping state &lt;/span&gt;
-        &lt;span class=&quot;co&quot;&gt;# EDIT: this can be negative, due to floating-point errors. so we take max(v,0) to avoid&lt;/span&gt;
-        transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, K&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;max&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(transition[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, -(K&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;), i]),&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)
-        
-        &lt;span class=&quot;co&quot;&gt;# Compute utility&lt;/span&gt;
-        utility[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;, i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;get_utility&lt;/span&gt;(nextpop)
-
-    } &lt;span class=&quot;co&quot;&gt;# end of action loop&lt;/span&gt;
-} &lt;span class=&quot;co&quot;&gt;# end of state loop&lt;/span&gt;
-
-&lt;span class=&quot;co&quot;&gt;# Discount factor&lt;/span&gt;
-discount &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.9&lt;/span&gt;
-
-&lt;span class=&quot;co&quot;&gt;# Action value vector at tmax&lt;/span&gt;
-Vtmax &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
-
-&lt;span class=&quot;co&quot;&gt;# Action value vector at t and t+1&lt;/span&gt;
-Vt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
-Vtplus &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
-
-&lt;span class=&quot;co&quot;&gt;# Optimal policy vector&lt;/span&gt;
-D &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states))
-
-&lt;span class=&quot;co&quot;&gt;# Time horizon&lt;/span&gt;
-Tmax &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;solution-calculated-explicitly&quot;&gt;Solution calculated explicitly:&lt;/h2&gt;
-&lt;p&gt;The backward iteration consists in storing action values in the vector Vt which is the maximum of utility plus the future action values for all possible next states. Knowing the final action values, we can then backwardly reset the next action value Vtplus to the new value Vt. We start The backward iteration at time T-1 since we already defined the action value at Tmax.&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;for (t in (Tmax -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;):&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) {
-
-&lt;span class=&quot;co&quot;&gt;# We define a matrix Q that stores the updated action values for &lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# all states (rows)&lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# actions (columns)&lt;/span&gt;
-    Q &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;array&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;dim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states), &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)))
-    
-    for (i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(H)) {
-    
-&lt;span class=&quot;co&quot;&gt;# For each harvest rate we fill for all states values (row) &lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# the ith column (Action) of matrix Q&lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# The utility of the ith action recorded for all states is &lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# added to the product of the transition matrix of the ith &lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# action by the action value of all states &lt;/span&gt;
-        Q[,i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;utility[, i] +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;discount *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(transition[,,i] %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Vtplus)
-    
-    } &lt;span class=&quot;co&quot;&gt;# end of the harvest loop&lt;/span&gt;
-
-    &lt;span class=&quot;co&quot;&gt;# Find the optimal action value at time t is the maximum of Q&lt;/span&gt;
-    Vt &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(Q, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, max)
-
-&lt;span class=&quot;co&quot;&gt;# After filling vector Vt of the action values at all states, we &lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# update the vector Vt+1 to Vt and we go to the next step standing &lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# for previous time t-1, since we iterate backward&lt;/span&gt;
-    Vtplus &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Vt
-
-} &lt;span class=&quot;co&quot;&gt;# end of the time loop&lt;/span&gt;
-
-&lt;span class=&quot;co&quot;&gt;# Find optimal action for each state&lt;/span&gt;
-for (k in &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K) {
-&lt;span class=&quot;co&quot;&gt;# We look for each state which column of Q corresponds to the #maximum of the last updated value &lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# of Vt (the one at time t + 1). If the index vector is longer than 1 #(if there is more than one optimal value we chose the minimum &lt;/span&gt;
-&lt;span class=&quot;co&quot;&gt;# harvest rate)&lt;/span&gt;
-    D[k +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;H[(&lt;span class=&quot;kw&quot;&gt;min&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;which&lt;/span&gt;(Q[k +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, ] ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Vt[k +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;])))]
-}&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;plot-solution&quot;&gt;PLOT SOLUTION&lt;/h2&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(states, D, &lt;span class=&quot;dt&quot;&gt;xlab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;harvest rate&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex/unnamed-chunk-8-1.png&quot; /&gt;
-&lt;/figure&gt;
-&lt;h2 id=&quot;proof-of-optimality-compare-with-analytical-solution&quot;&gt;PROOF OF OPTIMALITY: COMPARE WITH ANALYTICAL SOLUTION&lt;/h2&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;exact_policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,K)
-for (k in &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;:K) {
-    exact_policy[k&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;max&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;K/(k*lambda))
-}
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;D, &lt;span class=&quot;dt&quot;&gt;xlab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Escapement&amp;quot;&lt;/span&gt;)
 
 &lt;span class=&quot;co&quot;&gt;# The difference between Bellman equation solution and the analytical #solution is small:&lt;/span&gt;
-&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, exact_policy)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;D -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;exact_policy&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;  [1] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-  [6] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [11] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [16] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [21] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [26] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [31] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [36] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [41] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [46] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [51] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [56] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [61] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [66] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [71] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [76] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [81] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [86] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [91] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
- [96] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[101] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[106] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[111] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[116] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[121] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[126] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[131] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[136] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[141] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[146] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[151] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[156] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[161] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[166] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[171] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[176] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[181] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[186] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[191] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[196] 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000
-[201] 0.0000000000 0.0029930031 0.0020512011 0.0011579299 0.0003124756
-[206] 0.0034982023 0.0027462964 0.0020401486 0.0013790990 0.0007625002
-[211] 0.0001897173 0.0036441910 0.0031571826 0.0027121561 0.0023085229
-[216] 0.0019457055 0.0016231371 0.0013402611 0.0010965313 0.0008914115
-[221] 0.0007243752 0.0005949054 0.0005024945 0.0004466439 0.0004268640
-[226] 0.0004426737 0.0004936008 0.0005791811 0.0006989586 0.0008524853
-[231] 0.0010393210 0.0012590331 0.0015111966 0.0017953935 0.0021112133
-[236] 0.0024582521 0.0028361132 0.0032444063 0.0036827480 0.0001666972
-[241] 0.0006640106 0.0011902597 0.0017450858 0.0023281360 0.0029390634
-[246] 0.0035775266 0.0002591261 0.0009516590 0.0016707364 0.0024160387
-[251] 0.0031872510&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;exact_policy)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-11-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;h2 id=&quot;using-toolbox&quot;&gt;Using toolbox&lt;/h2&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;MDPtoolbox&amp;quot;&lt;/span&gt;)
 &lt;span class=&quot;kw&quot;&gt;mdp_check&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;P =&lt;/span&gt; transition, &lt;span class=&quot;dt&quot;&gt;R =&lt;/span&gt; utility)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] &amp;quot;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(transition, utility, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; discount, &lt;span class=&quot;dt&quot;&gt;epsilon =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0 =&lt;/span&gt; Vtmax)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, H[out$policy], &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;red&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;D, &lt;span class=&quot;dt&quot;&gt;xlab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Escapement&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;H[out$policy], &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;red&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-13-1.png&quot; /&gt;
+&lt;/figure&gt;
 </content>
  </entry>
  
@@ -643,7 +461,7 @@ values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;
 The downloaded source packages are in
-    &amp;#39;/tmp/RtmpFlFQ0I/downloaded_packages&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+    &amp;#39;/tmp/RtmpBuz3nz/downloaded_packages&amp;#39;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error: Command failed (1)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Error: package or namespace load failed for &amp;#39;nimble&amp;#39;&lt;/code&gt;&lt;/pre&gt;
@@ -3255,7 +3073,7 @@ chown -R mysql:mysql /var/lib/mysql&lt;/code&gt;&lt;/pre&gt;
 p &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;a =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;b =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;)
 
 profit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x, h) &lt;span class=&quot;kw&quot;&gt;pmin&lt;/span&gt;(x,h) -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;h  &lt;span class=&quot;co&quot;&gt;# vectorized for x&lt;/span&gt;
-x_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
+x_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;150&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;151&lt;/span&gt;)
 h_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;)
 delta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;
 sigma_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.01&lt;/span&gt;
@@ -3313,12 +3131,12 @@ i &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;k
 V0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(x_grid))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mdp_check&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;P=&lt;/span&gt;P,&lt;span class=&quot;dt&quot;&gt;R=&lt;/span&gt;R)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] &amp;quot;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P, R, &lt;span class=&quot;dt&quot;&gt;discount=&lt;/span&gt;delta, &lt;span class=&quot;dt&quot;&gt;epsilon=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0=&lt;/span&gt;V0)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P, R, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;delta), &lt;span class=&quot;dt&quot;&gt;epsilon=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0=&lt;/span&gt;V0)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped by maximum number of iteration condition&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;out$policy
 
-out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_finite_horizon&lt;/span&gt;(P, R, &lt;span class=&quot;dt&quot;&gt;discount=&lt;/span&gt;delta, &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;)
-policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;out$policy[,&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;co&quot;&gt;#out &amp;lt;- mdp_finite_horizon(P, R, discount=1 / (1 + delta), 10)&lt;/span&gt;
+&lt;span class=&quot;co&quot;&gt;#policy &amp;lt;- out$policy[,1]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Whoops, this doesn’t look right:&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(x_grid, h_grid[policy])&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
