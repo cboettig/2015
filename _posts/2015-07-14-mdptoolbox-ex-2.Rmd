@@ -6,23 +6,22 @@ category: ecology
 
 
 
-Adapted from Marescot et al. appendix 5, to Reed optimal control problem.
+Adapted from Marescot et al. appendix 5, to Reed optimal control problem, including direct comparison against (semi) analytic optimum.
 
-
-## STEP 1: DEFINE OBJECTIVES
+## step 1: define objectives
 
 
 This is a conceptual step which does not require coding
 
 
-## STEP 2: DEFINE STATES
+## step 2: define states
 
 ```{r}
 K <- 150 # state space limit
 states <- 0:K # Vector of all possible states
 ```
 
-## STEP 3: DEFINE CONTROL ACTIONS
+## step 3: define control actions
 
 
 ```{r}
@@ -30,7 +29,7 @@ states <- 0:K # Vector of all possible states
 H <- states
 ```
 
-## STEP 4: DEFINE DYNAMIC MODEL (WITH DEMOGRAPHIC PARAMETERS)
+## step 4: define dynamic model (with demographic parameters)
 
 ```{r}
 p <- c(6,0.05)
@@ -45,7 +44,7 @@ sigma_g = 0.1
 
 ```
 
-# STEP 5: DEFINE UTILITY
+## step 5: define utility
 
 ```{r}
 # Utility function
@@ -54,7 +53,7 @@ get_utility <- function(x,h) {
 }
 ```
 
-## STEP 6: SOLVE BELLMAN EQUATION WITH VALUE ITERATION
+## step 6: solve bellman equation with value iteration
 
 ```{r}
 # Initialize transition matrix
@@ -81,14 +80,14 @@ for (k in 0:K) {
 	# Implement demographic stochasticity by drawing 
   # probability from a density function
 		else {
-		
-		# We need to correct this density for the final capping state ("Pile on boundary")
-		# For discrete probability distribution, this is easy if `states` includes all possible
-		# discrete states below the capping state (e.g. all non-negative integers less than K).  
-		# For a continous distribution, this is more problematic as we have to first normalize the densities.
-		# EDIT: this can be negative, due to floating-point errors. so we take max(v,0) to avoid
-		
-		  # Get long-tailed denominator as normalizing factor (continuous distributions only):
+
+# We need to correct this density for the final capping state ("Pile on boundary")
+# For discrete probability distribution, this is easy if `states` includes all possible
+# discrete states below the capping state (e.g. all non-negative integers less than K).  
+# For a continuous distribution, this is more problematic as we have to first normalize the densities.
+# EDIT: this can be negative, due to floating-point errors. so we take max(v,0) to avoid
+
+# Get long-tailed denominator as normalizing factor (continuous distributions only):
 		  fine_states <- seq(min(states), 10 * max(states), by = states[2]-states[1])
 	  	N <- sum(dlnorm(fine_states, log(nextpop), sdlog = sigma_g))
 
@@ -165,8 +164,10 @@ for (t in (Tmax - 1):1) {
 
 # Find optimal action for each state
 for (k in 0:K) {
-# We look for each state which column of Q corresponds to the #maximum of the last updated value 
-# of Vt (the one at time t + 1). If the index vector is longer than 1 #(if there is more than one optimal value we chose the minimum 
+# We look for each state which column of Q corresponds to the 
+# maximum of the last updated value 
+# of Vt (the one at time t + 1). If the index vector is longer than 1 
+# (if there is more than one optimal value we chose the minimum 
 # harvest rate)
 	D[k + 1] <- H[(min(which(Q[k + 1, ] == Vt[k + 1])))]
 }
@@ -175,7 +176,7 @@ for (k in 0:K) {
 
 
 
-## PLOT SOLUTION
+## plot solution
 
 ```{r}
 plot(states, states - D, xlab="Population size", ylab="Escapement")
@@ -185,7 +186,7 @@ plot(states, states - D, xlab="Population size", ylab="Escapement")
 
 
 
-## PROOF OF OPTIMALITY: COMPARE WITH ANALYTICAL SOLUTION
+## proof of optimality: compare with analytical solution
 
 From Reed (1979) we know that the optimal solution is a constant-escapement rule:
 
@@ -207,7 +208,8 @@ exact_policy <- sapply(states,
 ```{r}
 plot(states, states - D, xlab="Population size", ylab="Escapement")
 
-# The difference between Bellman equation solution and the analytical #solution is small:
+# The difference between Bellman equation solution and the analytical 
+# solution is small:
 lines(states, states - exact_policy)
 ```
 
