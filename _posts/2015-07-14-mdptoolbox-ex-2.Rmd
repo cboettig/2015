@@ -205,6 +205,8 @@ exact_policy <- sapply(states,
 ```
 
 ```{r}
+plot(states, states - D, xlab="Population size", ylab="Escapement")
+
 # The difference between Bellman equation solution and the analytical #solution is small:
 lines(states, states - exact_policy)
 ```
@@ -222,5 +224,6 @@ out <- mdp_value_iteration(transition, utility, discount = discount, epsilon = 0
 
 
 ```{r}
+plot(states, states - D, xlab="Population size", ylab="Escapement")
 lines(states, states - H[out$policy], col="red", lty=2)
 ```

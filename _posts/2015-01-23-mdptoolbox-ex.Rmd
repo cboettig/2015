@@ -26,7 +26,7 @@ f <- function(x, h, p){
 p <- c(a = 6, b = 0.05)
 
 profit <- function(x, h) pmin(x,h) - 0.1 * h  # vectorized for x
-x_grid <- seq(0, 150, length = 10)
+x_grid <- seq(0, 150, length = 151)
 h_grid <- c(0,50,100)
 delta <- 0.001
 sigma_g <- 0.01
@@ -112,11 +112,11 @@ mdp_check(P=P,R=R)
 ```
 
 ```{r}
-out <- mdp_value_iteration(P, R, discount=delta, epsilon=0.001, max_iter = 5e3, V0=V0)
+out <- mdp_value_iteration(P, R, discount = 1 / (1 + delta), epsilon=0.001, max_iter = 5e3, V0=V0)
 policy <- out$policy
 
-out <- mdp_finite_horizon(P, R, discount=delta, 10)
-policy <- out$policy[,1]
+#out <- mdp_finite_horizon(P, R, discount=1 / (1 + delta), 10)
+#policy <- out$policy[,1]
 ```
 
 
