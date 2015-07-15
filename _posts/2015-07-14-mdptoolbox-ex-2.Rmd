@@ -6,7 +6,7 @@ category: ecology
 
 
 
-Adapted from MARESCOT ET AL. APPENDIX 5
+Adapted from Marescot et al. appendix 5, to Reed optimal control problem.
 
 
 ## STEP 1: DEFINE OBJECTIVES
@@ -128,11 +128,11 @@ Tmax <- 150
 
 ## Solution calculated explicitly:
 
-The backward iteration consists in storing action values in the vector Vt which is the maximum of
+The backward iteration consists in storing action values in the vector `Vt` which is the maximum of
 utility plus the future action values for all possible next states. Knowing the final action 
-values, we can then backwardly reset the next action value Vtplus to the new value Vt. We start 
-The backward iteration at time T-1 since we already defined the action 
-value at Tmax.
+values, we can then backwardly reset the next action value `Vtplus` to the new value `Vt`. We start 
+The backward iteration at time `T-1` since we already defined the action 
+value at `Tmax`.
 
 ```{r}
 for (t in (Tmax - 1):1) {
@@ -186,6 +186,12 @@ plot(states, states - D, xlab="Population size", ylab="Escapement")
 
 
 ## PROOF OF OPTIMALITY: COMPARE WITH ANALYTICAL SOLUTION
+
+From Reed (1979) we know that the optimal solution is a constant-escapement rule:
+
+$$f'(s^*) = 1/\alpha$$
+
+For growth-rate function $f$, where $\alpha$ is the discount factor and $s^*$ the stock size for the constant escapement.  Analytic solutions are clearly possible for certain growth functions, but here I've just implemented a generic numerical solution.
 
 ```{r}
 fun <- function(x) - f(x,0) + x / discount
