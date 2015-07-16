@@ -107,16 +107,16 @@
       <div class="row">
   <div class="col-md-7 col-md-offset-1">
     <article>
-    <p>Adapted from Marescot et al. appendix 5, to Reed optimal control problem.</p>
-<h2 id="step-1-define-objectives">STEP 1: DEFINE OBJECTIVES</h2>
+    <p>Adapted from Marescot et al. appendix 5, to Reed optimal control problem, including direct comparison against (semi) analytic optimum.</p>
+<h2 id="step-1-define-objectives">step 1: define objectives</h2>
 <p>This is a conceptual step which does not require coding</p>
-<h2 id="step-2-define-states">STEP 2: DEFINE STATES</h2>
+<h2 id="step-2-define-states">step 2: define states</h2>
 <pre class="sourceCode r"><code class="sourceCode r">K &lt;-<span class="st"> </span><span class="dv">150</span> <span class="co"># state space limit</span>
 states &lt;-<span class="st"> </span><span class="dv">0</span>:K <span class="co"># Vector of all possible states</span></code></pre>
-<h2 id="step-3-define-control-actions">STEP 3: DEFINE CONTROL ACTIONS</h2>
+<h2 id="step-3-define-control-actions">step 3: define control actions</h2>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Vector of actions: harvest</span>
 H &lt;-<span class="st"> </span>states</code></pre>
-<h2 id="step-4-define-dynamic-model-with-demographic-parameters">STEP 4: DEFINE DYNAMIC MODEL (WITH DEMOGRAPHIC PARAMETERS)</h2>
+<h2 id="step-4-define-dynamic-model-with-demographic-parameters">step 4: define dynamic model (with demographic parameters)</h2>
 <pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">6</span>,<span class="fl">0.05</span>)
 f &lt;-<span class="st"> </span>function(x, h){
   A &lt;-<span class="st"> </span>p[<span class="dv">1</span>] 
@@ -126,12 +126,12 @@ f &lt;-<span class="st"> </span>function(x, h){
 }
 
 sigma_g =<span class="st"> </span><span class="fl">0.1</span></code></pre>
-<h1 id="step-5-define-utility">STEP 5: DEFINE UTILITY</h1>
+<h2 id="step-5-define-utility">step 5: define utility</h2>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Utility function</span>
 get_utility &lt;-<span class="st"> </span>function(x,h) {
     <span class="kw">pmin</span>(x,h)
 }</code></pre>
-<h2 id="step-6-solve-bellman-equation-with-value-iteration">STEP 6: SOLVE BELLMAN EQUATION WITH VALUE ITERATION</h2>
+<h2 id="step-6-solve-bellman-equation-with-value-iteration">step 6: solve bellman equation with value iteration</h2>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Initialize transition matrix</span>
 transition &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dv">0</span>, <span class="dt">dim =</span> <span class="kw">c</span>(<span class="kw">length</span>(states), <span class="kw">length</span>(states), <span class="kw">length</span>(H)))
 
@@ -152,14 +152,14 @@ for (k in <span class="dv">0</span>:K) {
     <span class="co"># Implement demographic stochasticity by drawing </span>
   <span class="co"># probability from a density function</span>
         else {
-        
-        <span class="co"># We need to correct this density for the final capping state (&quot;Pile on boundary&quot;)</span>
-        <span class="co"># For discrete probability distribution, this is easy if `states` includes all possible</span>
-        <span class="co"># discrete states below the capping state (e.g. all non-negative integers less than K).  </span>
-        <span class="co"># For a continous distribution, this is more problematic as we have to first normalize the densities.</span>
-        <span class="co"># EDIT: this can be negative, due to floating-point errors. so we take max(v,0) to avoid</span>
-        
-          <span class="co"># Get long-tailed denominator as normalizing factor (continuous distributions only):</span>
+
+<span class="co"># We need to correct this density for the final capping state (&quot;Pile on boundary&quot;)</span>
+<span class="co"># For discrete probability distribution, this is easy if `states` includes all possible</span>
+<span class="co"># discrete states below the capping state (e.g. all non-negative integers less than K).  </span>
+<span class="co"># For a continuous distribution, this is more problematic as we have to first normalize the densities.</span>
+<span class="co"># EDIT: this can be negative, due to floating-point errors. so we take max(v,0) to avoid</span>
+
+<span class="co"># Get long-tailed denominator as normalizing factor (continuous distributions only):</span>
           fine_states &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="kw">min</span>(states), <span class="dv">10</span> *<span class="st"> </span><span class="kw">max</span>(states), <span class="dt">by =</span> states[<span class="dv">2</span>]-states[<span class="dv">1</span>])
         N &lt;-<span class="st"> </span><span class="kw">sum</span>(<span class="kw">dlnorm</span>(fine_states, <span class="kw">log</span>(nextpop), <span class="dt">sdlog =</span> sigma_g))
 
@@ -222,17 +222,19 @@ Tmax &lt;-<span class="st"> </span><span class="dv">150</span></code></pre>
 
 <span class="co"># Find optimal action for each state</span>
 for (k in <span class="dv">0</span>:K) {
-<span class="co"># We look for each state which column of Q corresponds to the #maximum of the last updated value </span>
-<span class="co"># of Vt (the one at time t + 1). If the index vector is longer than 1 #(if there is more than one optimal value we chose the minimum </span>
+<span class="co"># We look for each state which column of Q corresponds to the </span>
+<span class="co"># maximum of the last updated value </span>
+<span class="co"># of Vt (the one at time t + 1). If the index vector is longer than 1 </span>
+<span class="co"># (if there is more than one optimal value we chose the minimum </span>
 <span class="co"># harvest rate)</span>
     D[k +<span class="st"> </span><span class="dv">1</span>] &lt;-<span class="st"> </span>H[(<span class="kw">min</span>(<span class="kw">which</span>(Q[k +<span class="st"> </span><span class="dv">1</span>, ] ==<span class="st"> </span>Vt[k +<span class="st"> </span><span class="dv">1</span>])))]
 }</code></pre>
-<h2 id="plot-solution">PLOT SOLUTION</h2>
+<h2 id="plot-solution">plot solution</h2>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>D, <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-9-1.png" />
 </figure>
-<h2 id="proof-of-optimality-compare-with-analytical-solution">PROOF OF OPTIMALITY: COMPARE WITH ANALYTICAL SOLUTION</h2>
+<h2 id="proof-of-optimality-compare-with-analytical-solution">proof of optimality: compare with analytical solution</h2>
 <p>From Reed (1979) we know that the optimal solution is a constant-escapement rule:</p>
 <p><span class="math">\[f&#39;(s^*) = 1/\alpha\]</span></p>
 <p>For growth-rate function <span class="math">\(f\)</span>, where <span class="math">\(\alpha\)</span> is the discount factor and <span class="math">\(s^*\)</span> the stock size for the constant escapement. Analytic solutions are clearly possible for certain growth functions, but here I’ve just implemented a generic numerical solution.</p>
@@ -246,7 +248,8 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
                         else x -<span class="st"> </span>S_star)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>D, <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)
 
-<span class="co"># The difference between Bellman equation solution and the analytical #solution is small:</span>
+<span class="co"># The difference between Bellman equation solution and the analytical </span>
+<span class="co"># solution is small:</span>
 <span class="kw">lines</span>(states, states -<span class="st"> </span>exact_policy)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-11-1.png" />
@@ -277,7 +280,7 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
  <br />
 
   
-	<p><a class="btn btn-default" rel="prev" href='/2015/07/14/mdptoolbox-ex.html'><i class="icon-chevron-left"></i> prev</a>
+	<p><a class="btn btn-default" rel="prev" href='/2015/06/18/RAM-explore.html'><i class="icon-chevron-left"></i> prev</a>
   
   
     </p>
@@ -307,7 +310,7 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/96b672a7e6d75e9abd81e2cc9d171aad0e2eaf73/_posts/2015-07-14-mdptoolbox-ex-2.Rmd"> 96b672a7e6d75e9abd81e2cc9d171aad0e2eaf73</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/98d024ba1d6eba786ba274c2e7c70385eadec3a4/_posts/2015-07-14-mdptoolbox-ex-2.Rmd"> 98d024ba1d6eba786ba274c2e7c70385eadec3a4</a></small></p>
     
   <br/>
   
