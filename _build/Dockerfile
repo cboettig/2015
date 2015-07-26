@@ -3,13 +3,12 @@ MAINTAINER Carl Boettiger cboettig@ropensci.org
 
 ## Install additional R package dependencies ###
 RUN apt-get update && apt-get install -y inkscape
-RUN install2.r --error -r http://cran.rstudio.com -r http://r-nimble.org \
+RUN install2.r --error -r http://cran.rstudio.com \
      FKF \
      dlm \
      KFAS \
      mcmc \
      MDPtoolbox \
-     nimble \
      sde \
   && installGithub.r \
     yihui/servr \ 
@@ -20,6 +19,7 @@ RUN install2.r --error -r http://cran.rstudio.com -r http://r-nimble.org \
     ropensci/rgpdd \
     cboettig/nonparametric-bayes \
     cboettig/pmc \
+    nimble-dev/nimble/packages/nimble@stable \
   && rm -rf /tmp/downloaded_packages
 
 
