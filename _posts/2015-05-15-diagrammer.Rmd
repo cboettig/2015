@@ -60,7 +60,7 @@ target <- paste0(knitr::opts_chunk$get("fig.path"), f)
 file.rename(f, target)
 ```
 
-```{r results="asis" eval=FALSE}
+```{r results="asis", eval=FALSE}
 paste0("![](", target, ")")
 ```
 
