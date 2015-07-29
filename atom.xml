@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-07-29T22:57:23+00:00</updated>
+  <updated>2015-07-29T23:24:12+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -216,14 +216,14 @@ exact_policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span cl
   
   &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 21.865   0.020  21.963 &lt;/code&gt;&lt;/pre&gt;
+ 22.120   0.012  22.152 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
   ## basic sanity check
   testthat::&lt;span class=&quot;kw&quot;&gt;expect_identical&lt;/span&gt;(Cmodel$&lt;span class=&quot;kw&quot;&gt;getNodeNames&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;topOnly =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;), &lt;span class=&quot;kw&quot;&gt;colnames&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;predict from GP model using posterior MCMC samples&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 27.382   0.000  27.457 &lt;/code&gt;&lt;/pre&gt;
+ 27.516   0.000  27.543 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;extract predictions: E and C&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
   C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()
@@ -526,8 +526,9 @@ values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
    <updated>2015-06-16T00:00:00+00:00</updated>
    <id>/06/16/daniel-gp-example</id>
    <content type="html">&lt;h3 id=&quot;setup&quot;&gt;Setup&lt;/h3&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)
-&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in download(dest, src, auth): client error: (403) Forbidden&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
 &lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Randomly generate some sinusoidal data&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;
@@ -627,7 +628,7 @@ Cpred  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 ## 100,000 iterations
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 59.693   0.032  59.774 &lt;/code&gt;&lt;/pre&gt;
+ 59.612   0.035  59.717 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 25 seconds on my computer&lt;/p&gt;
 &lt;p&gt;That can be improved if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
@@ -638,7 +639,7 @@ if(!&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(params, &lt;span cla
 ## predict from GP model using posterior MCMC samples
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 79.494   0.004  79.654 &lt;/code&gt;&lt;/pre&gt;
+ 81.587   0.000  81.687 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 40 seconds on my computer&lt;/p&gt;
 &lt;p&gt;Again, could streamline the gpPred() function if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## extract predictions: E and C
@@ -697,6 +698,26 @@ C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-06-16-daniel-gp-example/unnamed-chunk-13-1.png&quot; /&gt;
 &lt;/figure&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Lazy Evaluation Thoughts</title>
+   <link href="http://www.carlboettiger.info/2015/06/03/lazy-evaluation-thoughts.html"/>
+   <updated>2015-06-03T00:00:00+00:00</updated>
+   <id>/06/03/lazy-evaluation-thoughts</id>
+   <content type="html">&lt;p&gt;This is just a draft of my reply to Gavin’s &lt;a href=&quot;http://www.fromthebottomoftheheap.net/2015/06/03/my-aversion-to-pipes/&quot;&gt;thought-provoking post&lt;/a&gt; pushing back on pipes and NSE in R.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;Gavin, really nice post and discussion here. I am still conflicted about some these issues myself.&lt;/p&gt;
+&lt;p&gt;For me, the issues of NSE are somewhat separate and above my concern with pipes. I agree completely with your observation that intermediate assignment is easier to read than nested assignment, and not that much harder to read than a pipe chain. However I also agree with other commenters that not having to think about intermediate assignment variables is nice (e.g. I usually do something like replacing &lt;code&gt;the_data&lt;/code&gt; with &lt;code&gt;tmp&lt;/code&gt; or some such in each occurrence after the first in your example to make this more explicit). But for the most part I do not find the pipe syntax to be problematic in the same way that NSE is – indeed I can use the pipe operator with the SE versions of the same functions, or with any other SE R function.&lt;/p&gt;
+&lt;p&gt;NSE to me is a whole different can of worms. It does make the syntax much more consise and more semantic, (even while it obfuscates what is a string, a numeric, or a variable). But this whole “don’t use it in programming” thing seems very impractical to me. When I first started R, I got the same advice – only it was for R itself – use it interactively, but for real programming write everything in C. Then maybe add some R wrappers on top. Um.. yeah, I actually did that for a few years… long ago. Most of the time I don’t even know if I’m programming or not. Sure, it’s easy to use the SE versions when working on some function you know will be part of an R package, but NSE has bitten me several times in various research scripts. Stupid things perhaps – where I have done things like changing a filter argument to a variable with the same name as a column (&lt;code&gt;filter(x == .5)&lt;/code&gt; into a &lt;code&gt;filter(x == x)&lt;/code&gt;) – but very difficult to debug since they do not throw errors.&lt;/p&gt;
+&lt;p&gt;Nevertheless, both the performance and consise abstractions of common manipulation tasks make it hard to walk away from &lt;code&gt;dplyr&lt;/code&gt; and friends. However, I find the syntax required to use the SE versions of the dplyr functions immensely cumbersome and opaque (e.g. http://www.carlboettiger.info/2015/02/06/fun-standardizing-non-standard-evaluation.html). Some of these can be written more concisely with a different SE syntax, but having 4 different ways to introduce a variable value, not all of which cover all the same cases, is even worse to me than just sticking with the most complex. No doubt I lack appreciation of the complexity here, but it seems like it should be possible to have a syntax that is nearly as consise as the NSE but where I can replace values with variables (e.g. &lt;code&gt;filter(&amp;quot;Y&amp;quot; == &amp;quot;X&amp;quot;)&lt;/code&gt; to &lt;code&gt;filter(y == x)&lt;/code&gt;) without needing something like&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(query), function(level){
+value &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;query[[level]]
+&lt;span class=&quot;kw&quot;&gt;interp&lt;/span&gt;(~y ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x, 
+&lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;as.name&lt;/span&gt;(level), &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; value))
+})&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Anyway, apologies for the rant – just trying to say I share your hesitation regarding NSE but pipes don’t bother me. (I do think lazy eval on pipes is a win btw – e.g. try testing out the same long pipe-string analysis on data coming from a remote database; say, just to check that the first 10 rows of output look right before evaluation the whole database)&lt;/p&gt;
 </content>
  </entry>
  
@@ -3623,6 +3644,19 @@ loaded via a namespace (and not attached):
 &lt;pre&gt;&lt;code&gt;docker run --rm -i -v $(pwd):/data pdflatex file.tex &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;RStudio server (note the &lt;code&gt;-u 0&lt;/code&gt; to launch server as root):&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;docker run -d -p 8787:8787 -u 0 -v $(pwd):/data supervisord&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Lsn Model Considerations</title>
+   <link href="http://www.carlboettiger.info/2015/01/06/lsn-model-considerations.html"/>
+   <updated>2015-01-06T00:00:00+00:00</updated>
+   <id>/01/06/lsn-model-considerations</id>
+   <content type="html">&lt;p&gt;Should we model the change in mean explicitly, or rely on detrending?&lt;/p&gt;
+&lt;p&gt;One of the first things to deal with in the model setup is whether we ‘detrend’ the data first or not. As you know, in most saddle-node bifurcations the mean also moves since the stable node usually moves a bit to collide with the unstable node rather than just sitting there and waiting for the unstable node to hit it; which results in a gradual decrease of the mean prior to the actual catastrophe. It’s relatively typical to detrend any changes in the mean out (after all, sometimes this will also reflect things like seasonal variation etc., so it’s not a trivial thing to build into the model in a general way). Modeling the rate of change in mean makes it possible for a mean-only change to be sufficient to prefer the model of change over the OU model… However, detrending needs rigorous definition to justify the approach. Transforming the data can distort the signal (particularly obvious with the case of interpolation). I don’t really like detrending since it can be rather arbitrary in how you choose to go about it, but I suppose it’s preferable to specific modeling assumptions that try and capture the trend as well. There’s an interesting comparison of detrending with just a Gaussian filter vs using the exact model in this paper really nice paper on warning signals in epidemiology that I’ve only recently come across; which also does some elegant van Kampen expansions en route: http://doi.org/10.1007/s12080-013-0185-5.&lt;/p&gt;
+&lt;!--
+Consider the mean changes as a function $f(x(t),t)$, we would want an approach that claims to provide a non-parametric estimate of $f$ such that for our data, $x - f(x)$ approximates to the model we fit (e.g. OU model with time-dependent spring constant term alone).
+--&gt;
 </content>
  </entry>
  

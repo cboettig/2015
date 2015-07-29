@@ -123,6 +123,7 @@ http://www.carlboettiger.info//07/14/mdptoolbox-ex-2.html
 http://www.carlboettiger.info//06/19/gp-nimble-v2.html  
 http://www.carlboettiger.info//06/18/RAM-explore.html  
 http://www.carlboettiger.info//06/16/daniel-gp-example.html  
+http://www.carlboettiger.info//06/03/lazy-evaluation-thoughts.html  
 http://www.carlboettiger.info//05/15/diagrammer.html  
 http://www.carlboettiger.info//05/08/ram-legacy-database-explore.html  
 http://www.carlboettiger.info//04/28/rfishbase-notes.html  
@@ -149,6 +150,7 @@ http://www.carlboettiger.info//01/22/sdp-Reed-controls-comparisons.html
 http://www.carlboettiger.info//01/22/invasives-sdp.html  
 http://www.carlboettiger.info//01/13/detrend-example.html  
 http://www.carlboettiger.info//01/07/automated-knitr-in-jekyll.html  
+http://www.carlboettiger.info//01/06/lsn-model-considerations.html  
 http://www.carlboettiger.info//01/05/notes.html  
 http://www.carlboettiger.info//01/04/lsn-model-comparisons.html  
 http://www.carlboettiger.info//01/01/notebook-maintenance-and-scaling.html 

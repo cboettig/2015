@@ -330,14 +330,14 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
   
   <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 21.865   0.020  21.963 </code></pre>
+ 22.120   0.012  22.152 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">  samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
   ## basic sanity check
   testthat::<span class="kw">expect_identical</span>(Cmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>), <span class="kw">colnames</span>(samples))</code></pre>
 <p>predict from GP model using posterior MCMC samples</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 27.382   0.000  27.457 </code></pre>
+ 27.516   0.000  27.543 </code></pre>
 <p>extract predictions: E and C</p>
 <pre class="sourceCode r"><code class="sourceCode r">  E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()
   C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()
@@ -664,8 +664,9 @@ values %&gt;%<span class="st"> </span>
 <article>
 <div class="excerpt">
 <h3 id="setup">Setup</h3>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;nimble-dev/nimble/packages/nimble@devel&#39;</span>)
-<span class="kw">library</span>(nimble)
+<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;nimble-dev/nimble/packages/nimble@devel&#39;</span>)</code></pre>
+<pre><code>Error in download(dest, src, auth): client error: (403) Forbidden</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nimble)
 <span class="kw">set.seed</span>(<span class="dv">0</span>)</code></pre>
 <p>Randomly generate some sinusoidal data</p>
 <pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">100</span>
@@ -765,7 +766,7 @@ Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred
 ## 100,000 iterations
 <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 59.693   0.032  59.774 </code></pre>
+ 59.612   0.035  59.717 </code></pre>
 <p>About 25 seconds on my computer</p>
 <p>That can be improved if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
@@ -776,7 +777,7 @@ if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(s
 ## predict from GP model using posterior MCMC samples
 <span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 79.494   0.004  79.654 </code></pre>
+ 81.587   0.000  81.687 </code></pre>
 <p>About 40 seconds on my computer</p>
 <p>Again, could streamline the gpPred() function if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">## extract predictions: E and C
@@ -847,6 +848,36 @@ C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre
         </div>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/06/03/lazy-evaluation-thoughts.html">Lazy Evaluation Thoughts</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 03 Jun 2015</p>
+
+<article>
+<div class="excerpt">
+<p>This is just a draft of my reply to Gavin’s <a href="http://www.fromthebottomoftheheap.net/2015/06/03/my-aversion-to-pipes/">thought-provoking post</a> pushing back on pipes and NSE in R.</p>
+<hr />
+<p>Gavin, really nice post and discussion here. I am still conflicted about some these issues myself.</p>
+<p>For me, the issues of NSE are somewhat separate and above my concern with pipes. I agree completely with your observation that intermediate assignment is easier to read than nested assignment, and not that much harder to read than a pipe chain. However I also agree with other commenters that not having to think about intermediate assignment variables is nice (e.g. I usually do something like replacing <code>the_data</code> with <code>tmp</code> or some such in each occurrence after the first in your example to make this more explicit). But for the most part I do not find the pipe syntax to be problematic in the same way that NSE is – indeed I can use the pipe operator with the SE versions of the same functions, or with any other SE R function.</p>
+<p>NSE to me is a whole different can of worms. It does make the syntax much more consise and more semantic, (even while it obfuscates what is a string, a numeric, or a variable). But this whole “don’t use it in programming” thing seems very impractical to me. When I first started R, I got the same advice – only it was for R itself – use it interactively, but for real programming write everything in C. Then maybe add some R wrappers on top. Um.. yeah, I actually did that for a few years… long ago. Most of the time I don’t even know if I’m programming or not. Sure, it’s easy to use the SE versions when working on some function you know will be part of an R package, but NSE has bitten me several times in various research scripts. Stupid things perhaps – where I have done things like changing a filter argument to a variable with the same name as a column (<code>filter(x == .5)</code> into a <code>filter(x == x)</code>) – but very difficult to debug since they do not throw errors.</p>
+<p>Nevertheless, both the performance and consise abstractions of common manipulation tasks make it hard to walk away from <code>dplyr</code> and friends. However, I find the syntax required to use the SE versions of the dplyr functions immensely cumbersome and opaque (e.g. http://www.carlboettiger.info/2015/02/06/fun-standardizing-non-standard-evaluation.html). Some of these can be written more concisely with a different SE syntax, but having 4 different ways to introduce a variable value, not all of which cover all the same cases, is even worse to me than just sticking with the most complex. No doubt I lack appreciation of the complexity here, but it seems like it should be possible to have a syntax that is nearly as consise as the NSE but where I can replace values with variables (e.g. <code>filter(&quot;Y&quot; == &quot;X&quot;)</code> to <code>filter(y == x)</code>) without needing something like</p>
+<pre class="sourceCode r"><code class="sourceCode r">dots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(query), function(level){
+value &lt;-<span class="st"> </span>query[[level]]
+<span class="kw">interp</span>(~y ==<span class="st"> </span>x, 
+<span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> <span class="kw">as.name</span>(level), <span class="dt">x =</span> value))
+})</code></pre>
+<p>Anyway, apologies for the rant – just trying to say I share your hesitation regarding NSE but pipes don’t bother me. (I do think lazy eval on pipes is a win btw – e.g. try testing out the same long pipe-string analysis on data coming from a remote database; say, just to check that the first 10 rows of output look right before evaluation the whole database)</p>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/06/03/lazy-evaluation-thoughts.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/05/15/diagrammer.html">Diagrammer</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 15 May 2015</p>
@@ -896,6 +927,10 @@ target &lt;-<span class="st"> </span><span class="kw">paste0</span>(knitr::opts_
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/05/08/ram-legacy-database-explore.html">Ram Legacy Database Explore</a></h4></header>
@@ -1216,10 +1251,6 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/04/28/rfishbase-notes.html">Rfishbase Notes</a></h4></header>
 <p><span></span></p>
@@ -1284,54 +1315,6 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/04/20/open-science-post-doc.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/04/15/misc-notes-on-cloud-providers.html">Misc Notes On Cloud Providers</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 15 Apr 2015</p>
-
-<article>
-<div class="excerpt">
-<p><em>ongoing notes comparing computing resources</em></p>
-<p>Comparing compute resources:</p>
-<ul>
-<li><p>AWS EC2, DigitalOcean, and Google Compute Engine look significantly cheaper than Rackspace, Azure, etc. (The Economist has estimated that AWS EC2 prices are roughly 3% <em>below</em> cost).</p></li>
-<li><p>DigitalOcean tends to have the lowest price point for on-demand use of a given set of resources; usually comparable to the Amazon or EC2 persistent (e.g. monthly) use. All-inclusive pricing (storage, networking etc) and limited options make choices simple and total costs easy to anticipate, though lack the flexibility to fine-tune a configuration to pay for exactly what you need.</p></li>
-<li><p>Google offers the best rate for higher-cpu instances, (e.g. 16 cores); primarily by provisioning them with less memory (0.9 GB/core) than DO or EC2.</p></li>
-<li><p>Google configures disk space separately from instance type. Cost of $0.04 per GB for spinning disk storage, is quite a bit cheaper than the ~ $0.10/GB for AWS EBS, and in fact nearly S3 price ~ $0.03. This makes it a potentially compelling platform for high storage, low compute instances.</p></li>
-</ul>
-<p>Presumably this is non-local storage like EBS, since they also offer a (very expensive) local SSD option (limited to 375 GB increments, each inc at $81.75 / mo). Though if the non-local nature creates a significant latency, it isn’t clear why one would buy non-local SSD option for $0.17/GB.</p>
-<h2 id="using-google-compute-engine">Using Google Compute Engine</h2>
-<p>Web interface is cleaner but much less flexible than Amazon’s, most tasks must be done with the commandline SDK tool instead, <code>gcloud</code> (such as modifying firewall settings other than port 80 and port 443). For instance, <a href="https://developer.ubuntu.com/en/snappy/start/#snappy-google">this tutorial</a> on running an Ubuntu Snappy Core image instead of the usual defaults.</p>
-<p>Docker-machine makes this a bit easier, as usual. The user needs to create a project name and project id on the Google Cloud Engine web interface. Only the project-name is required as an argument to docker-machine (e.g. no authentication token), auth must be done interactively through a web terminal. It doesn’t seem that there is a way to turn on <code>http</code> port or otherwise configure the firewall. By default, all inbound ports are shut. By mapping to port <code>80</code> and checking ‘allow http’ in the web interface one can still access an app like RStudio-server (my mapping docker ports appropriately), but there doesn’t seem to be any way to automate this. (In contrast, with Amazon EC2, docker-machine automatically attaches a ‘security-group’ called <code>docker-machine</code>, so a user can customize the ports permitted on that security group to have, e.g. 8787 open by default.)</p>
-<h2 id="performance-comparisons">Performance comparisons</h2>
-<p>CPU performance varies within a single provider.</p>
-<ul>
-<li>DO CPUs appear 2.3 - 2.4 Ghz with ~ 15MB cache,</li>
-<li>Google CPUs around 2.6 Ghz with ~ 20MB cache,</li>
-<li>Amazon ~ 2.8 Ghz with ~ 25 MB cache</li>
-</ul>
-<p>network i/o speeds seem reasonable on all.</p>
-<hr />
-<h2 id="using-resources-with-docker-machine">Using resources with docker-machine</h2>
-<p>docker-machine with docker save: after committing the container, this saves the container locally rather than on the host. With even reasonable download speeds ~ 0.5MB/s this is quite slow. DigitalOcean download speeds are ~ 680 Mb/s, and upload about half that. Better yet, pushing the container back to the Hub only pushes the changed layers anyway, so is nearly instantaneous. The Hub also provides a private repo for free.</p>
-<p>This provides a pretty compelling workflow of</p>
-<ul>
-<li><code>docker-machine create ...</code></li>
-<li><code>docker run &lt;...&gt; user/private</code> and do stuff</li>
-<li><code>docker commit container user/private</code>, <code>docker push user/private</code>, <code>docker-machine rm -f ...</code></li>
-</ul>
-<p>in order to deploy one’s work on temporary machine with appropriate power, and then save the work and close the machine. Using docker instead of the standard image ‘snapshots’ is probably faster and nicely independent of the machine and provider; and in this case the snapshot storage is free of cost as well.</p>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/04/15/misc-notes-on-cloud-providers.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
