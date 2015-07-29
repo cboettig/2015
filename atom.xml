@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-07-29T23:24:52+00:00</updated>
+  <updated>2015-07-29T23:35:36+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -216,14 +216,14 @@ exact_policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span cl
   
   &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 23.120   0.016  23.167 &lt;/code&gt;&lt;/pre&gt;
+ 21.827   0.019  21.876 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
   ## basic sanity check
   testthat::&lt;span class=&quot;kw&quot;&gt;expect_identical&lt;/span&gt;(Cmodel$&lt;span class=&quot;kw&quot;&gt;getNodeNames&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;topOnly =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;), &lt;span class=&quot;kw&quot;&gt;colnames&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;predict from GP model using posterior MCMC samples&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 28.630   0.004  28.642 &lt;/code&gt;&lt;/pre&gt;
+ 27.852   0.000  27.903 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;extract predictions: E and C&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
   C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()
@@ -526,9 +526,8 @@ values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
    <updated>2015-06-16T00:00:00+00:00</updated>
    <id>/06/16/daniel-gp-example</id>
    <content type="html">&lt;h3 id=&quot;setup&quot;&gt;Setup&lt;/h3&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in download(dest, src, auth): client error: (403) Forbidden&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
 &lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Randomly generate some sinusoidal data&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;
@@ -628,7 +627,7 @@ Cpred  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 ## 100,000 iterations
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 67.646   0.043  67.841 &lt;/code&gt;&lt;/pre&gt;
+ 59.338   0.040  59.546 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 25 seconds on my computer&lt;/p&gt;
 &lt;p&gt;That can be improved if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
@@ -639,7 +638,7 @@ if(!&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(params, &lt;span cla
 ## predict from GP model using posterior MCMC samples
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 86.798   0.005  86.948 &lt;/code&gt;&lt;/pre&gt;
+ 79.297   0.000  79.424 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 40 seconds on my computer&lt;/p&gt;
 &lt;p&gt;Again, could streamline the gpPred() function if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## extract predictions: E and C
@@ -702,13 +701,32 @@ C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&
  </entry>
  
  <entry>
+   <title>Lazy Evaluation Thoughts</title>
+   <link href="http://www.carlboettiger.info/2015/06/03/lazy-evaluation-thoughts.html"/>
+   <updated>2015-06-03T00:00:00+00:00</updated>
+   <id>/06/03/lazy-evaluation-thoughts</id>
+   <content type="html">&lt;p&gt;This is just a draft of my reply to Gavin’s &lt;a href=&quot;http://www.fromthebottomoftheheap.net/2015/06/03/my-aversion-to-pipes/&quot;&gt;thought-provoking post&lt;/a&gt; pushing back on pipes and NSE in R.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;Gavin, really nice post and discussion here. I am still conflicted about some these issues myself.&lt;/p&gt;
+&lt;p&gt;For me, the issues of NSE are somewhat separate and above my concern with pipes. I agree completely with your observation that intermediate assignment is easier to read than nested assignment, and not that much harder to read than a pipe chain. However I also agree with other commenters that not having to think about intermediate assignment variables is nice (e.g. I usually do something like replacing &lt;code&gt;the_data&lt;/code&gt; with &lt;code&gt;tmp&lt;/code&gt; or some such in each occurrence after the first in your example to make this more explicit). But for the most part I do not find the pipe syntax to be problematic in the same way that NSE is – indeed I can use the pipe operator with the SE versions of the same functions, or with any other SE R function.&lt;/p&gt;
+&lt;p&gt;NSE to me is a whole different can of worms. It does make the syntax much more consise and more semantic, (even while it obfuscates what is a string, a numeric, or a variable). But this whole “don’t use it in programming” thing seems very impractical to me. When I first started R, I got the same advice – only it was for R itself – use it interactively, but for real programming write everything in C. Then maybe add some R wrappers on top. Um.. yeah, I actually did that for a few years… long ago. Most of the time I don’t even know if I’m programming or not. Sure, it’s easy to use the SE versions when working on some function you know will be part of an R package, but NSE has bitten me several times in various research scripts. Stupid things perhaps – where I have done things like changing a filter argument to a variable with the same name as a column (&lt;code&gt;filter(x == .5)&lt;/code&gt; into a &lt;code&gt;filter(x == x)&lt;/code&gt;) – but very difficult to debug since they do not throw errors.&lt;/p&gt;
+&lt;p&gt;Nevertheless, both the performance and consise abstractions of common manipulation tasks make it hard to walk away from &lt;code&gt;dplyr&lt;/code&gt; and friends. However, I find the syntax required to use the SE versions of the dplyr functions immensely cumbersome and opaque (e.g. http://www.carlboettiger.info/2015/02/06/fun-standardizing-non-standard-evaluation.html). Some of these can be written more concisely with a different SE syntax, but having 4 different ways to introduce a variable value, not all of which cover all the same cases, is even worse to me than just sticking with the most complex. No doubt I lack appreciation of the complexity here, but it seems like it should be possible to have a syntax that is nearly as consise as the NSE but where I can replace values with variables (e.g. &lt;code&gt;filter(&amp;quot;Y&amp;quot; == &amp;quot;X&amp;quot;)&lt;/code&gt; to &lt;code&gt;filter(y == x)&lt;/code&gt;) without needing something like&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;dots &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;names&lt;/span&gt;(query), function(level){
+value &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;query[[level]]
+&lt;span class=&quot;kw&quot;&gt;interp&lt;/span&gt;(~y ==&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x, 
+&lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;as.name&lt;/span&gt;(level), &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; value))
+})&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Anyway, apologies for the rant – just trying to say I share your hesitation regarding NSE but pipes don’t bother me. (I do think lazy eval on pipes is a win btw – e.g. try testing out the same long pipe-string analysis on data coming from a remote database; say, just to check that the first 10 rows of output look right before evaluation the whole database)&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
    <title>Diagrammer</title>
    <link href="http://www.carlboettiger.info/2015/05/15/diagrammer.html"/>
    <updated>2015-05-15T00:00:00+00:00</updated>
    <id>/05/15/diagrammer</id>
    <content type="html">&lt;p&gt;Exploring ways for using &lt;code&gt;DiagrammeR&lt;/code&gt; to generate graphs/plots that can be exported to svg and included in knitr documents.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rich-iannone/DiagrammeR&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in download(dest, src, auth): client error: (403) Forbidden&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;DiagrammeR&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;n &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;archive&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;index&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;share&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;discover&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;use&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;attribute&amp;quot;&lt;/span&gt;)
 
@@ -740,6 +758,176 @@ out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
 target &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;paste0&lt;/span&gt;(knitr::opts_chunk$&lt;span class=&quot;kw&quot;&gt;get&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;fig.path&amp;quot;&lt;/span&gt;), f)
 &lt;span class=&quot;kw&quot;&gt;file.rename&lt;/span&gt;(f, target)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;paste0&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;![](&amp;quot;&lt;/span&gt;, target, &lt;span class=&quot;st&quot;&gt;&amp;quot;)&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Gp Compare</title>
+   <link href="http://www.carlboettiger.info/2015/05/13/GP-compare.html"/>
+   <updated>2015-05-13T00:00:00+00:00</updated>
+   <id>/05/13/GP-compare</id>
+   <content type="html">&lt;p&gt;Original go at nimble gp model, but this requires rather manual manipulation of parameter posteriors to get the GP posteriors.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;MASS&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;mcmc&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;nimble&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ggplot2&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;tidyr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;nonparametricbayes&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;pdgControl&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;sample-data&quot;&gt;sample data&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1234&lt;/span&gt;)
+Tobs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;40&lt;/span&gt;
+f &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;RickerAllee
+sigma_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;
+z_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function() &lt;span class=&quot;kw&quot;&gt;rlnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, sigma_g)
+p &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;8&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;15&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;)
+h_grid &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x_grid
+profit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(x,h) &lt;span class=&quot;kw&quot;&gt;pmin&lt;/span&gt;(x, h)
+delta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.01&lt;/span&gt;
+OptTime &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;  &lt;span class=&quot;co&quot;&gt;# stationarity with unstable models is tricky thing&lt;/span&gt;
+xT &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;    &lt;span class=&quot;co&quot;&gt;# terminal condition&lt;/span&gt;
+x0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;   &lt;span class=&quot;co&quot;&gt;# simulation under policy starts from&lt;/span&gt;
+MaxT &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1000&lt;/span&gt; &lt;span class=&quot;co&quot;&gt;# timeout for value iteration convergence&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(Tobs)
+x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;5.5&lt;/span&gt;
+nz &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;
+for(t in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(Tobs&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;))
+  x[t&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;z_g&lt;/span&gt;() *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(x[t], &lt;span class=&quot;dt&quot;&gt;h=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;p=&lt;/span&gt;p)
+obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,nz), 
+                        &lt;span class=&quot;kw&quot;&gt;pmax&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,Tobs&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;), x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(Tobs&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)])), 
+                  &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,nz), 
+                        x[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;:Tobs]))
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;time =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:Tobs, &lt;span class=&quot;dt&quot;&gt;x=&lt;/span&gt;x), &lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time,x)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-05-13-GP-compare/unnamed-chunk-4-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;gp-model&quot;&gt;GP Model&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;code &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
+
+   l ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dgamma&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) 
+   sigma.n ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
+   sigma.k  ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
+   Sigma[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigma.k ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;diff[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;l ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;                      &lt;/span&gt;sigma.n ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;I[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N]
+   y[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dmnorm&lt;/span&gt;(Mu[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N], &lt;span class=&quot;dt&quot;&gt;cov =&lt;/span&gt; Sigma[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N])  
+
+})&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;N &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(obs$x)
+diff &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(obs$x, obs$x, function(xi, xj) (xi-xj)^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
+constants =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; N, &lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; obs$x, &lt;span class=&quot;dt&quot;&gt;Mu =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,N), &lt;span class=&quot;dt&quot;&gt;diff =&lt;/span&gt; diff, &lt;span class=&quot;dt&quot;&gt;I =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,N))
+inits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;l =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma.n =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;sigma.k =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;)
+data &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; obs$y)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Rmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; code, &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; constants, &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; data, &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; inits)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Define our mcmc procedure in Nimble&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmodel)
+mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(Rmodel, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
+Rmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
+Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(Rmcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Rmodel)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(
+Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;1e6&lt;/span&gt;)
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+290.399   0.214 291.454 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
+df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;posteriors&quot;&gt;Posteriors&lt;/h4&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;scale_x_log10&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-05-13-GP-compare/unnamed-chunk-11-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;calculating-transition-probabilities&quot;&gt;Calculating transition probabilities&lt;/h2&gt;
+&lt;p&gt;Several ways we might go about this.&lt;/p&gt;
+&lt;p&gt;Technically all policies could be updated in response to new information, though this requires repeating the estimation process, or at least a Bayesian updating step (e.g. passive learning). Typically these steps are separated into estimating the policy and then implementing the policy separately, so we will focus on this case.&lt;/p&gt;
+&lt;p&gt;The transition probability is conditional&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Should be able to extract this from nimble...
+predict &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+function (posteriors, obs, x_predict) {
+    out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;t&lt;/span&gt;(posteriors)), 
+      function(sample) {
+      
+        l &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sample[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]
+        sigma.k &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sample[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]
+        sigma.n &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sample[&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;]
+       
+        
+        SE &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function (Xi, Xj, l) sigma.k *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.5&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(Xi -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Xj) ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; /&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;l ^&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)
+        cov &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(X, Y) &lt;span class=&quot;kw&quot;&gt;outer&lt;/span&gt;(X, Y, SE, l)
+            
+        cov_xx_inv &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;solve&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;cov&lt;/span&gt;(obs$x, obs$x) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sigma.n^&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(obs$x)))
+        Ef &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;cov&lt;/span&gt;(x_predict, obs$x) %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;cov_xx_inv %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;obs$y
+        Cf &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;cov&lt;/span&gt;(x_predict, x_predict) -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;cov&lt;/span&gt;(x_predict, obs$x) %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;            &lt;/span&gt;cov_xx_inv %*%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;cov&lt;/span&gt;(obs$x, x_predict)
+        &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;Ef =&lt;/span&gt; Ef, &lt;span class=&quot;dt&quot;&gt;Cf =&lt;/span&gt; Cf, &lt;span class=&quot;dt&quot;&gt;Vf =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(Cf))
+    })
+    Ef_posterior &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(out, &lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;Ef&amp;quot;&lt;/span&gt;)
+    Cf_posterior &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(out, &lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;Cf&amp;quot;&lt;/span&gt;)
+    Vf_posterior &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(out, &lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;Vf&amp;quot;&lt;/span&gt;)
+    E_Ef &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rowMeans&lt;/span&gt;(Ef_posterior)
+    E_Cf &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;matrix&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;apply&lt;/span&gt;(Cf_posterior, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, sum)/&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(Cf_posterior)[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;], 
+        &lt;span class=&quot;dt&quot;&gt;ncol =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;dim&lt;/span&gt;(Cf_posterior)[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]))
+    E_Vf &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(E_Cf)
+    Cf_posterior &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(out, &lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;dt&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;`&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;Cf&amp;quot;&lt;/span&gt;)
+    &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;Ef_posterior =&lt;/span&gt; Ef_posterior, &lt;span class=&quot;dt&quot;&gt;Vf_posterior =&lt;/span&gt; Vf_posterior, 
+        &lt;span class=&quot;dt&quot;&gt;Cf_posterior =&lt;/span&gt; Cf_posterior, &lt;span class=&quot;dt&quot;&gt;E_Ef =&lt;/span&gt; E_Ef, &lt;span class=&quot;dt&quot;&gt;E_Cf =&lt;/span&gt; E_Cf, 
+        &lt;span class=&quot;dt&quot;&gt;E_Vf =&lt;/span&gt; E_Vf)
+}
+
+gp_posterior &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;predict&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sample_n&lt;/span&gt;(samples, &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;), obs, x_grid)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;matrices_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_transition_matrix&lt;/span&gt;(gp_posteriort$Ef_posterior, gp_posterior$Vf_posterior, x_grid, h_grid) &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in gp_transition_matrix(gp_posteriort$Ef_posterior, gp_posterior$Vf_posterior, : object &amp;#39;gp_posteriort&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;opt_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;value_iteration&lt;/span&gt;(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error: object &amp;#39;reward&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;comparison&quot;&gt;Comparison&lt;/h2&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;s2.p &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;)  
+d.p =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;/&lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt;)
+gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_mcmc&lt;/span&gt;(obs$x, &lt;span class=&quot;dt&quot;&gt;y=&lt;/span&gt;obs$y, &lt;span class=&quot;dt&quot;&gt;n=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;s2.p =&lt;/span&gt; s2.p, &lt;span class=&quot;dt&quot;&gt;d.p =&lt;/span&gt; d.p)
+gp_dat &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_predict&lt;/span&gt;(gp, x_grid, &lt;span class=&quot;dt&quot;&gt;burnin=&lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;1e4&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;thin=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;300&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;matrices_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_transition_matrix&lt;/span&gt;(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
+opt_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;value_iteration&lt;/span&gt;(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;matrices_true &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;f_transition_matrix&lt;/span&gt;(f, p, x_grid, h_grid, sigma_g)
+opt_true &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;value_iteration&lt;/span&gt;(matrices_true, x_grid, h_grid, &lt;span class=&quot;dt&quot;&gt;OptTime=&lt;/span&gt;MaxT, xT, profit, delta)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;GP =&lt;/span&gt; opt_gp$D, &lt;span class=&quot;dt&quot;&gt;exact =&lt;/span&gt; opt_true$D)
+sets &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expand.grid&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;reps =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;exact&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;GP&amp;quot;&lt;/span&gt;)) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(reps, model)
+
+sim_fn &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(df){
+  &lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(df$reps)
+  &lt;span class=&quot;kw&quot;&gt;ForwardSimulate&lt;/span&gt;(f, p, x_grid, h_grid, x0, 
+                  &lt;span class=&quot;dt&quot;&gt;D =&lt;/span&gt; policy[[&lt;span class=&quot;kw&quot;&gt;as.character&lt;/span&gt;(df$model)]], 
+                  z_g, &lt;span class=&quot;dt&quot;&gt;profit=&lt;/span&gt;profit, &lt;span class=&quot;dt&quot;&gt;OptTime =&lt;/span&gt; OptTime)
+  
+}
+sims &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sets %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sim_fn&lt;/span&gt;(.))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;cbPalette &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;#000000&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;#E69F00&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;#56B4E9&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;#009E73&amp;quot;&lt;/span&gt;, 
+               &lt;span class=&quot;st&quot;&gt;&amp;quot;#F0E442&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;#0072B2&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;#D55E00&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;#CC79A7&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, fishstock, &lt;span class=&quot;dt&quot;&gt;group=&lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;interaction&lt;/span&gt;(reps,model), &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;model), &lt;span class=&quot;dt&quot;&gt;alpha=&lt;/span&gt;.&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~model) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;scale_colour_manual&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;values=&lt;/span&gt;colorkey, &lt;span class=&quot;dt&quot;&gt;guide=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in scale$palette(n): object &amp;#39;colorkey&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;policies_plot &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(policy){
+  policy_df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;model =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;GP&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;exact&amp;quot;&lt;/span&gt;))  %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(model) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;stock =&lt;/span&gt; x_grid, 
+                  &lt;span class=&quot;dt&quot;&gt;escapement =&lt;/span&gt; x_grid -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;h_grid[policy[[&lt;span class=&quot;kw&quot;&gt;as.character&lt;/span&gt;(.$model)]]]))
+
+  &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(policy_df, &lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(stock, escapement, &lt;span class=&quot;dt&quot;&gt;color=&lt;/span&gt;model)) +
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;() +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~model) +
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;stock size, x(t)&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ylab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;escapement, S(t)&amp;quot;&lt;/span&gt;)  +
+&lt;span class=&quot;st&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;scale_colour_manual&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;values=&lt;/span&gt;colorkey, &lt;span class=&quot;dt&quot;&gt;guide=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
+}
+
+&lt;span class=&quot;kw&quot;&gt;policies_plot&lt;/span&gt;(policy)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in scale$palette(n): object &amp;#39;colorkey&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;sims %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mutate&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;net_profit =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;sum&lt;/span&gt;(profit)) -&amp;gt;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;sims&lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  

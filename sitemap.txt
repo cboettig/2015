@@ -123,7 +123,9 @@ http://www.carlboettiger.info//07/14/mdptoolbox-ex-2.html
 http://www.carlboettiger.info//06/19/gp-nimble-v2.html  
 http://www.carlboettiger.info//06/18/RAM-explore.html  
 http://www.carlboettiger.info//06/16/daniel-gp-example.html  
+http://www.carlboettiger.info//06/03/lazy-evaluation-thoughts.html  
 http://www.carlboettiger.info//05/15/diagrammer.html  
+http://www.carlboettiger.info//05/13/GP-compare.html  
 http://www.carlboettiger.info//05/08/ram-legacy-database-explore.html  
 http://www.carlboettiger.info//04/28/rfishbase-notes.html  
 http://www.carlboettiger.info//04/20/open-science-post-doc.html  

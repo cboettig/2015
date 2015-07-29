@@ -330,14 +330,14 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
   
   <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 23.120   0.016  23.167 </code></pre>
+ 21.827   0.019  21.876 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">  samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
   ## basic sanity check
   testthat::<span class="kw">expect_identical</span>(Cmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>), <span class="kw">colnames</span>(samples))</code></pre>
 <p>predict from GP model using posterior MCMC samples</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 28.630   0.004  28.642 </code></pre>
+ 27.852   0.000  27.903 </code></pre>
 <p>extract predictions: E and C</p>
 <pre class="sourceCode r"><code class="sourceCode r">  E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()
   C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()
@@ -664,9 +664,8 @@ values %&gt;%<span class="st"> </span>
 <article>
 <div class="excerpt">
 <h3 id="setup">Setup</h3>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;nimble-dev/nimble/packages/nimble@devel&#39;</span>)</code></pre>
-<pre><code>Error in download(dest, src, auth): client error: (403) Forbidden</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nimble)
+<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;nimble-dev/nimble/packages/nimble@devel&#39;</span>)
+<span class="kw">library</span>(nimble)
 <span class="kw">set.seed</span>(<span class="dv">0</span>)</code></pre>
 <p>Randomly generate some sinusoidal data</p>
 <pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">100</span>
@@ -766,7 +765,7 @@ Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred
 ## 100,000 iterations
 <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 67.646   0.043  67.841 </code></pre>
+ 59.338   0.040  59.546 </code></pre>
 <p>About 25 seconds on my computer</p>
 <p>That can be improved if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
@@ -777,7 +776,7 @@ if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(s
 ## predict from GP model using posterior MCMC samples
 <span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 86.798   0.005  86.948 </code></pre>
+ 79.297   0.000  79.424 </code></pre>
 <p>About 40 seconds on my computer</p>
 <p>Again, could streamline the gpPred() function if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">## extract predictions: E and C
@@ -848,6 +847,36 @@ C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre
         </div>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/06/03/lazy-evaluation-thoughts.html">Lazy Evaluation Thoughts</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 03 Jun 2015</p>
+
+<article>
+<div class="excerpt">
+<p>This is just a draft of my reply to Gavin’s <a href="http://www.fromthebottomoftheheap.net/2015/06/03/my-aversion-to-pipes/">thought-provoking post</a> pushing back on pipes and NSE in R.</p>
+<hr />
+<p>Gavin, really nice post and discussion here. I am still conflicted about some these issues myself.</p>
+<p>For me, the issues of NSE are somewhat separate and above my concern with pipes. I agree completely with your observation that intermediate assignment is easier to read than nested assignment, and not that much harder to read than a pipe chain. However I also agree with other commenters that not having to think about intermediate assignment variables is nice (e.g. I usually do something like replacing <code>the_data</code> with <code>tmp</code> or some such in each occurrence after the first in your example to make this more explicit). But for the most part I do not find the pipe syntax to be problematic in the same way that NSE is – indeed I can use the pipe operator with the SE versions of the same functions, or with any other SE R function.</p>
+<p>NSE to me is a whole different can of worms. It does make the syntax much more consise and more semantic, (even while it obfuscates what is a string, a numeric, or a variable). But this whole “don’t use it in programming” thing seems very impractical to me. When I first started R, I got the same advice – only it was for R itself – use it interactively, but for real programming write everything in C. Then maybe add some R wrappers on top. Um.. yeah, I actually did that for a few years… long ago. Most of the time I don’t even know if I’m programming or not. Sure, it’s easy to use the SE versions when working on some function you know will be part of an R package, but NSE has bitten me several times in various research scripts. Stupid things perhaps – where I have done things like changing a filter argument to a variable with the same name as a column (<code>filter(x == .5)</code> into a <code>filter(x == x)</code>) – but very difficult to debug since they do not throw errors.</p>
+<p>Nevertheless, both the performance and consise abstractions of common manipulation tasks make it hard to walk away from <code>dplyr</code> and friends. However, I find the syntax required to use the SE versions of the dplyr functions immensely cumbersome and opaque (e.g. http://www.carlboettiger.info/2015/02/06/fun-standardizing-non-standard-evaluation.html). Some of these can be written more concisely with a different SE syntax, but having 4 different ways to introduce a variable value, not all of which cover all the same cases, is even worse to me than just sticking with the most complex. No doubt I lack appreciation of the complexity here, but it seems like it should be possible to have a syntax that is nearly as consise as the NSE but where I can replace values with variables (e.g. <code>filter(&quot;Y&quot; == &quot;X&quot;)</code> to <code>filter(y == x)</code>) without needing something like</p>
+<pre class="sourceCode r"><code class="sourceCode r">dots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(query), function(level){
+value &lt;-<span class="st"> </span>query[[level]]
+<span class="kw">interp</span>(~y ==<span class="st"> </span>x, 
+<span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> <span class="kw">as.name</span>(level), <span class="dt">x =</span> value))
+})</code></pre>
+<p>Anyway, apologies for the rant – just trying to say I share your hesitation regarding NSE but pipes don’t bother me. (I do think lazy eval on pipes is a win btw – e.g. try testing out the same long pipe-string analysis on data coming from a remote database; say, just to check that the first 10 rows of output look right before evaluation the whole database)</p>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/06/03/lazy-evaluation-thoughts.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/05/15/diagrammer.html">Diagrammer</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 15 May 2015</p>
@@ -856,7 +885,6 @@ C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre
 <div class="excerpt">
 <p>Exploring ways for using <code>DiagrammeR</code> to generate graphs/plots that can be exported to svg and included in knitr documents.</p>
 <pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;rich-iannone/DiagrammeR&quot;</span>)</code></pre>
-<pre><code>Error in download(dest, src, auth): client error: (403) Forbidden</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;DiagrammeR&quot;</span>)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;archive&quot;</span>, <span class="st">&quot;index&quot;</span>, <span class="st">&quot;share&quot;</span>, <span class="st">&quot;discover&quot;</span>, <span class="st">&quot;use&quot;</span>, <span class="st">&quot;attribute&quot;</span>)
 
@@ -893,6 +921,190 @@ target &lt;-<span class="st"> </span><span class="kw">paste0</span>(knitr::opts_
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/05/15/diagrammer.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+    </div>
+
+    <div class="row">
+      
+        <div class="col-md-3">
+          <header><h4><a href="/2015/05/13/GP-compare.html">Gp Compare</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 13 May 2015</p>
+
+<article>
+<div class="excerpt">
+<p>Original go at nimble gp model, but this requires rather manual manipulation of parameter posteriors to get the GP posteriors.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;MASS&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;mcmc&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;nonparametricbayes&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;pdgControl&quot;</span>)</code></pre>
+<h2 id="sample-data">sample data</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1234</span>)
+Tobs &lt;-<span class="st"> </span><span class="dv">40</span>
+f &lt;-<span class="st"> </span>RickerAllee
+sigma_g &lt;-<span class="st"> </span><span class="fl">0.05</span>
+z_g &lt;-<span class="st"> </span>function() <span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_g)
+p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">8</span>, <span class="dv">5</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">x_grid &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">15</span>, <span class="dt">length=</span><span class="dv">50</span>)
+h_grid &lt;-<span class="st"> </span>x_grid
+profit &lt;-<span class="st"> </span>function(x,h) <span class="kw">pmin</span>(x, h)
+delta &lt;-<span class="st"> </span><span class="fl">0.01</span>
+OptTime &lt;-<span class="st"> </span><span class="dv">50</span>  <span class="co"># stationarity with unstable models is tricky thing</span>
+xT &lt;-<span class="st"> </span><span class="dv">0</span>    <span class="co"># terminal condition</span>
+x0 &lt;-<span class="st"> </span><span class="dv">10</span>   <span class="co"># simulation under policy starts from</span>
+MaxT &lt;-<span class="st"> </span><span class="dv">1000</span> <span class="co"># timeout for value iteration convergence</span></code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">numeric</span>(Tobs)
+x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">5.5</span>
+nz &lt;-<span class="st"> </span><span class="dv">1</span>
+for(t in <span class="dv">1</span>:(Tobs<span class="dv">-1</span>))
+  x[t<span class="dv">+1</span>] =<span class="st"> </span><span class="kw">z_g</span>() *<span class="st"> </span><span class="kw">f</span>(x[t], <span class="dt">h=</span><span class="dv">0</span>, <span class="dt">p=</span>p)
+obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span>,nz), 
+                        <span class="kw">pmax</span>(<span class="kw">rep</span>(<span class="dv">0</span>,Tobs<span class="dv">-1</span>), x[<span class="dv">1</span>:(Tobs<span class="dv">-1</span>)])), 
+                  <span class="dt">y =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span>,nz), 
+                        x[<span class="dv">2</span>:Tobs]))
+<span class="kw">ggplot</span>(<span class="kw">data.frame</span>(<span class="dt">time =</span> <span class="dv">1</span>:Tobs, <span class="dt">x=</span>x), <span class="kw">aes</span>(time,x)) +<span class="st"> </span><span class="kw">geom_line</span>()</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-05-13-GP-compare/unnamed-chunk-4-1.png" />
+</figure>
+<h2 id="gp-model">GP Model</h2>
+<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+
+   l ~<span class="st"> </span><span class="kw">dgamma</span>(<span class="dv">10</span>, <span class="dv">1</span>) 
+   sigma.n ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
+   sigma.k  ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
+   Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N] &lt;-<span class="st"> </span>sigma.k ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span><span class="kw">exp</span>(-<span class="fl">0.5</span> *<span class="st"> </span>diff[<span class="dv">1</span>:N, <span class="dv">1</span>:N] /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span>
+<span class="st">                      </span>sigma.n ^<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>I[<span class="dv">1</span>:N, <span class="dv">1</span>:N]
+   y[<span class="dv">1</span>:N] ~<span class="st"> </span><span class="kw">dmnorm</span>(Mu[<span class="dv">1</span>:N], <span class="dt">cov =</span> Sigma[<span class="dv">1</span>:N, <span class="dv">1</span>:N])  
+
+})</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">length</span>(obs$x)
+diff &lt;-<span class="st"> </span><span class="kw">outer</span>(obs$x, obs$x, function(xi, xj) (xi-xj)^<span class="dv">2</span>)
+constants =<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> N, <span class="dt">x =</span> obs$x, <span class="dt">Mu =</span> <span class="kw">rep</span>(<span class="dv">0</span>,N), <span class="dt">diff =</span> diff, <span class="dt">I =</span> <span class="kw">diag</span>(<span class="dv">1</span>,N))
+inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">l =</span> <span class="dv">1</span>, <span class="dt">sigma.n =</span> <span class="dv">10</span>, <span class="dt">sigma.k =</span> <span class="dv">1</span>)
+data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> obs$y)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> code, <span class="dt">constants =</span> constants, <span class="dt">data =</span> data, <span class="dt">inits =</span> inits)</code></pre>
+<p>Define our mcmc procedure in Nimble</p>
+<pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
+mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>)
+Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
+Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Rmodel)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
+Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)
+)</code></pre>
+<pre><code>   user  system elapsed 
+290.399   0.214 291.454 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
+df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
+<h4 id="posteriors">Posteriors</h4>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_x_log10</span>()</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-05-13-GP-compare/unnamed-chunk-11-1.png" />
+</figure>
+<h2 id="calculating-transition-probabilities">Calculating transition probabilities</h2>
+<p>Several ways we might go about this.</p>
+<p>Technically all policies could be updated in response to new information, though this requires repeating the estimation process, or at least a Bayesian updating step (e.g. passive learning). Typically these steps are separated into estimating the policy and then implementing the policy separately, so we will focus on this case.</p>
+<p>The transition probability is conditional</p>
+<pre class="sourceCode r"><code class="sourceCode r">## Should be able to extract this from nimble...
+predict &lt;-<span class="st"> </span>
+function (posteriors, obs, x_predict) {
+    out &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">data.frame</span>(<span class="kw">t</span>(posteriors)), 
+      function(sample) {
+      
+        l &lt;-<span class="st"> </span>sample[<span class="dv">1</span>]
+        sigma.k &lt;-<span class="st"> </span>sample[<span class="dv">2</span>]
+        sigma.n &lt;-<span class="st"> </span>sample[<span class="dv">3</span>]
+       
+        
+        SE &lt;-<span class="st"> </span>function (Xi, Xj, l) sigma.k *<span class="st"> </span><span class="kw">exp</span>(-<span class="st"> </span><span class="fl">0.5</span> *<span class="st"> </span>(Xi -<span class="st"> </span>Xj) ^<span class="st"> </span><span class="dv">2</span> /<span class="st"> </span>l ^<span class="st"> </span><span class="dv">2</span>)
+        cov &lt;-<span class="st"> </span>function(X, Y) <span class="kw">outer</span>(X, Y, SE, l)
+            
+        cov_xx_inv &lt;-<span class="st"> </span><span class="kw">solve</span>(<span class="kw">cov</span>(obs$x, obs$x) +<span class="st"> </span>sigma.n^<span class="dv">2</span> *<span class="st"> </span><span class="kw">diag</span>(<span class="dv">1</span>, <span class="kw">length</span>(obs$x)))
+        Ef &lt;-<span class="st"> </span><span class="kw">cov</span>(x_predict, obs$x) %*%<span class="st"> </span>cov_xx_inv %*%<span class="st"> </span>obs$y
+        Cf &lt;-<span class="st"> </span><span class="kw">cov</span>(x_predict, x_predict) -<span class="st"> </span><span class="kw">cov</span>(x_predict, obs$x) %*%<span class="st"> </span>
+<span class="st">            </span>cov_xx_inv %*%<span class="st"> </span><span class="kw">cov</span>(obs$x, x_predict)
+        <span class="kw">list</span>(<span class="dt">Ef =</span> Ef, <span class="dt">Cf =</span> Cf, <span class="dt">Vf =</span> <span class="kw">diag</span>(Cf))
+    })
+    Ef_posterior &lt;-<span class="st"> </span><span class="kw">sapply</span>(out, <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="st">&quot;Ef&quot;</span>)
+    Cf_posterior &lt;-<span class="st"> </span><span class="kw">sapply</span>(out, <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="st">&quot;Cf&quot;</span>)
+    Vf_posterior &lt;-<span class="st"> </span><span class="kw">sapply</span>(out, <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="st">&quot;Vf&quot;</span>)
+    E_Ef &lt;-<span class="st"> </span><span class="kw">rowMeans</span>(Ef_posterior)
+    E_Cf &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">apply</span>(Cf_posterior, <span class="dv">1</span>, sum)/<span class="kw">dim</span>(Cf_posterior)[<span class="dv">2</span>], 
+        <span class="dt">ncol =</span> <span class="kw">sqrt</span>(<span class="kw">dim</span>(Cf_posterior)[<span class="dv">1</span>]))
+    E_Vf &lt;-<span class="st"> </span><span class="kw">diag</span>(E_Cf)
+    Cf_posterior &lt;-<span class="st"> </span><span class="kw">lapply</span>(out, <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="st">&quot;Cf&quot;</span>)
+    <span class="kw">list</span>(<span class="dt">Ef_posterior =</span> Ef_posterior, <span class="dt">Vf_posterior =</span> Vf_posterior, 
+        <span class="dt">Cf_posterior =</span> Cf_posterior, <span class="dt">E_Ef =</span> E_Ef, <span class="dt">E_Cf =</span> E_Cf, 
+        <span class="dt">E_Vf =</span> E_Vf)
+}
+
+gp_posterior &lt;-<span class="st"> </span><span class="kw">predict</span>(<span class="kw">sample_n</span>(samples, <span class="dv">100</span>), obs, x_grid)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">matrices_gp &lt;-<span class="st"> </span><span class="kw">gp_transition_matrix</span>(gp_posteriort$Ef_posterior, gp_posterior$Vf_posterior, x_grid, h_grid) </code></pre>
+<pre><code>Error in gp_transition_matrix(gp_posteriort$Ef_posterior, gp_posterior$Vf_posterior, : object &#39;gp_posteriort&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">opt_gp &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)</code></pre>
+<pre><code>Error: object &#39;reward&#39; not found</code></pre>
+<hr />
+<h2 id="comparison">Comparison</h2>
+<pre class="sourceCode r"><code class="sourceCode r">s2.p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span>,<span class="dv">5</span>)  
+d.p =<span class="st"> </span><span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">1</span>/<span class="fl">0.1</span>)
+gp &lt;-<span class="st"> </span><span class="kw">gp_mcmc</span>(obs$x, <span class="dt">y=</span>obs$y, <span class="dt">n=</span><span class="fl">1e5</span>, <span class="dt">s2.p =</span> s2.p, <span class="dt">d.p =</span> d.p)
+gp_dat &lt;-<span class="st"> </span><span class="kw">gp_predict</span>(gp, x_grid, <span class="dt">burnin=</span><span class="fl">1e4</span>, <span class="dt">thin=</span><span class="dv">300</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">matrices_gp &lt;-<span class="st"> </span><span class="kw">gp_transition_matrix</span>(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
+opt_gp &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">matrices_true &lt;-<span class="st"> </span><span class="kw">f_transition_matrix</span>(f, p, x_grid, h_grid, sigma_g)
+opt_true &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(matrices_true, x_grid, h_grid, <span class="dt">OptTime=</span>MaxT, xT, profit, delta)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">policy &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">GP =</span> opt_gp$D, <span class="dt">exact =</span> opt_true$D)
+sets &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">100</span>, <span class="dt">model =</span> <span class="kw">c</span>(<span class="st">&quot;exact&quot;</span>, <span class="st">&quot;GP&quot;</span>)) %&gt;%<span class="st"> </span><span class="kw">group_by</span>(reps, model)
+
+sim_fn &lt;-<span class="st"> </span>function(df){
+  <span class="kw">set.seed</span>(df$reps)
+  <span class="kw">ForwardSimulate</span>(f, p, x_grid, h_grid, x0, 
+                  <span class="dt">D =</span> policy[[<span class="kw">as.character</span>(df$model)]], 
+                  z_g, <span class="dt">profit=</span>profit, <span class="dt">OptTime =</span> OptTime)
+  
+}
+sims &lt;-<span class="st"> </span>sets %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">sim_fn</span>(.))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">cbPalette &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#000000&quot;</span>, <span class="st">&quot;#E69F00&quot;</span>, <span class="st">&quot;#56B4E9&quot;</span>, <span class="st">&quot;#009E73&quot;</span>, 
+               <span class="st">&quot;#F0E442&quot;</span>, <span class="st">&quot;#0072B2&quot;</span>, <span class="st">&quot;#D55E00&quot;</span>, <span class="st">&quot;#CC79A7&quot;</span>)
+<span class="kw">ggplot</span>(sims) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, fishstock, <span class="dt">group=</span><span class="kw">interaction</span>(reps,model), <span class="dt">col=</span>model), <span class="dt">alpha=</span>.<span class="dv">1</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~model) +
+<span class="st">  </span><span class="kw">scale_colour_manual</span>(<span class="dt">values=</span>colorkey, <span class="dt">guide=</span><span class="ot">FALSE</span>)</code></pre>
+<pre><code>Error in scale$palette(n): object &#39;colorkey&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">policies_plot &lt;-<span class="st"> </span>function(policy){
+  policy_df &lt;-<span class="st"> </span>
+<span class="st">    </span><span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="kw">c</span>(<span class="st">&quot;GP&quot;</span>, <span class="st">&quot;exact&quot;</span>))  %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">group_by</span>(model) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">do</span>(<span class="kw">data.frame</span>(<span class="dt">stock =</span> x_grid, 
+                  <span class="dt">escapement =</span> x_grid -<span class="st"> </span>h_grid[policy[[<span class="kw">as.character</span>(.$model)]]]))
+
+  <span class="kw">ggplot</span>(policy_df, <span class="kw">aes</span>(stock, escapement, <span class="dt">color=</span>model)) +
+<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_wrap</span>(~model) +
+<span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;stock size, x(t)&quot;</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;escapement, S(t)&quot;</span>)  +
+<span class="st">    </span><span class="kw">scale_colour_manual</span>(<span class="dt">values=</span>colorkey, <span class="dt">guide=</span><span class="ot">FALSE</span>)
+}
+
+<span class="kw">policies_plot</span>(policy)</code></pre>
+<pre><code>Error in scale$palette(n): object &#39;colorkey&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">sims %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">net_profit =</span> <span class="kw">sum</span>(profit)) -&gt;<span class="st"> </span>sims</code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/05/13/GP-compare.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
@@ -1218,10 +1430,6 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/04/28/rfishbase-notes.html">Rfishbase Notes</a></h4></header>
 <p><span></span></p>
@@ -1261,79 +1469,6 @@ y &lt;-<span class="st"> </span>values %&gt;%<span class="st"> </span><span clas
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/04/28/rfishbase-notes.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/04/20/open-science-post-doc.html">Open Science Post Doc</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 20 Apr 2015</p>
-
-<article>
-<div class="excerpt">
-<p>This post is a response to the query posted by Titus Brown on <a href="http://ivory.idyll.org/blog/2015-how-to-find-openscience-advisor.html">advice for doing an Open Science Post doc</a>.</p>
-<p>Open Science is a broad tent, and I believe there are many ways to engage in open science without crossing boundaries of collaborators or PIs. Some of the most valuable open science practices are those least likely to cross boundaries: in particular, those practices associated with post-publication of academic papers. Many widely regarded journals, including <em>Nature</em> and <em>Science</em>, have relatively strong data publication requirements, increasingly strong code publication expectations, and are compatible with the use of pre-print archives. Yes, their are those who would hesitate even to comply with the most minimal interpretation of these expectations; but there are many more who, given the expectation to do this at all, would appreciate your knowledge and effort on doing these things well and consistent with best practices. Using data repositories instead of supplemental material; exhibiting good management of data and code; providing good metadata in consistent formats; citing software and data appropriately.</p>
-<p>Many of the practices promoted by open scientists work almost as well in a setting that is closed until you ‘flip the switch’ to make them public; even if that is long after publication. Good data management, a private Github repository, or a private electronic lab notebook are all ways to leverage best practices tools and approaches in a setting that can either be shared securely or made open later. Attitudes to post-publication sharing are rarely black-and-white, and having everything curated and ready to go ahead of time can help nudge collaborators in the direction of best practices.</p>
-<p>I’ve been a post-doc for just over 2 years while enjoying a relatively open-science approach to my research: I’ve kept an open lab notebook, posted my papers ahead of publication on pre-print archives, released code, data, and knitr versions of my papers, discuss my work on social media, sign reviews, shared grant applications, contributed open source software and been active in open science communities.</p>
-<p>I was fortunate to have independent funding for most but not all of my post-doc, and to work in a field where researchers are often given substantial independence and in which open practices are common. Nonetheless these were not practices shared by either of my two excellent co-advisers, who gave only a neutral or vaguely positive response to these ideas.</p>
-<p>Nevertheless, I learned more about <em>old-school</em> open science from them than I had ever imagined. When I sent Marc the first draft of our paper, I had buried almost all of the equations in a curt appendix with minimal and jargon-laden supporting text. No sir, those equations not only had to appear in the main text, but I must endeavor to explain the meaning and relevance of each one in a language clear and concise enough for any ecologist to follow. I won’t claim to have succeeded, but boy did continuous integration on my unit tests feel like a low bar for openness by comparison.</p>
-<p>Meanwhile, I also felt I had the support and mentorship of an online community of open scientists even without going to work for one of them. I am thankful that my mentors have always been tolerant of my open science experimentation, but I would have enjoyed working with them even if it had been otherwise. There was much to learn from them, much to learn from the open science community, and after all, a post-doc position doesn’t last forever.</p>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/04/20/open-science-post-doc.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/04/15/misc-notes-on-cloud-providers.html">Misc Notes On Cloud Providers</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 15 Apr 2015</p>
-
-<article>
-<div class="excerpt">
-<p><em>ongoing notes comparing computing resources</em></p>
-<p>Comparing compute resources:</p>
-<ul>
-<li><p>AWS EC2, DigitalOcean, and Google Compute Engine look significantly cheaper than Rackspace, Azure, etc. (The Economist has estimated that AWS EC2 prices are roughly 3% <em>below</em> cost).</p></li>
-<li><p>DigitalOcean tends to have the lowest price point for on-demand use of a given set of resources; usually comparable to the Amazon or EC2 persistent (e.g. monthly) use. All-inclusive pricing (storage, networking etc) and limited options make choices simple and total costs easy to anticipate, though lack the flexibility to fine-tune a configuration to pay for exactly what you need.</p></li>
-<li><p>Google offers the best rate for higher-cpu instances, (e.g. 16 cores); primarily by provisioning them with less memory (0.9 GB/core) than DO or EC2.</p></li>
-<li><p>Google configures disk space separately from instance type. Cost of $0.04 per GB for spinning disk storage, is quite a bit cheaper than the ~ $0.10/GB for AWS EBS, and in fact nearly S3 price ~ $0.03. This makes it a potentially compelling platform for high storage, low compute instances.</p></li>
-</ul>
-<p>Presumably this is non-local storage like EBS, since they also offer a (very expensive) local SSD option (limited to 375 GB increments, each inc at $81.75 / mo). Though if the non-local nature creates a significant latency, it isn’t clear why one would buy non-local SSD option for $0.17/GB.</p>
-<h2 id="using-google-compute-engine">Using Google Compute Engine</h2>
-<p>Web interface is cleaner but much less flexible than Amazon’s, most tasks must be done with the commandline SDK tool instead, <code>gcloud</code> (such as modifying firewall settings other than port 80 and port 443). For instance, <a href="https://developer.ubuntu.com/en/snappy/start/#snappy-google">this tutorial</a> on running an Ubuntu Snappy Core image instead of the usual defaults.</p>
-<p>Docker-machine makes this a bit easier, as usual. The user needs to create a project name and project id on the Google Cloud Engine web interface. Only the project-name is required as an argument to docker-machine (e.g. no authentication token), auth must be done interactively through a web terminal. It doesn’t seem that there is a way to turn on <code>http</code> port or otherwise configure the firewall. By default, all inbound ports are shut. By mapping to port <code>80</code> and checking ‘allow http’ in the web interface one can still access an app like RStudio-server (my mapping docker ports appropriately), but there doesn’t seem to be any way to automate this. (In contrast, with Amazon EC2, docker-machine automatically attaches a ‘security-group’ called <code>docker-machine</code>, so a user can customize the ports permitted on that security group to have, e.g. 8787 open by default.)</p>
-<h2 id="performance-comparisons">Performance comparisons</h2>
-<p>CPU performance varies within a single provider.</p>
-<ul>
-<li>DO CPUs appear 2.3 - 2.4 Ghz with ~ 15MB cache,</li>
-<li>Google CPUs around 2.6 Ghz with ~ 20MB cache,</li>
-<li>Amazon ~ 2.8 Ghz with ~ 25 MB cache</li>
-</ul>
-<p>network i/o speeds seem reasonable on all.</p>
-<hr />
-<h2 id="using-resources-with-docker-machine">Using resources with docker-machine</h2>
-<p>docker-machine with docker save: after committing the container, this saves the container locally rather than on the host. With even reasonable download speeds ~ 0.5MB/s this is quite slow. DigitalOcean download speeds are ~ 680 Mb/s, and upload about half that. Better yet, pushing the container back to the Hub only pushes the changed layers anyway, so is nearly instantaneous. The Hub also provides a private repo for free.</p>
-<p>This provides a pretty compelling workflow of</p>
-<ul>
-<li><code>docker-machine create ...</code></li>
-<li><code>docker run &lt;...&gt; user/private</code> and do stuff</li>
-<li><code>docker commit container user/private</code>, <code>docker push user/private</code>, <code>docker-machine rm -f ...</code></li>
-</ul>
-<p>in order to deploy one’s work on temporary machine with appropriate power, and then save the work and close the machine. Using docker instead of the standard image ‘snapshots’ is probably faster and nicely independent of the machine and provider; and in this case the snapshot storage is free of cost as well.</p>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/04/15/misc-notes-on-cloud-providers.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
