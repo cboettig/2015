@@ -1,5 +1,4 @@
 ---
-published: false
 layout: post
 category: ecology
 tags: 
@@ -7,6 +6,9 @@ tags:
 - nimble
 
 ---
+
+Original go at nimble gp model, but this requires rather manual manipulation of parameter posteriors to get the GP posteriors.  
+
 
 ```{r }
 library("MASS")
@@ -17,7 +19,6 @@ library("tidyr")
 library("dplyr")
 library("nonparametricbayes")
 library("pdgControl")
-knitr::opts_chunk$set(eval=FALSE)
 ```
 
 ## sample data ##
