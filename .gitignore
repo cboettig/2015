@@ -7,3 +7,4 @@ assets/figures/posts
 .Rproj.user
 _posts/*.md
 *.swp
+.RData
