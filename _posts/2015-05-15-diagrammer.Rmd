@@ -1,35 +1,66 @@
 ---
 layout: post
 category: computing
-published: false
 
 ---
 
+Exploring ways for using `DiagrammeR` to generate graphs/plots that can be exported to svg and included in knitr documents.
+
+
+```{r}
+devtools::install_github("rich-iannone/DiagrammeR")
+```
 
 ```{r}
 library("DiagrammeR")
+```
 
+```{r}
 n <- c("archive", "index", "share", "discover", "use", "attribute")
 
 nodes <- create_nodes(nodes = c("Repository\n Roles", n, "Researcher\n Roles"), 
                       shape = "circle", 
                       color = c(rep("PowderBlue", 4), rep("Linen", 4)),
                       style = "filled")
-edges <- create_edges(edge_from = n, 
-                      edge_to = c(n[-1], n[1]),
+edges <- create_edges(from = n, 
+                      to = c(n[-1], n[1]),
                       color = "gray", penwidth = 4)
 
 graph <- create_graph(nodes = nodes, edges = edges, 
                       graph_attrs = c("layout = circo"))
+out <- render_graph(graph)
+```
 
+
+Render as SVG
+
+```{r}
 basename <- "figure1"
 out <- render_graph(graph, output = "SVG")
 writeLines(out, paste0(basename, ".svg"))
+```
+
+Render as pdf, for inculsion in pdf/tex files.
+
+```r
+## Not Run
 system(paste0("inkscape --export-png ", basename, ".png", 
 #              "-w ", width, " -h ", height, 
               " --export-dpi 300 ", 
               basename, ".svg")) 
 
 system(paste0("inkscape --export-pdf ", basename, ".pdf ", basename, ".svg")) 
-
 ```
+
+Embed in post? maybe? This could be more elegant:
+
+```{r eval=FALSE}
+f <- paste0(basename, ".svg")
+target <- paste0(knitr::opts_chunk$get("fig.path"), f)
+file.rename(f, target)
+```
+
+```{r results="asis" eval=FALSE}
+paste0("![](", target, ")")
+```
+

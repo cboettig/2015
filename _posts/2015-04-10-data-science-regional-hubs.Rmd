@@ -1,7 +1,6 @@
 ---
 layout: post
-published: false
-
+tags: conference
 ---
 
 
@@ -112,6 +111,7 @@ To encourage diversity of approaches, rooms were given different metaphors:
 how could the hub be like a:
 
 - weather
+
   Goals: foster research; education
   Matchmaking. tools + domains + data
   Standards. data trust. metadata.
@@ -120,6 +120,7 @@ how could the hub be like a:
   Governance: rotating board, transition to member funded
   
 - brain
+
   body does the work.  
   Facilitate communication. 
   Directory of resources. 
@@ -127,12 +128,14 @@ how could the hub be like a:
   they must come to you.
   
 - building
+
   modular
   diversity
   values: openness, collaboration, equality, agile
   built on existing infrastructure
 
 - ecosystem
+
   larger purpose/values.
   activities: student fellows, matchmaking, workshops
   spokes: natural resources, ag, natural hazards, healthcare, transportation 
@@ -147,7 +150,12 @@ Take volunteers for co pis (google doc)
 
 Take volunteers for host institution (5 volunteer: UCSD Supercomputing Center, USC (ISI), UC Berkeley (BIDS), Federation for Earth Systems, state of Utah)
 
-host institution volunteers meet to select host.  Agreement by consensus on Federation for Earth Systems.
+host institution volunteers meet to select host.  Agreement by consensus on Federation for Earth Systems. 
+
+
+------
+
+Following further discussion with NSF, FES agrees to a UCSD-UCB-UW led.
 
 
 

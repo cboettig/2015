@@ -1,5 +1,5 @@
 ---
-published: false
+
 category: ecology
 tags:
 - nimble
@@ -7,10 +7,15 @@ tags:
 ---
 
 ```{r}
-  devtools::install_github('nimble-dev/nimble', ref = '0627a7422ac252b4d8d4a328d58a5acd3f9589cb', subdir = 'packages/nimble')
   devtools::install_github("cboettig/gpmanagement")
-  library("gpmanagement")
 ```
+
+```{r}
+library("gpmanagement")
+library("dplyr")
+library("ggplot2")
+```
+
 
 ```{r}  
   set.seed(1234)
@@ -49,24 +54,33 @@ tags:
 
 ```{r}
   samples <- as.matrix(Cmcmc$mvSamples)
-  
   ## basic sanity check
   testthat::expect_identical(Cmodel$getNodeNames(topOnly = TRUE), colnames(samples))
+```
 
-  #### predict from GP model using posterior MCMC samples
-  system.time(Cpred$run(samples))
+predict from GP model using posterior MCMC samples
 
-  ## About 40 seconds on my computer
-  ## Again, could streamline the gpPred() function if necessary
+```{r}
+system.time(Cpred$run(samples))
+```
 
-  #### extract predictions: E and C
+
+extract predictions: E and C
+
+
+```{r}
   E <- Cpred$getE()
   C <- Cpred$getC()
   
-  if(interactive()){
-    plot(xObs, yObs, type='b', pch=19, xlim=range(c(xObs,xPred)), ylim=range(c(yObs,E)))
-    points(xPred, E, pch=20, col='red')
-    segments(x0=xPred, y0=E-sqrt(diag(C)), y1=E+sqrt(diag(C)), col='red')
-  }
-  
+obs <- data.frame(x = xObs, y = yObs)
+pred <- data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + sqrt(diag(C)))
+ggplot2::ggplot(pred) + 
+  geom_ribbon(aes(x = x,y = y, ymin = ymin, ymax = ymax), fill = "grey80") +
+  geom_line(aes(x = x, y = y), size=1) + 
+  geom_point(data = obs, aes(x,y)) +
+  coord_cartesian(xlim = range(c(xObs, xPred)), ylim = range(c(yObs,E))) +
+  theme_bw()
+
 ```
+
+
