@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-07-26T03:24:17+00:00</updated>
+  <updated>2015-07-29T22:57:23+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -173,6 +173,71 @@ exact_policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span cl
 &lt;span class=&quot;kw&quot;&gt;lines&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;H[out$policy], &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;red&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;lty=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-07-14-mdptoolbox-ex-2/unnamed-chunk-13-1.png&quot; /&gt;
+&lt;/figure&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Gp Nimble V2</title>
+   <link href="http://www.carlboettiger.info/2015/06/19/gp-nimble-v2.html"/>
+   <updated>2015-06-19T00:00:00+00:00</updated>
+   <id>/06/19/gp-nimble-v2</id>
+   <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;cboettig/gpmanagement&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;gpmanagement&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ggplot2&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  &lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1234&lt;/span&gt;)
+  Tobs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;40&lt;/span&gt;
+  f &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function (x, h, p){
+    &lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(x, function(x) {
+        x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;pmax&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, x -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;h)
+        x *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;exp&lt;/span&gt;(p[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt; -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;x/p[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;]) *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;(x -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;p[&lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;])/p[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;])
+    })
+  }
+  p &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;8&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;)
+  sigma_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;0.05&lt;/span&gt;
+  z_g &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function() &lt;span class=&quot;kw&quot;&gt;rlnorm&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, sigma_g)
+  x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(Tobs)
+  x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;fl&quot;&gt;5.5&lt;/span&gt;
+  for(t in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(Tobs&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;))
+    x[t&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;] =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;z_g&lt;/span&gt;() *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(x[t], &lt;span class=&quot;dt&quot;&gt;h=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;p=&lt;/span&gt;p)
+  obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, 
+                          &lt;span class=&quot;kw&quot;&gt;pmax&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,Tobs&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;), x[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:(Tobs&lt;span class=&quot;dv&quot;&gt;-1&lt;/span&gt;)])), 
+                    &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, 
+                          x[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;:Tobs]))
+  xObs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;obs$x
+  yObs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;obs$y
+  xPred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;15&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;length=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  fit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_setup&lt;/span&gt;(xObs, yObs, xPred)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cmcmc 
+  Cpred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred
+  Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cmodel
+  
+  &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+ 21.865   0.020  21.963 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
+  ## basic sanity check
+  testthat::&lt;span class=&quot;kw&quot;&gt;expect_identical&lt;/span&gt;(Cmodel$&lt;span class=&quot;kw&quot;&gt;getNodeNames&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;topOnly =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;), &lt;span class=&quot;kw&quot;&gt;colnames&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;predict from GP model using posterior MCMC samples&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+ 27.382   0.000  27.457 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;extract predictions: E and C&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
+  C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()
+  
+obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xObs, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; yObs)
+pred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xPred, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; E, &lt;span class=&quot;dt&quot;&gt;ymin =&lt;/span&gt; E -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)), &lt;span class=&quot;dt&quot;&gt;ymax =&lt;/span&gt; E +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)))
+ggplot2::&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(pred) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_ribbon&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; x,&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; y, &lt;span class=&quot;dt&quot;&gt;ymin =&lt;/span&gt; ymin, &lt;span class=&quot;dt&quot;&gt;ymax =&lt;/span&gt; ymax), &lt;span class=&quot;dt&quot;&gt;fill =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;grey80&amp;quot;&lt;/span&gt;) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; x, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; y), &lt;span class=&quot;dt&quot;&gt;size=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; obs, &lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(x,y)) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;coord_cartesian&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;xlim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(xObs, xPred)), &lt;span class=&quot;dt&quot;&gt;ylim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(yObs,E))) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;theme_bw&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-06-19-gp-nimble-v2/unnamed-chunk-7-1.png&quot; /&gt;
 &lt;/figure&gt;
 </content>
  </entry>
@@ -461,11 +526,8 @@ values %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
    <updated>2015-06-16T00:00:00+00:00</updated>
    <id>/06/16/daniel-gp-example</id>
    <content type="html">&lt;h3 id=&quot;setup&quot;&gt;Setup&lt;/h3&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;
-The downloaded source packages are in
-    &amp;#39;/tmp/RtmppWbR7y/downloaded_packages&amp;#39;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;#39;nimble-dev/nimble/packages/nimble@devel&amp;#39;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(nimble)
 &lt;span class=&quot;kw&quot;&gt;set.seed&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Randomly generate some sinusoidal data&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;x &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;
@@ -565,7 +627,7 @@ Cpred  &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 ## 100,000 iterations
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 66.200   0.022  66.343 &lt;/code&gt;&lt;/pre&gt;
+ 59.693   0.032  59.774 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 25 seconds on my computer&lt;/p&gt;
 &lt;p&gt;That can be improved if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
@@ -576,7 +638,7 @@ if(!&lt;span class=&quot;kw&quot;&gt;identical&lt;/span&gt;(params, &lt;span cla
 ## predict from GP model using posterior MCMC samples
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 85.094   0.003  85.185 &lt;/code&gt;&lt;/pre&gt;
+ 79.494   0.004  79.654 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;About 40 seconds on my computer&lt;/p&gt;
 &lt;p&gt;Again, could streamline the gpPred() function if necessary&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## extract predictions: E and C
@@ -635,6 +697,47 @@ C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-06-16-daniel-gp-example/unnamed-chunk-13-1.png&quot; /&gt;
 &lt;/figure&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Diagrammer</title>
+   <link href="http://www.carlboettiger.info/2015/05/15/diagrammer.html"/>
+   <updated>2015-05-15T00:00:00+00:00</updated>
+   <id>/05/15/diagrammer</id>
+   <content type="html">&lt;p&gt;Exploring ways for using &lt;code&gt;DiagrammeR&lt;/code&gt; to generate graphs/plots that can be exported to svg and included in knitr documents.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;devtools::&lt;span class=&quot;kw&quot;&gt;install_github&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;rich-iannone/DiagrammeR&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;DiagrammeR&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;n &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;archive&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;index&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;share&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;discover&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;use&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;attribute&amp;quot;&lt;/span&gt;)
+
+nodes &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;create_nodes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;nodes =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Repository&lt;/span&gt;&lt;span class=&quot;ch&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;st&quot;&gt; Roles&amp;quot;&lt;/span&gt;, n, &lt;span class=&quot;st&quot;&gt;&amp;quot;Researcher&lt;/span&gt;&lt;span class=&quot;ch&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;st&quot;&gt; Roles&amp;quot;&lt;/span&gt;), 
+                      &lt;span class=&quot;dt&quot;&gt;shape =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;circle&amp;quot;&lt;/span&gt;, 
+                      &lt;span class=&quot;dt&quot;&gt;color =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;PowderBlue&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;), &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Linen&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;)),
+                      &lt;span class=&quot;dt&quot;&gt;style =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;filled&amp;quot;&lt;/span&gt;)
+edges &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;create_edges&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;from =&lt;/span&gt; n, 
+                      &lt;span class=&quot;dt&quot;&gt;to =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(n[-&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;], n[&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;]),
+                      &lt;span class=&quot;dt&quot;&gt;color =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;gray&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;penwidth =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;)
+
+graph &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;create_graph&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;nodes =&lt;/span&gt; nodes, &lt;span class=&quot;dt&quot;&gt;edges =&lt;/span&gt; edges, 
+                      &lt;span class=&quot;dt&quot;&gt;graph_attrs =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;layout = circo&amp;quot;&lt;/span&gt;))
+out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;render_graph&lt;/span&gt;(graph)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Render as SVG&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;basename &amp;lt;-&lt;span class=&quot;st&quot;&gt; &amp;quot;figure1&amp;quot;&lt;/span&gt;
+out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;render_graph&lt;/span&gt;(graph, &lt;span class=&quot;dt&quot;&gt;output =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;SVG&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;writeLines&lt;/span&gt;(out, &lt;span class=&quot;kw&quot;&gt;paste0&lt;/span&gt;(basename, &lt;span class=&quot;st&quot;&gt;&amp;quot;.svg&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Render as pdf, for inculsion in pdf/tex files.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Not Run
+&lt;span class=&quot;kw&quot;&gt;system&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;paste0&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;inkscape --export-png &amp;quot;&lt;/span&gt;, basename, &lt;span class=&quot;st&quot;&gt;&amp;quot;.png&amp;quot;&lt;/span&gt;, 
+&lt;span class=&quot;co&quot;&gt;#              &amp;quot;-w &amp;quot;, width, &amp;quot; -h &amp;quot;, height, &lt;/span&gt;
+              &lt;span class=&quot;st&quot;&gt;&amp;quot; --export-dpi 300 &amp;quot;&lt;/span&gt;, 
+              basename, &lt;span class=&quot;st&quot;&gt;&amp;quot;.svg&amp;quot;&lt;/span&gt;)) 
+
+&lt;span class=&quot;kw&quot;&gt;system&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;paste0&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;inkscape --export-pdf &amp;quot;&lt;/span&gt;, basename, &lt;span class=&quot;st&quot;&gt;&amp;quot;.pdf &amp;quot;&lt;/span&gt;, basename, &lt;span class=&quot;st&quot;&gt;&amp;quot;.svg&amp;quot;&lt;/span&gt;)) &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Embed in post? maybe? This could be more elegant:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;f &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;paste0&lt;/span&gt;(basename, &lt;span class=&quot;st&quot;&gt;&amp;quot;.svg&amp;quot;&lt;/span&gt;)
+target &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;paste0&lt;/span&gt;(knitr::opts_chunk$&lt;span class=&quot;kw&quot;&gt;get&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;fig.path&amp;quot;&lt;/span&gt;), f)
+&lt;span class=&quot;kw&quot;&gt;file.rename&lt;/span&gt;(f, target)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;paste0&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;![](&amp;quot;&lt;/span&gt;, target, &lt;span class=&quot;st&quot;&gt;&amp;quot;)&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 </content>
  </entry>
  
@@ -1032,6 +1135,98 @@ y &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;values %&amp;gt;%&lt;s
 &lt;li&gt;&lt;code&gt;docker commit container user/private&lt;/code&gt;, &lt;code&gt;docker push user/private&lt;/code&gt;, &lt;code&gt;docker-machine rm -f ...&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;in order to deploy one’s work on temporary machine with appropriate power, and then save the work and close the machine. Using docker instead of the standard image ‘snapshots’ is probably faster and nicely independent of the machine and provider; and in this case the snapshot storage is free of cost as well.&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Data Science Regional Hubs</title>
+   <link href="http://www.carlboettiger.info/2015/04/10/data-science-regional-hubs.html"/>
+   <updated>2015-04-10T00:00:00+00:00</updated>
+   <id>/04/10/data-science-regional-hubs</id>
+   <content type="html">&lt;h2 id=&quot;agenda&quot;&gt;Agenda&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Goal&lt;/li&gt;
+&lt;li&gt;Who &amp;amp; what we have&lt;/li&gt;
+&lt;li&gt;imagine and design the hub&lt;/li&gt;
+&lt;li&gt;engage, govern, sustain&lt;/li&gt;
+&lt;li&gt;structure a proposal&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;nsf-overview&quot;&gt;NSF overview&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;What does NSF mean by hub? Consortium/network with regional focus&lt;/li&gt;
+&lt;li&gt;why regional? face time. regional issues&lt;/li&gt;
+&lt;li&gt;NSF thinking it will fund for 9-10 years (in 3 phases). next phase will be &amp;lt; 3 years after first&lt;/li&gt;
+&lt;li&gt;phase 1: hub (executive director)&lt;/li&gt;
+&lt;li&gt;phase 2: spokes (priority areas)&lt;/li&gt;
+&lt;li&gt;phase 3: nodes (sustaining partner organizations)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Volunteer steering council advises ED, executive staff partner organizations (beyond steering council) (model like the CRA)&lt;/p&gt;
+&lt;p&gt;Foundational Research example: Berkeley AMPlab (NSF, DARPA, DOE, AWS, Google, SAP) -&amp;gt; apache open source: spark, mesos, tachyon&lt;/p&gt;
+&lt;p&gt;Education example: Schmidt family foundation funds U Chicago run Data Science for Social Good&lt;/p&gt;
+&lt;p&gt;Applications: Healthcare: industry using open clinicaltrials.gov data, tidy up/visual interface (Novartis, Pfizer, Eli Lillu)&lt;/p&gt;
+&lt;p&gt;NSF will fund the logistics, not the research (other NSF programs do that)&lt;/p&gt;
+&lt;p&gt;networking (meeting, staff) dynamic: grow over time Collaboration rather than competition: NSF prefers one proposal per region!! Must represent the entire region. West is the largest geographic region.&lt;/p&gt;
+&lt;p&gt;spokes can be regional areas as well as topical.&lt;/p&gt;
+&lt;p&gt;phase 1 somewhat of a planning grant&lt;/p&gt;
+&lt;h2 id=&quot;charratte-outcome-goals&quot;&gt;Charratte outcome goals&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;priority applications&lt;/li&gt;
+&lt;li&gt;technical or research topics&lt;/li&gt;
+&lt;li&gt;societal big data issues&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Volunteer to organize next steps in coalescing regional stakeholders and advancing the region’s proposal&lt;/p&gt;
+&lt;p&gt;How will hubs interact? 2.5 day workshop at DC will talk about that after regionally focused hubs are created. Successful pilot (e.g. education) can spread nationally.&lt;/p&gt;
+&lt;p&gt;Coordination between federal agencies.&lt;/p&gt;
+&lt;p&gt;this group selected based on their white papers.&lt;/p&gt;
+&lt;p&gt;Networking&lt;/p&gt;
+&lt;p&gt;Content for the proposal from the western region&lt;/p&gt;
+&lt;p&gt;by hands, looks like 50% academic, 50% govt/non-profit (6)/for profit (6) in equal bit&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;table breakout. environmental science strong at my table:&lt;/p&gt;
+&lt;p&gt;Mark Tompkins (Berkeley industry), Anne Wilson (Colorado), Jeremy Franklin, Philip Tarrant&lt;/p&gt;
+&lt;p&gt;Brainstorm 2: listing&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Existing hubs and partnerships&lt;/li&gt;
+&lt;li&gt;Data Sources&lt;/li&gt;
+&lt;li&gt;Analysis Capabilities&lt;/li&gt;
+&lt;li&gt;User and Uses&lt;/li&gt;
+&lt;li&gt;Education &amp;amp; workforce development&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Breakout 2: Services the hub can provide&lt;/p&gt;
+&lt;p&gt;see our sticky. i make case for demographic diversity (&amp;amp; geographic)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;plenary&lt;/p&gt;
+&lt;p&gt;staff, workshops. Not funding for infrastructure, not funding research, not funding education.&lt;/p&gt;
+&lt;p&gt;Could fund a workshop to create an NSF call for infrastructure.&lt;/p&gt;
+&lt;p&gt;structure: could rotate between campuses. could be led by a .org.&lt;/p&gt;
+&lt;p&gt;(us-ignite.org spun off. hub could spin off into a .org)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;Breakout 3: discuss very different images for what hub would look like&lt;/p&gt;
+&lt;p&gt;To encourage diversity of approaches, rooms were given different metaphors:&lt;/p&gt;
+&lt;p&gt;how could the hub be like a:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;weather&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Goals: foster research; education Matchmaking. tools + domains + data Standards. data trust. metadata. Buisness services: data management. sustainability Functions: workshops. events/hackathons. forum for curriculum development. data carpentry boot camps. standardization, containers. Governance: rotating board, transition to member funded&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;brain&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;body does the work.&lt;br /&gt; Facilitate communication. Directory of resources. Advocacy of best practices they must come to you.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;building&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;modular diversity values: openness, collaboration, equality, agile built on existing infrastructure&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ecosystem&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;larger purpose/values. activities: student fellows, matchmaking, workshops spokes: natural resources, ag, natural hazards, healthcare, transportation leadership: ED. 18 person steering committee. spoke working groups Select steering committee: via an interim steering committee from the proposal.&lt;/p&gt;
+&lt;p&gt;Feedback: plus, potential, critique,&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;Take volunteers for co pis (google doc)&lt;/p&gt;
+&lt;p&gt;Take volunteers for host institution (5 volunteer: UCSD Supercomputing Center, USC (ISI), UC Berkeley (BIDS), Federation for Earth Systems, state of Utah)&lt;/p&gt;
+&lt;p&gt;host institution volunteers meet to select host. Agreement by consensus on Federation for Earth Systems.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;Following further discussion with NSF, FES agrees to a UCSD-UCB-UW led.&lt;/p&gt;
 </content>
  </entry>
  
