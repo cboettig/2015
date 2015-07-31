@@ -37,7 +37,6 @@ get_utility <- function(x,h) {
 ```
 
 
-## step 6: solve bellman equation with value iteration
 
 ```{r}
 R <- outer(states, actions, get_utility)
