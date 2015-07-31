@@ -29,5 +29,5 @@ RUN install2.r --error -r http://cran.rstudio.com \
 
 # break cache first
 COPY Dockerfile /tmp/Dockerfile
-RUN git clone https://github.com/cboettig/2015 data
+RUN rm -rf /data && git clone https://github.com/cboettig/2015 /data
 
