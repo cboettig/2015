@@ -3,7 +3,7 @@ layout: post
 
 ---
 
-```{r}
+```{r message=FALSE, results='hide'}
 library(FastGP)
 library(mvtnorm)
 library(MASS)

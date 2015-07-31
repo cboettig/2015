@@ -4,9 +4,9 @@ category: ecology
 
 ---
 
-```{r}
-library("MDPtoolbox")
-library("ggplot2")
+```{r, message = FALSE, results = "hide"}
+library("MDPtoolbox", quietly = TRUE)
+library("ggplot2", quietly = TRUE)
 ```
 
 ```{r}

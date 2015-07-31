@@ -4,12 +4,12 @@ category: ecology
 published: false
 ---
 
-```{r}
-library("MDPtoolbox")
-library("tidyr")
-library("dplyr")
-library("ggplot2")
-library("gpmanagement")
+```{r results = hide}
+library("MDPtoolbox", quietly = TRUE)
+library("tidyr", quietly = TRUE)
+library("dplyr", quietly = TRUE)
+library("ggplot2", quietly = TRUE)
+library("gpmanagement", quietly = TRUE)
 
 knitr::opts_chunk$set(eval=FALSE)
 ```

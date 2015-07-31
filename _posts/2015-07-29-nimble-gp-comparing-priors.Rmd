@@ -10,12 +10,12 @@ tags:
 
 
 
-```{r}
+```{r, results="hide"}
 knitr::opts_chunk$set(eval=FALSE)
-library("gpmanagement")
-library("tidyr")
-library("dplyr")
-library("ggplot2")
+library("gpmanagement", quietly = TRUE)
+library("tidyr", quietly = TRUE)
+library("dplyr", quietly = TRUE)
+library("ggplot2", quietly = TRUE)
 ```
 
 
