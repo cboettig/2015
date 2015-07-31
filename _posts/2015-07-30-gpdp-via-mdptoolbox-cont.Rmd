@@ -4,20 +4,27 @@ category: ecology
 published: false
 ---
 
-```{r results = hide}
-library("MDPtoolbox", quietly = TRUE)
-library("tidyr", quietly = TRUE)
-library("dplyr", quietly = TRUE)
-library("ggplot2", quietly = TRUE)
-library("gpmanagement", quietly = TRUE)
 
-knitr::opts_chunk$set(eval=FALSE)
+```{r results='hide'}
+#knitr::opts_chunk$set(eval=FALSE)
+library("gpmanagement")
+library("tidyr")
+library("dplyr")
+library("ggplot2")
 ```
 
 
+Programming around nimble: Can we break out a piece of the nimble model definition to be diefined by users, using the nimble format (e.g. the priors), while leaving some of the model to be specified seperately? 
+
+At the moment this requires some trickery: http://stackoverflow.com/questions/31712646
+
+It's interesting to observe just how much nimble's use (and extension!) of the powerful modeling expressions from BUGS has in common with the non-standard evaluation of Hadley's `dplyr` and friends.  With this in place in `gpmanagement` we can specify the prior externally.  
+
+First, some sample data
 
 
 ```{r}  
+# Should move my 'standard' sample data into the package?
   set.seed(1234)
   Tobs <- 40
   f <- function (x, h, p){
@@ -39,10 +46,7 @@ knitr::opts_chunk$set(eval=FALSE)
                           x[2:Tobs]))
   xObs <- obs$x
   yObs <- obs$y
-```  
-  
-```{r}  
-xPred <- seq(0, 1.25 * max(xObs), length = 50)
+  xPred <- seq(0, 1.25 * max(xObs), length = 50)
 ```
 
 ```{r}
@@ -65,40 +69,38 @@ curve(dgamma(x, 1, 10))
 
 ```{r}
 fit <- gp_setup(xObs[2:Tobs], yObs[2:Tobs], xPred)
-Cmcmc <- fit$Cmcmc
-Cpred <- fit$Cpred
 ```
 
-Run the MCMC and collect posteriors
+```{r}
+Cmcmc <- fit$Cmcmc 
+Cpred <- fit$Cpred
+Cmodel <- fit$Cmodel
+```
 
 ```{r}
 system.time(Cmcmc$run(100000))
-samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
 ```
 
-
-Posteriors
-
 ```{r}
-df <- tidyr::gather(as.data.frame(samples))
-ggplot(df) + 
-  geom_density(aes(value)) + 
-  facet_wrap(~key, scale='free')
-```  
+  samples <- as.matrix(Cmcmc$mvSamples)
+  ## basic sanity check
+  testthat::expect_identical(Cmodel$getNodeNames(topOnly = TRUE), colnames(samples))
+```
 
-
-
-Generate predictions from GP model using posterior MCMC samples, extract predictions
+predict from GP model using posterior MCMC samples
 
 ```{r}
 system.time(Cpred$run(samples))
-E <- Cpred$getE()
-C <- Cpred$getC()
 ```
 
-Plots
+
+extract predictions: E and C
+
 
 ```{r}
+  E <- Cpred$getE()
+  C <- Cpred$getC()
+  
 obs <- data.frame(x = xObs, y = yObs)
 pred <- data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + sqrt(diag(C)))
 ggplot2::ggplot(pred) + 
@@ -109,6 +111,18 @@ ggplot2::ggplot(pred) +
   theme_bw()
 
 ```
+
+
+Posteriors
+
+```{r}
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+df <- tidyr::gather(samples)
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```  
+
 
 
 

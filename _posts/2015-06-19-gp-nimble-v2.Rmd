@@ -7,10 +7,10 @@ tags:
 ---
 
 ```{r}
-  devtools::install_github("cboettig/gpmanagement")
+#  devtools::install_github("cboettig/gpmanagement")
 ```
 
-```{r}
+```{r, results = 'hide'}
 library("gpmanagement")
 library("dplyr")
 library("ggplot2")
