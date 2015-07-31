@@ -10,6 +10,8 @@ RUN install2.r --error -r http://cran.rstudio.com \
      mcmc \
      MDPtoolbox \
      sde \
+     FastGP \
+     rbenchmark \
   && installGithub.r \
     yihui/servr \ 
     cboettig/earlywarning \
@@ -20,6 +22,7 @@ RUN install2.r --error -r http://cran.rstudio.com \
     cboettig/nonparametric-bayes \
     cboettig/pmc \
     nimble-dev/nimble/packages/nimble@stable \
+    cboettig/gpmanagement \
   && rm -rf /tmp/downloaded_packages
 
 
