@@ -1,4 +1,5 @@
 #!/bin/bash
+## Run from repo root
 
 YEAR=2015
 
