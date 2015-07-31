@@ -141,14 +141,14 @@
   
   <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 21.827   0.019  21.876 </code></pre>
+ 19.036   0.020  19.048 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">  samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
   ## basic sanity check
   testthat::<span class="kw">expect_identical</span>(Cmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>), <span class="kw">colnames</span>(samples))</code></pre>
 <p>predict from GP model using posterior MCMC samples</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 27.852   0.000  27.903 </code></pre>
+ 23.036   0.000  23.015 </code></pre>
 <p>extract predictions: E and C</p>
 <pre class="sourceCode r"><code class="sourceCode r">  E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()
   C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()
