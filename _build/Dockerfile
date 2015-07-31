@@ -21,6 +21,7 @@ RUN install2.r --error -r http://cran.rstudio.com \
     ropensci/rgpdd \
     cboettig/nonparametric-bayes \
     cboettig/pmc \
+    rich-iannone/DiagrammeR \
     nimble-dev/nimble/packages/nimble@stable \
     cboettig/gpmanagement \
   && rm -rf /tmp/downloaded_packages
