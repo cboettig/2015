@@ -1,0 +1,130 @@
+---
+layout: post
+category: ecology
+
+---
+
+```{r}
+library("MDPtoolbox")
+library("ggplot2")
+```
+
+```{r}
+K <- 150 # state space limit
+states <- 0:K # Vector of all possible states
+actions <- states # Vector of actions: harvest
+
+
+sigma_g = 0.1
+p <- c(2, 100, 50)
+
+f <- function (x, h){
+  sapply(x, function(x) {
+    x <- pmax(0, x - h)
+    x * exp(p[1] * (1 - x/p[2]) * (x - p[3])/p[2])
+  })
+}
+
+pdfn <- function(x, mu, sigma = sigma_g){
+  dlnorm(x, log(mu), sdlog = sigma)
+}
+
+# Utility function
+discount = 0.95
+get_utility <- function(x,h) {
+	pmin(x,h)
+}
+```
+
+
+## step 6: solve bellman equation with value iteration
+
+```{r}
+R <- outer(states, actions, get_utility)
+
+```
+
+
+```{r}
+
+
+  
+transition_matrix <- function(states, actions, f, pdfn){
+  # Initialize
+  transition <- array(0, dim = c(length(states), length(states), length(actions)))
+  
+  K <- length(states)
+  
+  for (k in 1:length(states)) {
+  	for (i in 1:length(actions)) {
+  
+  # Calculate the transition state at the next step, given the 
+  # current state k and action i (harvest H[i])
+  		nextpop <- f(states[k], actions[i])
+  		
+  		## Population always extinct if this is negative. since multiplicitive shock z_t * f(n) < 0 for all f(n) < 0
+  		if(nextpop <= 0)
+  		  transition[k, , i] <- c(1, rep(0, length(states) - 1))
+  	# Implement demographic stochasticity 
+  		else {
+  
+        # Cts distributions need long-tailed denominator as normalizing factor:
+  		  fine_states <- seq(min(states), 10 * max(states), by = states[2] - states[1])
+  	  	N <- sum(pdfn(fine_states, nextpop))  
+    	  transition[k, , i] <-pdfn(states, nextpop) / N
+    	  
+    		# We need to correct this density for the final capping state ("Pile on boundary") (discrete or cts case)
+    	  # this can be a tiny but negative value due to floating-point errors. so we take max(v,0) to avoid
+  	  	transition[k, K, i] <- max(1 - sum(transition[k, -K, i]), 0)
+  		}
+  	} 
+  }
+  transition
+}
+
+P <- transition_matrix(states, actions, f, pdfn)
+```
+
+
+## Using toolbox
+
+
+```{r}
+mdp_check(P = P, R = R)
+mdp <- mdp_value_iteration(P, R, discount = discount, epsilon = 0.001, max_iter = 5e3, V0 = numeric(length(states)))
+
+```
+
+
+
+```{r}
+plot(states, states - actions[mdp$policy],  xlab="Population size", ylab="Escapement")
+```
+
+
+## Compare to Reed
+
+From Reed (1979) we know that the optimal solution is a constant-escapement rule when the growth function in convex.  Note that this condition is violated by the growth function with alternative stable states (Allen/Ricker-Allee model), resulting in a very different optimal policy:
+
+$$f'(s^*) = 1/\alpha$$
+
+For growth-rate function $f$, where $\alpha$ is the discount factor and $s^*$ the stock size for the constant escapement.  Analytic solutions are clearly possible for certain growth functions, but here I've just implemented a generic numerical solution.
+
+```{r}
+fun <- function(x) - f(x,0) + x / discount
+out <- optimize(f = fun, interval = c(0,K))
+S_star <- out$minimum
+
+exact_policy <- sapply(states, 
+                       function(x) 
+                        if(x < S_star) 0
+                        else x - S_star)
+```
+
+```{r}
+plot(states, states - actions[mdp$policy],  xlab="Population size", ylab="Escapement")
+
+# The difference between Bellman and the analytical solution is small:
+lines(states, states - exact_policy)
+```
+
