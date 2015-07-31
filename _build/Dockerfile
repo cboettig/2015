@@ -27,4 +27,5 @@ RUN install2.r --error -r http://cran.rstudio.com \
 
 
 
-COPY . /data
+RUN git clone https://github.com/cboettig/2015 data
+
