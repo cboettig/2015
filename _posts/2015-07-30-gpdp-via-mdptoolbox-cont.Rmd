@@ -1,0 +1,232 @@
+---
+layout: post
+category: ecology
+published: false
+---
+
+```{r}
+library("MDPtoolbox")
+library("tidyr")
+library("dplyr")
+library("ggplot2")
+library("gpmanagement")
+
+knitr::opts_chunk$set(eval=FALSE)
+```
+
+
+
+
+```{r}  
+  set.seed(1234)
+  Tobs <- 40
+  f <- function (x, h, p){
+    sapply(x, function(x) {
+        x <- pmax(0, x - h)
+        x * exp(p[1] * (1 - x/p[2]) * (x - p[3])/p[2])
+    })
+  }
+  p <- c(2, 100, 50)
+  sigma_g <- 0.1
+  z_g <- function() rlnorm(1, 0, sigma_g)
+  x <- numeric(Tobs)
+  x[1] <- 60
+  for(t in 1:(Tobs-1))
+    x[t+1] = z_g() * f(x[t], h=0, p=p)
+  obs <- data.frame(x = c(0, 
+                          pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
+                    y = c(0, 
+                          x[2:Tobs]))
+  xObs <- obs$x
+  yObs <- obs$y
+```  
+  
+```{r}  
+xPred <- seq(0, 1.25 * max(xObs), length = 50)
+```
+
+```{r}
+qplot(seq_along(x), x) + geom_line()
+```
+
+
+Now the GP estimation from NIMBLE.  Let's emphasize shorter length-scales with the prior to compare:
+
+```{r}
+# having this work with output from `nimbleCode` might be more natural than `expression`
+priors <- expression({
+  rho ~ dgamma(1, 10)
+  sigGP ~ dunif(0, 1e5)
+  sigOE ~ dunif(0, 1e5)
+})
+curve(dgamma(x, 1, 10))
+
+```
+
+```{r}
+fit <- gp_setup(xObs[2:Tobs], yObs[2:Tobs], xPred)
+Cmcmc <- fit$Cmcmc
+Cpred <- fit$Cpred
+```
+
+Run the MCMC and collect posteriors
+
+```{r}
+system.time(Cmcmc$run(100000))
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+```
+
+
+Posteriors
+
+```{r}
+df <- tidyr::gather(as.data.frame(samples))
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```  
+
+
+
+Generate predictions from GP model using posterior MCMC samples, extract predictions
+
+```{r}
+system.time(Cpred$run(samples))
+E <- Cpred$getE()
+C <- Cpred$getC()
+```
+
+Plots
+
+```{r}
+obs <- data.frame(x = xObs, y = yObs)
+pred <- data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + sqrt(diag(C)))
+ggplot2::ggplot(pred) + 
+  geom_ribbon(aes(x = x,y = y, ymin = ymin, ymax = ymax), fill = "grey80") +
+  geom_line(aes(x = x, y = y), size=1) + 
+  geom_point(data = obs, aes(x,y)) +
+  coord_cartesian(xlim = range(c(xObs, xPred)), ylim = range(c(yObs,E))) +
+  theme_bw()
+
+```
+
+
+
+
+-------------------------------
+
+
+## True model
+
+
+```{r}
+states <- xPred # Vector of all possible states
+actions <- states # Vector of actions: harvest
+
+
+p <- c(2, 100, 50)
+f <- function (x, h){
+  sapply(x, function(x) {
+    x <- pmax(0, x - h)
+    x * exp(p[1] * (1 - x/p[2]) * (x - p[3])/p[2])
+  })
+}
+
+sigma_g = 0.1
+pdfn <- function(x, mu, sigma = sigma_g){
+  dlnorm(x, log(mu), sdlog = sigma)
+}
+
+# Utility function
+get_utility <- function(x,h) {
+	pmin(x,h) - 0.01 * h ^ 2
+}
+```
+
+
+```{r}
+R <- outer(states, actions, get_utility)
+P <- transition_matrix(states, actions, f, pdfn)
+```
+
+
+```{r}
+mdp_check(P = P, R = R)
+mdp <- mdp_value_iteration(P, R, discount = discount, epsilon = 0.001, max_iter = 5e3, V0 = numeric(length(states)))
+
+```
+
+
+
+```{r}
+plot(states, states - actions[mdp$policy],  xlab="Population size", ylab="Escapement")
+```
+
+## Implementing policy
+
+```{r}
+z <- function() rlnorm(1, meanlog = 0, sdlog = sigma_g)
+
+simulate_policy <- function(states, actions, policy, f, z, s0, steps = 50, utility = function(s,a) NA, discount = 1){
+  s <- numeric(steps)
+  a <- numeric(steps)
+  u <- numeric(steps)
+  s[1] <- s0
+  for(t in 1:(steps-1)){
+    
+    a[t] <- actions[policy[which.min(abs(states - s[t]))]]
+    s[t+1] <- z() * f(s[t], a[t])
+    u[t] <- get_utility(s[t], a[t]) * discount ^ t
+  }
+  
+  # Final action determined but not implemented
+  a[steps] <- actions[policy[which.min(abs(states - s[t]))]]
+
+  data.frame(time = 1:steps, state = s, action = a, utility = u)
+}
+
+sims <- simulate_policy(states, actions, mdp$policy, f, z, s0 = 100, steps = 50, utility = utility, discount = discount)
+
+```
+----------------
+
+## GP model
+
+```{r}
+gp_matrix <- function(states, actions, E, C){
+  
+  transition <- array(0, dim = c(length(states), length(states), length(actions)))
+  K <- length(states)
+  sigmas <- sqrt(diag(C))
+  
+  for (k in 1:length(states)) {
+    for (i in 1:length(actions)) {
+      nextpop <- E[k] - actions[i]
+      if(nextpop <= 0) {
+        transition[k, , i] <- c(1, rep(0, K - 1))
+      } else {
+        transition[k, , i] <- dnorm(states, nextpop, sigmas[i]) / sum(dnorm(states, nextpop, sigmas[i]))
+      }
+    }
+  }
+  transition
+}
+
+P_gp <- gp_matrix(states, actions, E, C)
+```
+
+
+
+```{r}
+mdp_check(P = P_gp, R = R)
+gp <- mdp_value_iteration(P_gp, R, discount = discount, epsilon = 0.001, max_iter = 5e3, V0 = numeric(length(states)))
+
+```
+
+
+
+```{r}
+plot(states, states - actions[gp$policy],  xlab="Population size", ylab="Escapement")
+```
+
+

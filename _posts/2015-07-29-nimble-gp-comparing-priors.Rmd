@@ -1,0 +1,216 @@
+---
+published: false
+layout: post
+category: ecology
+tags: 
+- gp
+- nimble
+
+---
+
+
+
+```{r}
+knitr::opts_chunk$set(eval=FALSE)
+library("gpmanagement")
+library("tidyr")
+library("dplyr")
+library("ggplot2")
+```
+
+
+Programming around nimble: Can we break out a piece of the nimble model definition to be diefined by users, using the nimble format (e.g. the priors), while leaving some of the model to be specified seperately? 
+
+At the moment this requires some trickery: http://stackoverflow.com/questions/31712646
+
+It's interesting to observe just how much nimble's use (and extension!) of the powerful modeling expressions from BUGS has in common with the non-standard evaluation of Hadley's `dplyr` and friends.  With this in place in `gpmanagement` we can specify the prior externally.  
+
+First, some sample data
+
+
+```{r}  
+# Should move my 'standard' sample data into the package?
+  set.seed(1234)
+  Tobs <- 40
+  f <- function (x, h, p){
+    sapply(x, function(x) {
+        x <- pmax(0, x - h)
+        x * exp(p[1] * (1 - x/p[2]) * (x - p[3])/p[2])
+    })
+  }
+  p <- c(2, 100, 50)
+  sigma_g <- 0.1
+  z_g <- function() rlnorm(1, 0, sigma_g)
+  x <- numeric(Tobs)
+  x[1] <- 60
+  for(t in 1:(Tobs-1))
+    x[t+1] = z_g() * f(x[t], h=0, p=p)
+  obs <- data.frame(x = c(0, 
+                          pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
+                    y = c(0, 
+                          x[2:Tobs]))
+  xObs <- obs$x
+  yObs <- obs$y
+  xPred <- seq(0, 1.25 * max(xObs), length = 50)
+```
+
+```{r}
+qplot(seq_along(x), x) + geom_line()
+```
+
+
+Now the GP estimation from NIMBLE.  Let's emphasize shorter length-scales with the prior to compare:
+
+```{r}
+# having this work with output from `nimbleCode` might be more natural than `expression`
+priors <- expression({
+  rho ~ dgamma(1, 10)
+  sigGP ~ dunif(0, 1e5)
+  sigOE ~ dunif(0, 1e5)
+})
+curve(dgamma(x, 1, 10))
+
+```
+
+```{r}
+fit <- gp_setup(xObs[2:Tobs], yObs[2:Tobs], xPred)
+```
+
+```{r}
+Cmcmc <- fit$Cmcmc 
+Cpred <- fit$Cpred
+Cmodel <- fit$Cmodel
+```
+
+```{r}
+system.time(Cmcmc$run(100000))
+```
+
+```{r}
+  samples <- as.matrix(Cmcmc$mvSamples)
+  ## basic sanity check
+  testthat::expect_identical(Cmodel$getNodeNames(topOnly = TRUE), colnames(samples))
+```
+
+predict from GP model using posterior MCMC samples
+
+```{r}
+system.time(Cpred$run(samples))
+```
+
+
+extract predictions: E and C
+
+
+```{r}
+  E <- Cpred$getE()
+  C <- Cpred$getC()
+  
+obs <- data.frame(x = xObs, y = yObs)
+pred <- data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + sqrt(diag(C)))
+ggplot2::ggplot(pred) + 
+  geom_ribbon(aes(x = x,y = y, ymin = ymin, ymax = ymax), fill = "grey80") +
+  geom_line(aes(x = x, y = y), size=1) + 
+  geom_point(data = obs, aes(x,y)) +
+  coord_cartesian(xlim = range(c(xObs, xPred)), ylim = range(c(yObs,E))) +
+  theme_bw()
+
+```
+
+
+Posteriors
+
+```{r}
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+df <- tidyr::gather(samples)
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```  
+
+
+------------------------------------------
+
+### Longer length scale
+
+
+
+Now the GP estimation from NIMBLE.  Let's emphasize shorter length-scales with the prior to compare:
+
+```{r}
+# having this work with output from `nimbleCode` might be more natural than `expression`
+priors <- expression({
+  rho ~ dgamma(10, 1)
+  sigGP ~ dunif(0, 1e5)
+  sigOE ~ dunif(0, 1e5)
+})
+curve(dgamma(x, 10, 1))
+```
+
+```{r}
+fit <- gp_setup(xObs[2:Tobs], yObs[2:Tobs], xPred)
+```
+
+```{r}
+Cmcmc <- fit$Cmcmc 
+Cpred <- fit$Cpred
+Cmodel <- fit$Cmodel
+```
+
+```{r}
+system.time(Cmcmc$run(100000))
+```
+
+```{r}
+  samples <- as.matrix(Cmcmc$mvSamples)
+  ## basic sanity check
+  testthat::expect_identical(Cmodel$getNodeNames(topOnly = TRUE), colnames(samples))
+```
+
+predict from GP model using posterior MCMC samples
+
+```{r}
+system.time(Cpred$run(samples))
+```
+
+
+extract predictions: E and C
+
+
+```{r}
+  E2 <- Cpred$getE()
+  C2 <- Cpred$getC()
+```
+
+
+sanity check: these should be different
+
+```{r}
+identical(E, E2)
+identical(C, C2)
+```
+
+```{r}
+obs <- data.frame(x = xObs, y = yObs)
+pred <- data.frame(x = xPred, y = E2, ymin = E2 - sqrt(diag(C2)), ymax = E + sqrt(diag(C2)))
+ggplot2::ggplot(pred) + 
+  geom_ribbon(aes(x = x,y = y, ymin = ymin, ymax = ymax), fill = "grey80") +
+  geom_line(aes(x = x, y = y), size=1) + 
+  geom_point(data = obs, aes(x,y)) +
+  coord_cartesian(xlim = range(c(xObs, xPred)), ylim = range(c(yObs,E))) +
+  theme_bw()
+
+```
+
+
+Posteriors
+
+```{r}
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+df <- tidyr::gather(samples)
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```  
+
+
