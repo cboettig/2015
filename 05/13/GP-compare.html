@@ -170,7 +170,7 @@ Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc,
 Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)
 )</code></pre>
 <pre><code>   user  system elapsed 
-234.640   0.428 234.884 </code></pre>
+243.900   0.424 244.309 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
 df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <h4 id="posteriors">Posteriors</h4>
@@ -219,9 +219,8 @@ function (posteriors, obs, x_predict) {
 }
 
 gp_posterior &lt;-<span class="st"> </span><span class="kw">predict</span>(<span class="kw">sample_n</span>(samples, <span class="dv">100</span>), obs, x_grid)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">matrices_gp &lt;-<span class="st"> </span><span class="kw">gp_transition_matrix</span>(gp_posteriort$Ef_posterior, gp_posterior$Vf_posterior, x_grid, h_grid) </code></pre>
-<pre><code>Error in gp_transition_matrix(gp_posteriort$Ef_posterior, gp_posterior$Vf_posterior, : object &#39;gp_posteriort&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">opt_gp &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">matrices_gp &lt;-<span class="st"> </span><span class="kw">gp_transition_matrix</span>(gp_posterior$Ef_posterior, gp_posterior$Vf_posterior, x_grid, h_grid) 
+opt_gp &lt;-<span class="st"> </span><span class="kw">value_iteration</span>(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)</code></pre>
 <pre><code>Error: object &#39;reward&#39; not found</code></pre>
 <hr />
 <h2 id="comparison">Comparison</h2>
@@ -244,13 +243,15 @@ sim_fn &lt;-<span class="st"> </span>function(df){
   
 }
 sims &lt;-<span class="st"> </span>sets %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">sim_fn</span>(.))</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">cbPalette &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#000000&quot;</span>, <span class="st">&quot;#E69F00&quot;</span>, <span class="st">&quot;#56B4E9&quot;</span>, <span class="st">&quot;#009E73&quot;</span>, 
+<pre class="sourceCode r"><code class="sourceCode r">colorkey &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#000000&quot;</span>, <span class="st">&quot;#E69F00&quot;</span>, <span class="st">&quot;#56B4E9&quot;</span>, <span class="st">&quot;#009E73&quot;</span>, 
                <span class="st">&quot;#F0E442&quot;</span>, <span class="st">&quot;#0072B2&quot;</span>, <span class="st">&quot;#D55E00&quot;</span>, <span class="st">&quot;#CC79A7&quot;</span>)
 <span class="kw">ggplot</span>(sims) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, fishstock, <span class="dt">group=</span><span class="kw">interaction</span>(reps,model), <span class="dt">col=</span>model), <span class="dt">alpha=</span>.<span class="dv">1</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~model) +
 <span class="st">  </span><span class="kw">scale_colour_manual</span>(<span class="dt">values=</span>colorkey, <span class="dt">guide=</span><span class="ot">FALSE</span>)</code></pre>
-<pre><code>Error in scale$palette(n): object &#39;colorkey&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-05-13-GP-compare/unnamed-chunk-16-1.png" />
+</figure>
 <pre class="sourceCode r"><code class="sourceCode r">policies_plot &lt;-<span class="st"> </span>function(policy){
   policy_df &lt;-<span class="st"> </span>
 <span class="st">    </span><span class="kw">data.frame</span>(<span class="dt">model =</span> <span class="kw">c</span>(<span class="st">&quot;GP&quot;</span>, <span class="st">&quot;exact&quot;</span>))  %&gt;%<span class="st"> </span>
@@ -267,7 +268,9 @@ sims &lt;-<span class="st"> </span>sets %&gt;%<span class="st"> </span><span cla
 }
 
 <span class="kw">policies_plot</span>(policy)</code></pre>
-<pre><code>Error in scale$palette(n): object &#39;colorkey&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-05-13-GP-compare/unnamed-chunk-17-1.png" />
+</figure>
 <pre class="sourceCode r"><code class="sourceCode r">sims %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">net_profit =</span> <span class="kw">sum</span>(profit)) -&gt;<span class="st"> </span>sims</code></pre>
 
     </article>
@@ -322,7 +325,7 @@ sims &lt;-<span class="st"> </span>sets %&gt;%<span class="st"> </span><span cla
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/bf36270147c1c8004831237e636a3eee13496866/_posts/2015-05-13-GP-compare.Rmd"> bf36270147c1c8004831237e636a3eee13496866</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/38b271c1acef2888ba68dba19c0172336e2812d3/_posts/2015-05-13-GP-compare.Rmd"> 38b271c1acef2888ba68dba19c0172336e2812d3</a></small></p>
     
   <br/>
   
