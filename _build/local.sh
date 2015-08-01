@@ -2,12 +2,16 @@
 ## Run from repo root
 YEAR=2015
 
+## Identical to machine.sh, but links the local volume. won't work with docker-machine,
+## but takes advantage of local host having more up-to-date versions of posts
+## Also takes advantage of any local cache files, combined with those on cache volume
+
 set -e
 source ~/.notebook-env.sh
 
 
 ## always use latest images for these
-docker pull cboettig/${year}-cache
+docker pull cboettig/${YEAR}-cache
 docker pull cboettig/2015
 
 ## Build using cached data:  

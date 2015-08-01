@@ -2,12 +2,16 @@
 ## Run from repo root
 YEAR=2015
 
+## identical to local.sh, except avoids linking the host volume.
+## Instead, assumes the docker build image has the latest git repo with all posts
+## already copied onto it.
+
 set -e
 source ~/.notebook-env.sh
 
 
 ## always use latest images for these
-docker pull cboettig/${year}-cache
+docker pull cboettig/${YEAR}-cache
 docker pull cboettig/2015
 
 ## Build using cached data:  
