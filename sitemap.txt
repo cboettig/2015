@@ -119,9 +119,8 @@ http://www.carlboettiger.info//sitemap.txt
 http://www.carlboettiger.info//tags.html 
 
  
-http://www.carlboettiger.info//07/29/nimble-gp-comparing-priors.html  
-http://www.carlboettiger.info//07/29/nimble-gp-comparing-priors.html  
-http://www.carlboettiger.info//07/29/gpdp-via-mdptoolbox.html  
+http://www.carlboettiger.info//07/30/gpdp-via-mdptoolbox-cont.html  
+http://www.carlboettiger.info//07/29/mdptoolbox-allen-model.html  
 http://www.carlboettiger.info//07/29/fastgp-explore.html  
 http://www.carlboettiger.info//07/14/mdptoolbox-ex-2.html  
 http://www.carlboettiger.info//06/19/gp-nimble-v2.html  

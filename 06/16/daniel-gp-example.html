@@ -108,8 +108,7 @@
   <div class="col-md-7 col-md-offset-1">
     <article>
     <h3 id="setup">Setup</h3>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;nimble-dev/nimble/packages/nimble@devel&#39;</span>)
-<span class="kw">library</span>(nimble)
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
 <span class="kw">set.seed</span>(<span class="dv">0</span>)</code></pre>
 <p>Randomly generate some sinusoidal data</p>
 <pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">100</span>
@@ -209,7 +208,7 @@ Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred
 ## 100,000 iterations
 <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 46.344   0.020  46.326 </code></pre>
+ 49.068   0.016  49.057 </code></pre>
 <p>About 25 seconds on my computer</p>
 <p>That can be improved if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
@@ -220,7 +219,7 @@ if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(s
 ## predict from GP model using posterior MCMC samples
 <span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 70.992   0.000  70.956 </code></pre>
+ 64.236   0.000  64.188 </code></pre>
 <p>About 40 seconds on my computer</p>
 <p>Again, could streamline the gpPred() function if necessary</p>
 <pre class="sourceCode r"><code class="sourceCode r">## extract predictions: E and C
@@ -332,7 +331,7 @@ C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/66474737d9a84ada8d6455e88cd4bc4debb5eebd/_posts/2015-06-16-daniel-gp-example.Rmd"> 66474737d9a84ada8d6455e88cd4bc4debb5eebd</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/6abccd43ba957293476c670ffba6363bf5ad917e/_posts/2015-06-16-daniel-gp-example.Rmd"> 6abccd43ba957293476c670ffba6363bf5ad917e</a></small></p>
     
   <br/>
   

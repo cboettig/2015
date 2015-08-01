@@ -107,12 +107,10 @@
       <div class="row">
   <div class="col-md-7 col-md-offset-1">
     <article>
-    <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(FastGP)</code></pre>
-<pre><code>Error in library(FastGP): there is no package called &#39;FastGP&#39;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(mvtnorm)
+    <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(FastGP)
+<span class="kw">library</span>(mvtnorm)
 <span class="kw">library</span>(MASS)
 <span class="kw">library</span>(rbenchmark)</code></pre>
-<pre><code>Error in library(rbenchmark): there is no package called &#39;rbenchmark&#39;</code></pre>
 <h2 id="demo-of-elliptical-slice-sampling">Demo of elliptical slice sampling</h2>
 <p>Relevant Parameters:</p>
 <pre class="sourceCode r"><code class="sourceCode r">A &lt;-<span class="st"> </span><span class="dv">1</span> <span class="co">#amplitude of the sin function used for our signal</span>
@@ -140,22 +138,31 @@ log_lik_rcpp &lt;-<span class="st"> </span>function(w,s){
 }</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">X &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">seq</span>(<span class="dv">1</span>,N),<span class="dt">nrow=</span>N)
 Sig &lt;-<span class="st"> </span>sigma*<span class="kw">exp</span>(-<span class="kw">rcpp_distance</span>(X,<span class="kw">dim</span>(X)[<span class="dv">1</span>],<span class="kw">dim</span>(X)[<span class="dv">2</span>])^<span class="dv">2</span>/phi)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;rcpp_distance&quot;</code></pre>
 <p>and here we go:</p>
 <pre class="sourceCode r"><code class="sourceCode r">mcmc_samples &lt;-<span class="st"> </span><span class="kw">ess</span>(log_lik_rcpp,s,Sig,<span class="dv">1000</span>,<span class="dv">250</span>,<span class="dv">100</span>,<span class="ot">TRUE</span>)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;ess&quot;</code></pre>
+<pre><code>[1] &quot;Running elliptical slice sampling...&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>))
-<span class="kw">plot</span>(<span class="kw">colMeans</span>(mcmc_samples), <span class="dt">type=</span><span class="st">&quot;l&quot;</span>)</code></pre>
-<pre><code>Error in is.data.frame(x): object &#39;mcmc_samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">points</span>(t, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">lwd=</span><span class="dv">3</span>, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre>
-<pre><code>Error in plot.xy(xy.coords(x, y), type = type, ...): plot.new has not been called yet</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">points</span>(<span class="kw">colMeans</span>(mcmc_samples) +<span class="st"> </span><span class="dv">2</span>*<span class="st"> </span><span class="kw">apply</span>(mcmc_samples, <span class="dv">2</span>, sd), <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">lty=</span><span class="st">&quot;dashed&quot;</span>)</code></pre>
-<pre><code>Error in is.data.frame(x): object &#39;mcmc_samples&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">points</span>(<span class="kw">colMeans</span>(mcmc_samples) -<span class="st"> </span><span class="dv">2</span>*<span class="st"> </span><span class="kw">apply</span>(mcmc_samples, <span class="dv">2</span>, sd), <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">lty=</span><span class="st">&quot;dashed&quot;</span>)</code></pre>
-<pre><code>Error in is.data.frame(x): object &#39;mcmc_samples&#39; not found</code></pre>
+<span class="kw">plot</span>(<span class="kw">colMeans</span>(mcmc_samples), <span class="dt">type=</span><span class="st">&quot;l&quot;</span>)
+<span class="kw">points</span>(t, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">lwd=</span><span class="dv">3</span>, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)
+<span class="kw">points</span>(<span class="kw">colMeans</span>(mcmc_samples) +<span class="st"> </span><span class="dv">2</span>*<span class="st"> </span><span class="kw">apply</span>(mcmc_samples, <span class="dv">2</span>, sd), <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">lty=</span><span class="st">&quot;dashed&quot;</span>)
+<span class="kw">points</span>(<span class="kw">colMeans</span>(mcmc_samples) -<span class="st"> </span><span class="dv">2</span>*<span class="st"> </span><span class="kw">apply</span>(mcmc_samples, <span class="dv">2</span>, sd), <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">lty=</span><span class="st">&quot;dashed&quot;</span>)</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-29-fastgp-explore/unnamed-chunk-9-1.png" />
+</figure>
 <p>test <code>ess</code> with rcpp likelihood versus non rcpp likelihood</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">benchmark</span>(<span class="kw">ess</span>(log_lik_rcpp,s,Sig,<span class="dv">1000</span>,<span class="dv">250</span>,<span class="dv">100</span>,<span class="ot">FALSE</span>), <span class="kw">ess</span>(log_lik,s,Sig,<span class="dv">1000</span>,<span class="dv">250</span>,<span class="dv">100</span>,<span class="ot">TRUE</span>),<span class="dt">replications=</span><span class="dv">2</span>)</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): could not find function &quot;benchmark&quot;</code></pre>
+<pre><code>[1] &quot;Running elliptical slice sampling...&quot;
+[1] &quot;Running elliptical slice sampling...&quot;
+[1] &quot;Running elliptical slice sampling...&quot;
+[1] &quot;Running elliptical slice sampling...&quot;
+[1] &quot;Running elliptical slice sampling...&quot;
+[1] &quot;Running elliptical slice sampling...&quot;</code></pre>
+<pre><code>                                              test replications
+1 ess(log_lik_rcpp, s, Sig, 1000, 250, 100, FALSE)            2
+2       ess(log_lik, s, Sig, 1000, 250, 100, TRUE)            2
+  elapsed relative user.self sys.self user.child sys.child
+1  19.480    1.000    19.592    0.636          0         0
+2  33.818    1.736    46.504   87.208          0         0</code></pre>
 
     </article>
   </div>
@@ -174,7 +181,7 @@ Sig &lt;-<span class="st"> </span>sigma*<span class="kw">exp</span>(-<span class
 	<p><a class="btn btn-default" rel="prev" href='/2015/07/14/mdptoolbox-ex-2.html'><i class="icon-chevron-left"></i> prev</a>
   
   
-  <a class="btn btn-default" rel="next" href='/2015/07/29/gpdp-via-mdptoolbox.html'>next <i class="icon-chevron-right"></i></a></p>
+  <a class="btn btn-default" rel="next" href='/2015/07/29/mdptoolbox-allen-model.html'>next <i class="icon-chevron-right"></i></a></p>
   
 
   <br />
@@ -197,7 +204,7 @@ Sig &lt;-<span class="st"> </span>sigma*<span class="kw">exp</span>(-<span class
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit//_posts/2015-07-29-fastgp-explore.Rmd"> </a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/29916ee8aff30db5fa9e0a8336eec2264b53c9de/_posts/2015-07-29-fastgp-explore.Rmd"> 29916ee8aff30db5fa9e0a8336eec2264b53c9de</a></small></p>
     
   <br/>
   
