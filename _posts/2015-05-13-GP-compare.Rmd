@@ -170,8 +170,8 @@ gp_posterior <- predict(sample_n(samples, 100), obs, x_grid)
 
 
 
-```{r}
-matrices_gp <- gp_transition_matrix(gp_posteriort$Ef_posterior, gp_posterior$Vf_posterior, x_grid, h_grid) 
+```{r, dependson=-1}
+matrices_gp <- gp_transition_matrix(gp_posterior$Ef_posterior, gp_posterior$Vf_posterior, x_grid, h_grid) 
 opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
 ```
 
@@ -188,12 +188,12 @@ gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
 
 
 
-```{r gp-opt, dependson="gp-output"}
+```{r gp-opt, dependson=-1}
 matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
 opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta)
 ```
 
-```{r mle-opt, dependson="mle-output"}
+```{r mle-opt, dependson=-1}
 matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
 opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, profit, delta)
 ```
@@ -201,7 +201,7 @@ opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, pro
 
 
 
-```{r}
+```{r, dependson=-1}
 policy <- list(GP = opt_gp$D, exact = opt_true$D)
 sets <- expand.grid(reps = 1:100, model = c("exact", "GP")) %>% group_by(reps, model)
 
@@ -215,8 +215,8 @@ sim_fn <- function(df){
 sims <- sets %>% do(sim_fn(.))
 ```
 
-```{r}
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+```{r, dependson=1}
+colorkey <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 ggplot(sims) + 
   geom_line(aes(time, fishstock, group=interaction(reps,model), col=model), alpha=.1) + 
@@ -224,7 +224,7 @@ ggplot(sims) +
   scale_colour_manual(values=colorkey, guide=FALSE)
 ```
 
-```{r}
+```{r, dependson=-1}
 
 policies_plot <- function(policy){
   policy_df <- 
@@ -245,7 +245,7 @@ policies_plot(policy)
 
 ```
 
-```{r}
+```{r, dependson=-1}
 sims %>% mutate(net_profit = sum(profit)) -> sims
 ```
 
