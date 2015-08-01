@@ -12,8 +12,7 @@ tags:
 ### Setup
 
 ```{r message=FALSE}
-devtools::install_github('nimble-dev/nimble/packages/nimble@devel')
-library(nimble)
+library("nimble")
 set.seed(0)
 ```
 
