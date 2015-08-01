@@ -17,4 +17,5 @@ deployment:
     commands:
       - docker run -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_build/deploy.sh" cboettig/2015 > /dev/null
 
-
+# Note: This doesn't update the cache itself, to help avoid caching any errors
+# Run _build/local.sh to update the cache
