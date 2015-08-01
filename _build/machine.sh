@@ -1,9 +1,5 @@
 #!/bin/bash
 ## Run from repo root
-
-
-## Modified script to update that can run over docker machine
-
 YEAR=2015
 
 set -e
@@ -14,11 +10,14 @@ source ~/.notebook-env.sh
 docker pull cboettig/${year}-cache
 docker pull cboettig/2015
 
-## Build using cached data.  
+## Build using cached data:  
+
+## First, start a volume container with the cache
 docker create --name cache \
   -v /root \
   cboettig/${YEAR}-cache
 
+## Then build using this cached data
 docker run --name build \
   -v /data/_cache \
   --volumes-from cache \

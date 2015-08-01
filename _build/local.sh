@@ -1,6 +1,5 @@
 #!/bin/bash
 ## Run from repo root
-
 YEAR=2015
 
 set -e
@@ -8,25 +7,34 @@ source ~/.notebook-env.sh
 
 
 ## always use latest images for these
-docker pull cboettig/2015-cache
+docker pull cboettig/${year}-cache
 docker pull cboettig/2015
 
-## Build using cached data.  
-docker create --name cache -v /cache cboettig/${YEAR}-cache
-docker run --rm --volumes-from cache -v $(pwd):/data cboettig/${YEAR} bash _build/build.sh 
+## Build using cached data:  
 
-## Deploy to GitHub
-docker run --rm -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_build/deploy.sh" cboettig/${YEAR}
+## First, start a volume container with the cache
+docker create --name cache \
+  -v /root \
+  cboettig/${YEAR}-cache
 
-## Update cache to reflect build (local builds only)
-docker run --rm --volumes-from cache -v $(pwd):/backup busybox tar cvf /backup/backup.tar /data/_cache
-docker run --name cache2 -v $(pwd):/backup busybox tar -xf /backup/backup.tar
+## Then build using this cached data.  Note this links
+## the local working directory to obtain the sources
+docker run --name build \
+  -v $(pwd):/data \
+  --volumes-from cache \
+  -e GH_TOKEN=$GH_TOKEN \
+  -w /data \
+  cboettig/${YEAR} \
+  bash _build/build.sh 
+
+## Update cache to reflect build 
+## Note this links the local working directory to obtain the cache
+docker run --name cache2 -v $(pwd):/data busybox tar cvf /root/cache.tar /data/_cache 
 
 ## commit and push updated cache container
 docker commit cache2 cboettig/${YEAR}-cache
 docker push cboettig/${YEAR}-cache
 
 ## Clean up
-docker rm -v cache cache2
-rm backup.tar
+docker rm -v cache cache2 build
 
