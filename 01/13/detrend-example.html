@@ -162,10 +162,12 @@ Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmode
 Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
 Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Cmodel)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Cmcmc$<span class="kw">run</span>(<span class="fl">1e6</span>)</code></pre>
+<pre><code>NULL</code></pre>
 <p>and examine results</p>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
-<span class="kw">dim</span>(samples)
-samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
+<span class="kw">dim</span>(samples)</code></pre>
+<pre><code>[1] 5000   84</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span>samples[,<span class="dv">1</span>:<span class="dv">4</span>]
 long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">apply</span>(samples, <span class="dv">2</span>, mean)</code></pre>
 <pre><code>            m       sigma_x       sigma_y         theta 
@@ -183,9 +185,9 @@ long &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code
 <img src="/2015/assets/figures/posts/2015-01-13-detrend-example/histogram-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre>
-<pre><code>R version 3.2.1 (2015-06-18)
+<pre><code>R version 3.2.0 (2015-04-16)
 Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Debian GNU/Linux stretch/sid
+Running under: Debian GNU/Linux 8 (jessie)
 
 locale:
  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -201,17 +203,17 @@ attached base packages:
 
 other attached packages:
 [1] tidyr_0.2.0        ggplot2_1.0.1      earlywarning_0.0-1
-[4] nimble_0.4         yaml_2.1.13        knitr_1.10.5      
+[4] nimble_0.3-1       yaml_2.1.13        knitr_1.10        
 
 loaded via a namespace (and not attached):
- [1] igraph_1.0.1     Rcpp_0.12.0      magrittr_1.5    
- [4] MASS_7.3-43      mnormt_1.5-3     munsell_0.4.2   
- [7] colorspace_1.2-6 stringr_1.0.0    plyr_1.8.3      
-[10] tools_3.2.1      parallel_3.2.1   grid_3.2.1      
-[13] gtable_0.1.2     psych_1.5.6      digest_0.6.8    
-[16] reshape2_1.4.1   formatR_1.2      codetools_0.2-14
-[19] deSolve_1.12     evaluate_0.7     labeling_0.3    
-[22] stringi_0.5-5    scales_0.2.5     proto_0.3-10    </code></pre>
+ [1] igraph_0.7.1     Rcpp_0.11.5      MASS_7.3-40     
+ [4] mnormt_1.5-2     munsell_0.4.2    colorspace_1.2-6
+ [7] stringr_0.6.2    plyr_1.8.2       tools_3.2.0     
+[10] parallel_3.2.0   grid_3.2.0       gtable_0.1.2    
+[13] psych_1.5.4      digest_0.6.8     reshape2_1.4.1  
+[16] formatR_1.2      codetools_0.2-11 deSolve_1.11    
+[19] evaluate_0.7     labeling_0.3     scales_0.2.4    
+[22] proto_0.3-10    </code></pre>
 
     </article>
   </div>
