@@ -4,6 +4,9 @@ category: ecology
 published: false
 ---
 
+```{r}
+devtools::install_github("cboettig/gpmanagement")
+```
 
 ```{r results='hide'}
 #knitr::opts_chunk$set(eval=FALSE)
@@ -14,14 +17,6 @@ library("dplyr")
 library("ggplot2")
 ```
 
-
-Programming around nimble: Can we break out a piece of the nimble model definition to be diefined by users, using the nimble format (e.g. the priors), while leaving some of the model to be specified seperately? 
-
-At the moment this requires some trickery: http://stackoverflow.com/questions/31712646
-
-It's interesting to observe just how much nimble's use (and extension!) of the powerful modeling expressions from BUGS has in common with the non-standard evaluation of Hadley's `dplyr` and friends.  With this in place in `gpmanagement` we can specify the prior externally.  
-
-First, some sample data
 
 
 ```{r}  
@@ -153,6 +148,7 @@ pdfn <- function(x, mu, sigma = sigma_g){
 }
 
 # Utility function
+discount = 0.95
 get_utility <- function(x,h) {
 	pmin(x,h) - 0.01 * h ^ 2
 }
