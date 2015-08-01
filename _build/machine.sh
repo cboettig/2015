@@ -11,18 +11,24 @@ source ~/.notebook-env.sh
 
 
 ## always use latest images for these
-docker pull cboettig/2015-cache
+docker pull cboettig/${year}-cache
 docker pull cboettig/2015
 
 ## Build using cached data.  
-docker create --name cache -v /cache cboettig/${YEAR}-cache
-docker run --name build -v /data/_cache --volumes-from cache -w /data cboettig/${YEAR} bash _build/build.sh 
+docker create --name cache \
+  -v /root \
+  cboettig/${YEAR}-cache
 
-## Deploy to GitHub
-docker run --rm -ti -v $(pwd):/data -e GH_TOKEN=$GH_TOKEN --entrypoint "/data/_build/deploy.sh" cboettig/${YEAR}
+docker run --name build \
+  -v /data/_cache \
+  --volumes-from cache \
+  -e GH_TOKEN=$GH_TOKEN \
+  -w /data \
+  cboettig/${YEAR} \
+  bash _build/build.sh 
 
 ## Update cache to reflect build 
-docker run --name cache2 --volumes-from build busybox cp -r /data/_cache /cache
+docker run --name cache2 --volumes-from build busybox tar cvf /root/cache.tar /data/_cache 
 
 ## commit and push updated cache container
 docker commit cache2 cboettig/${YEAR}-cache
