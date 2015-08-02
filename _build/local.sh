@@ -14,12 +14,16 @@ source ~/.notebook-env.sh
 docker pull cboettig/${YEAR}-cache
 docker pull cboettig/2015
 
-## Build using cached data:  
 
 ## First, start a volume container with the cache
 docker create --name cache \
   -v /root \
   cboettig/${YEAR}-cache
+
+## Copy this data locally, otherwise it will be omitted from the updated cache!
+docker cp cache /root/cache.tar .
+tar -xf cache.tar
+rsync -a data/_cache/ _cache/
 
 ## Then build using this cached data.  Note this links
 ## the local working directory to obtain the sources
