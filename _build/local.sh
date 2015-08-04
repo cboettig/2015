@@ -21,7 +21,7 @@ docker create --name cache \
   cboettig/${YEAR}-cache
 
 ## Copy this data locally, otherwise it will be omitted from the updated cache!
-docker cp cache /root/cache.tar .
+docker cp cache:/root/cache.tar .
 tar -xf cache.tar
 rsync -a data/_cache/ _cache/
 

@@ -1,15 +1,17 @@
 ---
 layout: post
 category: ecology
-published: false
+tags:
+- gpmanagement
+- gp
+- nimble
+- mdptoolbox
 ---
 
-```{r}
-devtools::install_github("cboettig/gpmanagement")
-```
 
-```{r results='hide'}
+```{r results='hide', cache=FALSE}
 #knitr::opts_chunk$set(eval=FALSE)
+#devtools::install_github("cboettig/gpmanagement@b3b765cbceb51c9b0b8cb2724e395353ec365df9")
 library("MDPtoolbox")
 library("gpmanagement")
 library("tidyr")
@@ -19,30 +21,46 @@ library("ggplot2")
 
 
 
+### True model
+
+
+
+```{r}
+p <- c(2, 100, 50)
+f <- function (x, h){
+  sapply(x, function(x) {
+    x <- pmax(0, x - h)
+    x * exp(p[1] * (1 - x/p[2]) * (x - p[3])/p[2])
+  })
+}
+
+sigma_g <- 0.1
+pdfn <- function(x, mu, sigma = sigma_g){
+  dlnorm(x, log(mu), sdlog = sigma)
+}
+
+z_g <- function() rlnorm(1, 0, sigma_g)
+
+```
+
+
+
 ```{r}  
-# Should move my 'standard' sample data into the package?
-  set.seed(1234)
+  set.seed(0)
   Tobs <- 40
-  f <- function (x, h, p){
-    sapply(x, function(x) {
-        x <- pmax(0, x - h)
-        x * exp(p[1] * (1 - x/p[2]) * (x - p[3])/p[2])
-    })
-  }
-  p <- c(2, 100, 50)
-  sigma_g <- 0.1
-  z_g <- function() rlnorm(1, 0, sigma_g)
+
+
   x <- numeric(Tobs)
   x[1] <- 60
   for(t in 1:(Tobs-1))
-    x[t+1] = z_g() * f(x[t], h=0, p=p)
+    x[t+1] = z_g() * f(x[t], h=0)
   obs <- data.frame(x = c(0, 
                           pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
                     y = c(0, 
                           x[2:Tobs]))
   xObs <- obs$x
   yObs <- obs$y
-  xPred <- seq(0, 1.25 * max(xObs), length = 50)
+  xPred <- seq(0, 1.1 * max(xObs), length = 50)
 ```
 
 ```{r}
@@ -50,21 +68,23 @@ qplot(seq_along(x), x) + geom_line()
 ```
 
 
+
+-------------------------------------------------
+
 Now the GP estimation from NIMBLE.  Let's emphasize shorter length-scales with the prior to compare:
 
 ```{r}
 # having this work with output from `nimbleCode` might be more natural than `expression`
 priors <- expression({
-  rho ~ dgamma(1, 10)
+  rho ~ dgamma(1, 1)
   sigGP ~ dunif(0, 1e5)
   sigOE ~ dunif(0, 1e5)
 })
-curve(dgamma(x, 1, 10))
 
 ```
 
 ```{r}
-fit <- gp_setup(xObs[2:Tobs], yObs[2:Tobs], xPred)
+fit <- gp_setup(xObs, yObs, xPred)
 ```
 
 ```{r}
@@ -90,6 +110,19 @@ system.time(Cpred$run(samples))
 ```
 
 
+
+Posteriors
+
+```{r}
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+df <- tidyr::gather(samples)
+ggplot(df) + 
+  geom_density(aes(value)) + 
+  facet_wrap(~key, scale='free')
+```  
+
+
+
 extract predictions: E and C
 
 
@@ -109,71 +142,42 @@ ggplot2::ggplot(pred) +
 ```
 
 
-Posteriors
-
-```{r}
-samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
-df <- tidyr::gather(samples)
-ggplot(df) + 
-  geom_density(aes(value)) + 
-  facet_wrap(~key, scale='free')
-```  
-
-
-
-
 
 -------------------------------
 
-
-## True model
+## Decision theory
 
 
 ```{r}
 states <- xPred # Vector of all possible states
 actions <- states # Vector of actions: harvest
+```
 
 
-p <- c(2, 100, 50)
-f <- function (x, h){
-  sapply(x, function(x) {
-    x <- pmax(0, x - h)
-    x * exp(p[1] * (1 - x/p[2]) * (x - p[3])/p[2])
-  })
-}
+Let's consider a slight variation of the most trivial utility function: one which explicitly adds a cost to completely exhausting the stock (or reducing the stock by more than, say 95% in this case.)  This should be somewhat similar to the impact of no discount rate.
 
-sigma_g = 0.1
-pdfn <- function(x, mu, sigma = sigma_g){
-  dlnorm(x, log(mu), sdlog = sigma)
-}
-
+```{r}
 # Utility function
-discount = 0.95
-get_utility <- function(x,h) {
-	pmin(x,h) - 0.01 * h ^ 2
-}
-```
+discount = 0.99
 
+#get_utility <- function(x,h) pmin(x,h)
+#R <- outer(states, actions, get_utility)
 
-```{r}
-R <- outer(states, actions, get_utility)
-P <- transition_matrix(states, actions, f, pdfn)
-```
-
-
-```{r}
-mdp_check(P = P, R = R)
-mdp <- mdp_value_iteration(P, R, discount = discount, epsilon = 0.001, max_iter = 5e3, V0 = numeric(length(states)))
+R <- sapply(actions, function(h){
+      sapply(states, function(x){
+  if(h < x)
+    h
+  else 
+	 - 1 * max(states)
+  })
+})
 
 ```
 
 
 
-```{r}
-plot(states, states - actions[mdp$policy],  xlab="Population size", ylab="Escapement")
-```
 
-## Implementing policy
+Implementing policy
 
 ```{r}
 z <- function() rlnorm(1, meanlog = 0, sdlog = sigma_g)
@@ -187,7 +191,7 @@ simulate_policy <- function(states, actions, policy, f, z, s0, steps = 50, utili
     
     a[t] <- actions[policy[which.min(abs(states - s[t]))]]
     s[t+1] <- z() * f(s[t], a[t])
-    u[t] <- get_utility(s[t], a[t]) * discount ^ t
+    u[t] <- utility(s[t], a[t]) * discount ^ t
   }
   
   # Final action determined but not implemented
@@ -195,13 +199,15 @@ simulate_policy <- function(states, actions, policy, f, z, s0, steps = 50, utili
 
   data.frame(time = 1:steps, state = s, action = a, utility = u)
 }
-
-sims <- simulate_policy(states, actions, mdp$policy, f, z, s0 = 100, steps = 50, utility = utility, discount = discount)
-
 ```
-----------------
 
-## GP model
+
+
+
+
+### GP model
+
+
 
 ```{r}
 gp_matrix <- function(states, actions, E, C){
@@ -230,7 +236,8 @@ P_gp <- gp_matrix(states, actions, E, C)
 
 ```{r}
 mdp_check(P = P_gp, R = R)
-gp <- mdp_value_iteration(P_gp, R, discount = discount, epsilon = 0.001, max_iter = 5e3, V0 = numeric(length(states)))
+
+gp <- mdp_value_iteration(P_gp, R, discount = discount, epsilon = 0.00001, max_iter = 5e3, V0 = numeric(length(states)))
 
 ```
 
@@ -238,6 +245,92 @@ gp <- mdp_value_iteration(P_gp, R, discount = discount, epsilon = 0.001, max_ite
 
 ```{r}
 plot(states, states - actions[gp$policy],  xlab="Population size", ylab="Escapement")
+```
+
+
+
+```{r}
+data.frame(reps = 1:50) %>% 
+  group_by(reps) %>% 
+  do(simulate_policy(states,actions, gp$policy, f, z, s0 = 100, steps = 20, utility = pmin, discount = discount)[c("time", "state", "utility")]) ->
+  sims 
+
+mean(sims$utility)
+
+```
+
+
+```{r}
+ggplot(sims) + geom_line(aes(time, state, group = reps), alpha = 0.3, col = "darkblue")
+```
+
+
+
+With this amount of data, the gp solution is too cautious, and avoids any exploitation.
+
+
+
+#### Simulate under the true model
+
+```{r}
+data.frame(reps = 1:50) %>% 
+  group_by(reps) %>% 
+  do(simulate_policy(states, actions, gp$policy, f, z, s0 = 100, steps = 20, utility = pmin, discount = discount)[c("time", "state", "utility")]) ->
+  sims 
+
+mean(sims$utility)
+
+```
+
+(Average utility is approximate here since it does not include penalty; since a function and not a matrix is requred by this function at this time.)
+
+
+```{r}
+ggplot(sims) + geom_line(aes(time, state, group = reps), alpha = 0.3, col = "darkblue")
+```
+
+
+------------
+
+
+```{r}
+P <- transition_matrix(states, actions, f, pdfn)
+#get_utility <- function(x,h) pmin(x,h)
+#R <- outer(states, actions, get_utility)
+```
+
+
+```{r}
+mdp_check(P = P, R = R)
+mdp <- mdp_value_iteration(P, R, discount = discount, epsilon = 0.001, max_iter = 5e3, V0 = numeric(length(states)))
+
+```
+
+
+
+```{r}
+plot(states, states - actions[mdp$policy],  xlab="Population size", ylab="Escapement")
+```
+
+
+Note that the altered award structure has almost no effect on the optimal policy given the true model, other than to avoid harvesting directly to zero even when the stock cannot persist, due to the explicit penalty for doing so.
+
+
+```{r}
+
+data.frame(reps = 1:50) %>% 
+  group_by(reps) %>% 
+  do(simulate_policy(states,actions, mdp$policy, f, z, s0 = 100, steps = 20, utility = pmin, discount = discount)[c("time", "state", "utility")]) ->
+  sims 
+
+mean(sims$utility)
+```
+
+
+
+
+```{r}
+ggplot(sims) + geom_line(aes(time, state, group = reps), alpha = 0.3, col = "darkblue")
 ```
 
 
