@@ -24,6 +24,7 @@ docker create --name cache \
 docker cp cache:/root/cache.tar .
 tar -xf cache.tar
 rsync -a data/_cache/ _cache/
+rm -rf data
 
 ## Then build using this cached data.  Note this links
 ## the local working directory to obtain the sources
