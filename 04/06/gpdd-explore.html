@@ -338,8 +338,8 @@ fit_rw &lt;-<span class="st"> </span>function(y, <span class="dt">init =</span> 
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(
 df %&gt;%<span class="st"> </span><span class="kw">do</span>(<span class="kw">kalman</span>(., <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>)) -&gt;<span class="st"> </span>fits
 )</code></pre>
-<pre><code>    user   system  elapsed 
-4278.742  123.188 4402.113 </code></pre>
+<pre><code>     user    system   elapsed 
+11652.039   278.562 11956.545 </code></pre>
 <hr />
 <p>Unfortunately <code>dplyr</code> does not as yet directly support parallelization (despite the documentation of <code>dplyr::init_cluster()</code> describing parallel <code>dplyr::do()</code> use, this feature is not actually implemented yet). Most parallelization packages for R wrap around <code>apply</code> functions, and thus are not trivially adapted to the <code>dplyr</code> grammar. If many cores are available it may still be faster to devolve the <code>group_by()</code> <code>data.frame</code> into a list of data frames and then apply in parallel; e.g.:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># not run</span>
@@ -357,20 +357,20 @@ fits &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(fits_l
 <hr />
 <p>We now have a nice table of parameter estimates and likelihoods by model for each data set:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits</code></pre>
-<pre><code>Source: local data frame [45,724 x 4]
+<pre><code>Source: local data frame [45,727 x 4]
 Groups: MainID
 
    MainID model parameter         value
-1       3   ssg        dt  3.467438e+00
-2       3   ssg        Tt -1.335810e-01
-3       3   ssg       HHt  6.383566e-02
-4       3   ssg       GGt  1.766069e-01
+1       3   ssg        dt  3.466916e+00
+2       3   ssg        Tt -1.334051e-01
+3       3   ssg       HHt  6.394019e-02
+4       3   ssg       GGt  1.765346e-01
 5       3   ssg   mloglik  2.050357e+01
 6       3   ssg  converge  0.000000e+00
 7       3   ssg         n  2.700000e+01
 8       3   ssg        a0  2.484907e+00
-9       3  ssrw        dt  7.431098e-04
-10      3  ssrw       HHt  9.975410e-10
+9       3  ssrw        dt  7.431723e-04
+10      3  ssrw       HHt  3.562612e-09
 ..    ...   ...       ...           ...</code></pre>
 <p>and here is our version then of Figure 1b, comparing the estimate of the density-dependence coefficent with and without the uncertainty in observations:</p>
 <pre class="sourceCode r"><code class="sourceCode r">fits %&gt;%<span class="st"> </span>
@@ -506,7 +506,7 @@ difference &lt;-<span class="st"> </span><span class="kw">sapply</span>(s, funct
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/e94b06c94dc472e1932143f1041a511579cf888b/_posts/2015-04-06-gpdd-explore.Rmd"> e94b06c94dc472e1932143f1041a511579cf888b</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/20c2da649c40311272c3cece1606fad2f502c29e/_posts/2015-04-06-gpdd-explore.Rmd"> 20c2da649c40311272c3cece1606fad2f502c29e</a></small></p>
     
   <br/>
   

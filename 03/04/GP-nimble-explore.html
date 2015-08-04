@@ -137,18 +137,18 @@ data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span clas
 <pre><code>[1] 1</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate</span>(Rmodel, <span class="st">&quot;l&quot;</span>)
 Rmodel$l</code></pre>
-<pre><code>[1] 11.48671</code></pre>
+<pre><code>[1] 10.37676</code></pre>
 <p>Other nodes and likelihoods are updated to reflect the new value only after we run <code>calculate()</code>, so this is the logProb of <code>l</code> originally:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
 <pre><code>[1] NA</code></pre>
 <p>After we run <code>calculate()</code>, the <code>logProb</code> is updated to reflect our simulated value of <code>l</code>, as are the dependent terms (like the Sigma matrix)</p>
 <pre class="sourceCode r"><code class="sourceCode r">Sigma &lt;-<span class="st"> </span>Rmodel$Sigma
 <span class="kw">calculate</span>(Rmodel)</code></pre>
-<pre><code>[1] -30.01279</code></pre>
+<pre><code>[1] -29.81744</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(Sigma, Rmodel$Sigma)</code></pre>
 <pre><code>[1] FALSE</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$logProb_l</code></pre>
-<pre><code>[1] -2.31782</code></pre>
+<pre><code>[1] -2.122469</code></pre>
 <p>Interestingly, we don’t seem to be able to simulate actual data from the model in this way:</p>
 <pre class="sourceCode r"><code class="sourceCode r">Rmodel$y</code></pre>
 <pre><code>[1] -2  0  1  2 -1</code></pre>
@@ -159,7 +159,7 @@ Rmodel$y</code></pre>
 <pre><code>[1] TRUE</code></pre>
 <p>Note that <code>y</code> remaines fixed to the original data values. We have to do this manually:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mvrnorm</span>(<span class="dt">mu =</span> constants$Mu, <span class="dt">Sigma =</span> Rmodel$Sigma) </code></pre>
-<pre><code>[1]  8.625736 12.486449  3.002395 -4.190873 18.365414</code></pre>
+<pre><code>[1]  -7.498019 -20.999389   4.939137  11.751509  -8.123005</code></pre>
 <p>Define our mcmc procedure in Nimble</p>
 <pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
 mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">print=</span><span class="ot">FALSE</span>)
@@ -169,7 +169,7 @@ Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc,
 Cmcmc$<span class="kw">run</span>(<span class="fl">1e5</span>)
 )</code></pre>
 <pre><code>   user  system elapsed 
-  0.829   0.016   0.844 </code></pre>
+  2.411   0.021   2.434 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
 df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code></pre>
 <h4 id="posteriors">Posteriors</h4>
@@ -214,7 +214,7 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(samples)</code><
 out &lt;-<span class="st"> </span><span class="kw">metrop</span>(posterior, <span class="dt">initial =</span> <span class="kw">c</span>(<span class="dt">l =</span> <span class="dv">1</span>,<span class="dt">sigma.n =</span> <span class="dv">10</span>), <span class="dt">nbatch =</span> <span class="fl">1e5</span>, <span class="dt">x =</span> obs$x, <span class="dt">y =</span> obs$y)  
 )</code></pre>
 <pre><code>   user  system elapsed 
- 11.923   0.000  11.960 </code></pre>
+ 36.485   0.442  37.202 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">burnin &lt;-<span class="st"> </span><span class="fl">1e3</span>
 thin &lt;-<span class="st"> </span><span class="fl">1e2</span>
 df &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">index=</span><span class="dv">1</span>:out$nbatch, <span class="kw">as.data.frame</span>(<span class="kw">exp</span>(out$batch)))
@@ -283,7 +283,7 @@ df &lt;-<span class="st"> </span><span class="kw">gather</span>(df)</code></pre>
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/79147f001a709a2eaad1a537fc5a65ccda98f882/_posts/2015-03-04-GP-nimble-explore.Rmd"> 79147f001a709a2eaad1a537fc5a65ccda98f882</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/20c2da649c40311272c3cece1606fad2f502c29e/_posts/2015-03-04-GP-nimble-explore.Rmd"> 20c2da649c40311272c3cece1606fad2f502c29e</a></small></p>
     
   <br/>
   
