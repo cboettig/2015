@@ -2,7 +2,6 @@ FROM cboettig/labnotebook
 MAINTAINER Carl Boettiger cboettig@ropensci.org 
 
 ## Install additional R package dependencies ###
-RUN apt-get update && apt-get install -y inkscape
 RUN install2.r --error -r http://cran.rstudio.com \
      FKF \
      dlm \
