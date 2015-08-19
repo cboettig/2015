@@ -24,7 +24,7 @@ RUN install2.r --error -r http://cran.rstudio.com \
     nimble-dev/nimble/packages/nimble@stable \
     cboettig/gpmanagement \
     ropensci/rfishbase \
-    cloudyr/signature \
+    cloudyr/aws.signature \
     cloudyr/aws.s3 \
   && rm -rf /tmp/downloaded_packages
 
