@@ -1,0 +1,84 @@
+---
+layout: post
+category: computing
+tags: 
+  - nimble
+---
+
+
+
+
+```{r}
+library("nimble")
+library("lazyeval")
+```
+
+Can we declare the `nimbleCode` parts in sections? Such as defining the model and priors in separate, reusable code blocks? Here's a "model" block:
+
+```{r}
+model <- expression({
+  for (i in 1:N){
+    theta[i] ~ dgamma(alpha,beta)
+    lambda[i] <- theta[i]*t[i]
+    x[i] ~ dpois(lambda[i])
+  }
+})
+```
+
+
+We may also wish to define the priors separately, and with specified list of hyperparameters for the priors.  Perhaps the need to use `quote` and to specify each line as a list item, instead of as a block defined with `{`, is not ideal, but non-standard evaluation is a bit of a wild west still.
+
+```{r}
+hyperparameters <- list(lambda = 1.0, a = 0.1, b = 1.0)
+
+priors <- list(
+  quote(alpha ~ dexp(lambda)),
+  quote(beta ~ dgamma(a,b))
+)
+
+```
+
+Having done so, we can construct a `nimbleCode` block by passing our chosen hyperparameters to the priors and concatenating the model and priors.  
+
+```{r}
+P <- as.expression(sapply(priors, lazyeval::interp, .values = hyperparameters))
+pumpCode <- c(model, P)
+```
+
+The result appears to work as a functional `nimbleCode` block; though note the resulting expression is not quite identical to the one we would typically write (e.g. without commas):
+
+```{r}
+pumpCode
+```
+
+Here we just specify the rest of the model:
+
+```{r}
+pumpConsts <- list(N = 10, 
+                   t = c(94.3, 15.7, 62.9, 126, 5.24,
+                         31.4, 1.05, 1.05, 2.1, 10.5))
+pumpData <- list(x = c(5, 1, 5, 14, 3, 19, 1, 1, 4, 22))
+pumpInits <- list(alpha = 1, 
+                  beta = 1,
+                  theta = rep(0.1, pumpConsts$N))
+
+pump <- nimbleModel(code = pumpCode, 
+                    name = 'pump', 
+                    constants = pumpConsts,
+                    data = pumpData, 
+                    inits = pumpInits)
+```
+
+and then verify that it runs.
+
+```{r}
+Cmodel <- compileNimble(pump)
+mcmcspec <- configureMCMC(pump, print=FALSE)
+mcmc <- buildMCMC(mcmcspec)
+Cmcmc <- compileNimble(mcmc, project = Cmodel)
+Cmcmc$run(1000)
+samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
+plot(samples[ , 'alpha'], samples[ , 'beta'], xlab = expression(alpha), ylab = expression(beta))
+```
+
+(The plot shows the same correlation issue that arises without using a block sampler that is illustrated in the manual.)
