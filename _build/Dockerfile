@@ -11,6 +11,11 @@ RUN install2.r --error -r http://cran.rstudio.com \
      sde \
      FastGP \
      rbenchmark \
+     PVAClone \
+     triangle \
+     bbmle \
+     nlstools \
+     drc \
   && installGithub.r \
     yihui/servr \ 
     cboettig/earlywarning \
