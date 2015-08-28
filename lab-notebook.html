@@ -114,6 +114,80 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/08/27/nimble-model-construction.html">Nimble Model Construction</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 27 Aug 2015</p>
+
+<article>
+<div class="excerpt">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;lazyeval&quot;</span>)</code></pre>
+<p>Can we declare the <code>nimbleCode</code> parts in sections? Such as defining the model and priors in separate, reusable code blocks? Here’s a “model” block:</p>
+<pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">expression</span>({
+  for (i in <span class="dv">1</span>:N){
+    theta[i] ~<span class="st"> </span><span class="kw">dgamma</span>(alpha,beta)
+    lambda[i] &lt;-<span class="st"> </span>theta[i]*t[i]
+    x[i] ~<span class="st"> </span><span class="kw">dpois</span>(lambda[i])
+  }
+})</code></pre>
+<p>We may also wish to define the priors separately, and with specified list of hyperparameters for the priors. Perhaps the need to use <code>quote</code> and to specify each line as a list item, instead of as a block defined with <code>{</code>, is not ideal, but non-standard evaluation is a bit of a wild west still.</p>
+<pre class="sourceCode r"><code class="sourceCode r">hyperparameters &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="fl">1.0</span>, <span class="dt">a =</span> <span class="fl">0.1</span>, <span class="dt">b =</span> <span class="fl">1.0</span>)
+
+priors &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="kw">quote</span>(alpha ~<span class="st"> </span><span class="kw">dexp</span>(lambda)),
+  <span class="kw">quote</span>(beta ~<span class="st"> </span><span class="kw">dgamma</span>(a,b))
+)</code></pre>
+<p>Having done so, we can construct a <code>nimbleCode</code> block by passing our chosen hyperparameters to the priors and concatenating the model and priors.</p>
+<pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">as.expression</span>(<span class="kw">sapply</span>(priors, lazyeval::interp, <span class="dt">.values =</span> hyperparameters))
+pumpCode &lt;-<span class="st"> </span><span class="kw">c</span>(model, P)</code></pre>
+<p>The result appears to work as a functional <code>nimbleCode</code> block; though note the resulting expression is not quite identical to the one we would typically write (e.g. without commas):</p>
+<pre class="sourceCode r"><code class="sourceCode r">pumpCode</code></pre>
+<pre><code>expression({
+    for (i in 1:N) {
+        theta[i] ~ dgamma(alpha, beta)
+        lambda[i] &lt;- theta[i] * t[i]
+        x[i] ~ dpois(lambda[i])
+    }
+}, alpha ~ dexp(1), beta ~ dgamma(0.1, 1))</code></pre>
+<p>Here we just specify the rest of the model:</p>
+<pre class="sourceCode r"><code class="sourceCode r">pumpConsts &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> <span class="dv">10</span>, 
+                   <span class="dt">t =</span> <span class="kw">c</span>(<span class="fl">94.3</span>, <span class="fl">15.7</span>, <span class="fl">62.9</span>, <span class="dv">126</span>, <span class="fl">5.24</span>,
+                         <span class="fl">31.4</span>, <span class="fl">1.05</span>, <span class="fl">1.05</span>, <span class="fl">2.1</span>, <span class="fl">10.5</span>))
+pumpData &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">14</span>, <span class="dv">3</span>, <span class="dv">19</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">22</span>))
+pumpInits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">alpha =</span> <span class="dv">1</span>, 
+                  <span class="dt">beta =</span> <span class="dv">1</span>,
+                  <span class="dt">theta =</span> <span class="kw">rep</span>(<span class="fl">0.1</span>, pumpConsts$N))
+
+pump &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(<span class="dt">code =</span> pumpCode, 
+                    <span class="dt">name =</span> <span class="st">&#39;pump&#39;</span>, 
+                    <span class="dt">constants =</span> pumpConsts,
+                    <span class="dt">data =</span> pumpData, 
+                    <span class="dt">inits =</span> pumpInits)</code></pre>
+<p>and then verify that it runs.</p>
+<pre class="sourceCode r"><code class="sourceCode r">Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(pump)
+mcmcspec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(pump, <span class="dt">print=</span><span class="ot">FALSE</span>)
+mcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(mcmcspec)
+Cmcmc &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(mcmc, <span class="dt">project =</span> Cmodel)
+Cmcmc$<span class="kw">run</span>(<span class="dv">1000</span>)</code></pre>
+<pre><code>NULL</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))
+<span class="kw">plot</span>(samples[ , <span class="st">&#39;alpha&#39;</span>], samples[ , <span class="st">&#39;beta&#39;</span>], <span class="dt">xlab =</span> <span class="kw">expression</span>(alpha), <span class="dt">ylab =</span> <span class="kw">expression</span>(beta))</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-08-27-nimble-model-construction/unnamed-chunk-7-1.png" />
+</figure>
+<p>(The plot shows the same correlation issue that arises without using a block sampler that is illustrated in the manual.)</p>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/08/27/nimble-model-construction.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/07/30/gpdp-via-mdptoolbox-cont.html">Gpdp Via Mdptoolbox Cont</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 30 Jul 2015</p>
@@ -439,6 +513,10 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/07/29/fastgp-explore.html">Fastgp Explore</a></h4></header>
 <p><span></span></p>
@@ -512,10 +590,6 @@ Sig &lt;-<span class="st"> </span>sigma*<span class="kw">exp</span>(-<span class
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/07/14/mdptoolbox-ex-2.html">Mdptoolbox Ex 2</a></h4></header>
@@ -767,6 +841,10 @@ ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/06/18/RAM-explore.html">Further exploration of RAM Legacy Stock Assessment data</a></h4></header>
@@ -1056,10 +1134,6 @@ values %&gt;%<span class="st"> </span>
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/06/16/daniel-gp-example.html">Daniel Gp Example</a></h4></header>
 <p><span></span></p>
@@ -1273,57 +1347,6 @@ value &lt;-<span class="st"> </span>query[[level]]
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/06/03/lazy-evaluation-thoughts.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/05/15/diagrammer.html">Diagrammer</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 15 May 2015</p>
-
-<article>
-<div class="excerpt">
-<p>Exploring ways for using <code>DiagrammeR</code> to generate graphs/plots that can be exported to svg and included in knitr documents.</p>
-<pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;rich-iannone/DiagrammeR&quot;</span>)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;DiagrammeR&quot;</span>)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;archive&quot;</span>, <span class="st">&quot;index&quot;</span>, <span class="st">&quot;share&quot;</span>, <span class="st">&quot;discover&quot;</span>, <span class="st">&quot;use&quot;</span>, <span class="st">&quot;attribute&quot;</span>)
-
-nodes &lt;-<span class="st"> </span><span class="kw">create_nodes</span>(<span class="dt">nodes =</span> <span class="kw">c</span>(<span class="st">&quot;Repository</span><span class="ch">\n</span><span class="st"> Roles&quot;</span>, n, <span class="st">&quot;Researcher</span><span class="ch">\n</span><span class="st"> Roles&quot;</span>), 
-                      <span class="dt">shape =</span> <span class="st">&quot;circle&quot;</span>, 
-                      <span class="dt">color =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&quot;PowderBlue&quot;</span>, <span class="dv">4</span>), <span class="kw">rep</span>(<span class="st">&quot;Linen&quot;</span>, <span class="dv">4</span>)),
-                      <span class="dt">style =</span> <span class="st">&quot;filled&quot;</span>)
-edges &lt;-<span class="st"> </span><span class="kw">create_edges</span>(<span class="dt">from =</span> n, 
-                      <span class="dt">to =</span> <span class="kw">c</span>(n[-<span class="dv">1</span>], n[<span class="dv">1</span>]),
-                      <span class="dt">color =</span> <span class="st">&quot;gray&quot;</span>, <span class="dt">penwidth =</span> <span class="dv">4</span>)
-
-graph &lt;-<span class="st"> </span><span class="kw">create_graph</span>(<span class="dt">nodes =</span> nodes, <span class="dt">edges =</span> edges, 
-                      <span class="dt">graph_attrs =</span> <span class="kw">c</span>(<span class="st">&quot;layout = circo&quot;</span>))
-out &lt;-<span class="st"> </span><span class="kw">render_graph</span>(graph)</code></pre>
-<p>Render as SVG</p>
-<pre class="sourceCode r"><code class="sourceCode r">basename &lt;-<span class="st"> &quot;figure1&quot;</span>
-out &lt;-<span class="st"> </span><span class="kw">render_graph</span>(graph, <span class="dt">output =</span> <span class="st">&quot;SVG&quot;</span>)
-<span class="kw">writeLines</span>(out, <span class="kw">paste0</span>(basename, <span class="st">&quot;.svg&quot;</span>))</code></pre>
-<p>Render as pdf, for inculsion in pdf/tex files.</p>
-<pre class="sourceCode r"><code class="sourceCode r">## Not Run
-<span class="kw">system</span>(<span class="kw">paste0</span>(<span class="st">&quot;inkscape --export-png &quot;</span>, basename, <span class="st">&quot;.png&quot;</span>, 
-<span class="co">#              &quot;-w &quot;, width, &quot; -h &quot;, height, </span>
-              <span class="st">&quot; --export-dpi 300 &quot;</span>, 
-              basename, <span class="st">&quot;.svg&quot;</span>)) 
-
-<span class="kw">system</span>(<span class="kw">paste0</span>(<span class="st">&quot;inkscape --export-pdf &quot;</span>, basename, <span class="st">&quot;.pdf &quot;</span>, basename, <span class="st">&quot;.svg&quot;</span>)) </code></pre>
-<p>Embed in post? maybe? This could be more elegant:</p>
-<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span><span class="kw">paste0</span>(basename, <span class="st">&quot;.svg&quot;</span>)
-target &lt;-<span class="st"> </span><span class="kw">paste0</span>(knitr::opts_chunk$<span class="kw">get</span>(<span class="st">&quot;fig.path&quot;</span>), f)
-<span class="kw">file.rename</span>(f, target)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste0</span>(<span class="st">&quot;![](&quot;</span>, target, <span class="st">&quot;)&quot;</span>)</code></pre>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/05/15/diagrammer.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 

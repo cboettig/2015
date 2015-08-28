@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-08-28T18:47:24+00:00</updated>
+  <updated>2015-08-28T19:18:33+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -11,6 +11,70 @@
   </author>
 
    
+ <entry>
+   <title>Nimble Model Construction</title>
+   <link href="http://www.carlboettiger.info/2015/08/27/nimble-model-construction.html"/>
+   <updated>2015-08-27T00:00:00+00:00</updated>
+   <id>/08/27/nimble-model-construction</id>
+   <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;nimble&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;lazyeval&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Can we declare the &lt;code&gt;nimbleCode&lt;/code&gt; parts in sections? Such as defining the model and priors in separate, reusable code blocks? Here’s a “model” block:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;model &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;({
+  for (i in &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:N){
+    theta[i] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dgamma&lt;/span&gt;(alpha,beta)
+    lambda[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;theta[i]*t[i]
+    x[i] ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dpois&lt;/span&gt;(lambda[i])
+  }
+})&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We may also wish to define the priors separately, and with specified list of hyperparameters for the priors. Perhaps the need to use &lt;code&gt;quote&lt;/code&gt; and to specify each line as a list item, instead of as a block defined with &lt;code&gt;{&lt;/code&gt;, is not ideal, but non-standard evaluation is a bit of a wild west still.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;hyperparameters &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;lambda =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1.0&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;a =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;b =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;1.0&lt;/span&gt;)
+
+priors &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(
+  &lt;span class=&quot;kw&quot;&gt;quote&lt;/span&gt;(alpha ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dexp&lt;/span&gt;(lambda)),
+  &lt;span class=&quot;kw&quot;&gt;quote&lt;/span&gt;(beta ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dgamma&lt;/span&gt;(a,b))
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Having done so, we can construct a &lt;code&gt;nimbleCode&lt;/code&gt; block by passing our chosen hyperparameters to the priors and concatenating the model and priors.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;P &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.expression&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;sapply&lt;/span&gt;(priors, lazyeval::interp, &lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; hyperparameters))
+pumpCode &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(model, P)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The result appears to work as a functional &lt;code&gt;nimbleCode&lt;/code&gt; block; though note the resulting expression is not quite identical to the one we would typically write (e.g. without commas):&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;pumpCode&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;expression({
+    for (i in 1:N) {
+        theta[i] ~ dgamma(alpha, beta)
+        lambda[i] &amp;lt;- theta[i] * t[i]
+        x[i] ~ dpois(lambda[i])
+    }
+}, alpha ~ dexp(1), beta ~ dgamma(0.1, 1))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here we just specify the rest of the model:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;pumpConsts &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;N =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;10&lt;/span&gt;, 
+                   &lt;span class=&quot;dt&quot;&gt;t =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;94.3&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;15.7&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;62.9&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;126&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;5.24&lt;/span&gt;,
+                         &lt;span class=&quot;fl&quot;&gt;31.4&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1.05&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1.05&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;2.1&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;10.5&lt;/span&gt;))
+pumpData &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;14&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;3&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;19&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;, &lt;span class=&quot;dv&quot;&gt;22&lt;/span&gt;))
+pumpInits &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;, 
+                  &lt;span class=&quot;dt&quot;&gt;beta =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;,
+                  &lt;span class=&quot;dt&quot;&gt;theta =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;fl&quot;&gt;0.1&lt;/span&gt;, pumpConsts$N))
+
+pump &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleModel&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;code =&lt;/span&gt; pumpCode, 
+                    &lt;span class=&quot;dt&quot;&gt;name =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;#39;pump&amp;#39;&lt;/span&gt;, 
+                    &lt;span class=&quot;dt&quot;&gt;constants =&lt;/span&gt; pumpConsts,
+                    &lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; pumpData, 
+                    &lt;span class=&quot;dt&quot;&gt;inits =&lt;/span&gt; pumpInits)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and then verify that it runs.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(pump)
+mcmcspec &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;configureMCMC&lt;/span&gt;(pump, &lt;span class=&quot;dt&quot;&gt;print=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
+mcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;buildMCMC&lt;/span&gt;(mcmcspec)
+Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;compileNimble&lt;/span&gt;(mcmc, &lt;span class=&quot;dt&quot;&gt;project =&lt;/span&gt; Cmodel)
+Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;1000&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;NULL&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))
+&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;alpha&amp;#39;&lt;/span&gt;], samples[ , &lt;span class=&quot;st&quot;&gt;&amp;#39;beta&amp;#39;&lt;/span&gt;], &lt;span class=&quot;dt&quot;&gt;xlab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(alpha), &lt;span class=&quot;dt&quot;&gt;ylab =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;expression&lt;/span&gt;(beta))&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-08-27-nimble-model-construction/unnamed-chunk-7-1.png&quot; /&gt;
+&lt;/figure&gt;
+&lt;p&gt;(The plot shows the same correlation issue that arises without using a block sampler that is illustrated in the manual.)&lt;/p&gt;
+</content>
+ </entry>
+ 
  <entry>
    <title>Gpdp Via Mdptoolbox Cont</title>
    <link href="http://www.carlboettiger.info/2015/07/30/gpdp-via-mdptoolbox-cont.html"/>
