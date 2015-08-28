@@ -2,7 +2,8 @@ FROM cboettig/labnotebook
 MAINTAINER Carl Boettiger cboettig@ropensci.org 
 
 ## Install additional R package dependencies ###
-RUN install2.r --error -r http://cran.rstudio.com \
+RUN apt-get update && apt-get -y install r-cran-rjags \
+  && install2.r --error -r http://cran.rstudio.com \
      FKF \
      dlm \
      KFAS \
