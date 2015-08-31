@@ -47,7 +47,5 @@ docker push cboettig/${YEAR}-cache
 ## Clean up: restore user permissions and remove containers 
 docker run --rm -v $(pwd):/data busybox chown -R 1000:1000 /data/_cache
 docker rm -v -f cache cache2 build
-
-docker rm -f -v cache
-
 echo "Finished"
+

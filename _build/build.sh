@@ -5,7 +5,7 @@ set -e
 # Extract data from linked volume
 cd / && tar -xf /root/cache.tar
 
-cd data && Rscript -e 'servr::jekyll(serve = FALSE, script = "_build/build.R")'
+cd data && rm -rf cache.tar && Rscript -e 'servr::jekyll(serve = FALSE, script = "_build/build.R")'
 
 ## Deploy to gh-pages
 {
