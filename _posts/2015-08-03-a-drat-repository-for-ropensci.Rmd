@@ -1,8 +1,7 @@
 ---
 layout: post
-title: "a drat repository for rOpenSci"
+title: "a drat repository for rOpenSci (draft for ropensci blog)"
 author: Carl Boettiger
-published: false
 ---
 
 

@@ -10,7 +10,7 @@ tags:
 
 
 ```{r results='hide', cache=FALSE}
-#knitr::opts_chunk$set(eval=FALSE)
+knitr::opts_chunk$set(comment=NA)
 #devtools::install_github("cboettig/gpmanagement@b3b765cbceb51c9b0b8cb2724e395353ec365df9")
 library("MDPtoolbox")
 library("gpmanagement")
@@ -83,30 +83,22 @@ priors <- expression({
 
 ```
 
+(Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).
+
 ```{r}
 fit <- gp_setup(xObs, yObs, xPred)
-```
 
-```{r}
-Cmcmc <- fit$Cmcmc 
-Cpred <- fit$Cpred
-Cmodel <- fit$Cmodel
-```
+## Fit the GP
+system.time(fit$Cmcmc$run(100000))
+samples <- as.matrix(fit$Cmcmc$mvSamples)
 
-```{r}
-system.time(Cmcmc$run(100000))
-```
+## Perform prediction
+system.time(fit$Cpred$run(samples))
 
-```{r}
-  samples <- as.matrix(Cmcmc$mvSamples)
-  ## basic sanity check
-  testthat::expect_identical(Cmodel$getNodeNames(topOnly = TRUE), colnames(samples))
-```
-
-predict from GP model using posterior MCMC samples
-
-```{r}
-system.time(Cpred$run(samples))
+## Extract variables for future use
+E <- fit$Cpred$getE()
+C <- fit$Cpred$getC()
+samples <- as.data.frame(samples)
 ```
 
 
@@ -114,7 +106,6 @@ system.time(Cpred$run(samples))
 Posteriors
 
 ```{r}
-samples <- as.data.frame(as.matrix(Cmcmc$mvSamples))
 df <- tidyr::gather(samples)
 ggplot(df) + 
   geom_density(aes(value)) + 
@@ -123,13 +114,7 @@ ggplot(df) +
 
 
 
-extract predictions: E and C
-
-
 ```{r}
-  E <- Cpred$getE()
-  C <- Cpred$getC()
-  
 obs <- data.frame(x = xObs, y = yObs)
 pred <- data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + sqrt(diag(C)))
 ggplot2::ggplot(pred) + 
