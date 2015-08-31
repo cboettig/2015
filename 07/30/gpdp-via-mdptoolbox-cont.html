@@ -107,7 +107,7 @@
       <div class="row">
   <div class="col-md-7 col-md-offset-1">
     <article>
-    <pre class="sourceCode r"><code class="sourceCode r"><span class="co">#knitr::opts_chunk$set(eval=FALSE)</span>
+    <pre class="sourceCode r"><code class="sourceCode r">knitr::opts_chunk$<span class="kw">set</span>(<span class="dt">comment=</span><span class="ot">NA</span>)
 <span class="co">#devtools::install_github(&quot;cboettig/gpmanagement@b3b765cbceb51c9b0b8cb2724e395353ec365df9&quot;)</span>
 <span class="kw">library</span>(<span class="st">&quot;MDPtoolbox&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;gpmanagement&quot;</span>)
@@ -156,46 +156,42 @@ priors &lt;-<span class="st"> </span><span class="kw">expression</span>({
   sigGP ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
   sigOE ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
 })</code></pre>
+<p>(Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).</p>
 <pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">gp_setup</span>(xObs, yObs, xPred)</code></pre>
 <pre><code>[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmcmc &lt;-<span class="st"> </span>fit$Cmcmc 
-Cpred &lt;-<span class="st"> </span>fit$Cpred
-Cmodel &lt;-<span class="st"> </span>fit$Cmodel</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
+<span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 16.604   0.008  16.600 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">  samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
-  ## basic sanity check
-  testthat::<span class="kw">expect_identical</span>(Cmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>), <span class="kw">colnames</span>(samples))</code></pre>
-<p>predict from GP model using posterior MCMC samples</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
+ 22.281   0.020  22.326 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
+
+## Perform prediction
+<span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 22.036   0.000  22.021 </code></pre>
+ 28.450   0.005  28.496 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
+E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
+C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
+samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(samples)</code></pre>
 <p>Posteriors</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))</code></pre>
-<pre><code>Error: Sextptr is not a valid external pointer</code></pre>
-<pre><code>Error in matrix(0.1, nrow = nrows, ncol = length(flatNames)): non-numeric matrix extent</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span>tidyr::<span class="kw">gather</span>(samples)</code></pre>
-<pre><code>Error in UseMethod(&quot;gather_&quot;): no applicable method for &#39;gather_&#39; applied to an object of class &quot;c(&#39;matrix&#39;, &#39;double&#39;, &#39;numeric&#39;)&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span>tidyr::<span class="kw">gather</span>(samples)
+<span class="kw">ggplot</span>(df) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<pre><code>Error: ggplot2 doesn&#39;t know how to deal with data of class function</code></pre>
-<p>extract predictions: E and C</p>
-<pre class="sourceCode r"><code class="sourceCode r">  E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): attempt to apply non-function</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">  C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): attempt to apply non-function</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-7-1.png" />
+</figure>
 <pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xObs, <span class="dt">y =</span> yObs)
-pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))</code></pre>
-<pre><code>Error in data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + : object &#39;E&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
+pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))
+ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x,<span class="dt">y =</span> y, <span class="dt">ymin =</span> ymin, <span class="dt">ymax =</span> ymax), <span class="dt">fill =</span> <span class="st">&quot;grey80&quot;</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y), <span class="dt">size=</span><span class="dv">1</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> obs, <span class="kw">aes</span>(x,y)) +
 <span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">range</span>(<span class="kw">c</span>(xObs, xPred)), <span class="dt">ylim =</span> <span class="kw">range</span>(<span class="kw">c</span>(yObs,E))) +
 <span class="st">  </span><span class="kw">theme_bw</span>()</code></pre>
-<pre><code>Error in ggplot2::ggplot(pred): object &#39;pred&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png" />
+</figure>
 <hr />
 <h2 id="decision-theory">Decision theory</h2>
 <pre class="sourceCode r"><code class="sourceCode r">states &lt;-<span class="st"> </span>xPred <span class="co"># Vector of all possible states</span>
@@ -256,34 +252,39 @@ simulate_policy &lt;-<span class="st"> </span>function(states, actions, policy, 
 }
 
 P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, actions, E, C)</code></pre>
-<pre><code>Error in as.integer(x): cannot coerce type &#39;closure&#39; to vector of type &#39;integer&#39;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mdp_check</span>(<span class="dt">P =</span> P_gp, <span class="dt">R =</span> R)</code></pre>
-<pre><code>Error in mdp_check(P = P_gp, R = R): object &#39;P_gp&#39; not found</code></pre>
+<pre><code>[1] &quot;&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">gp &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P_gp, R, <span class="dt">discount =</span> discount, <span class="dt">epsilon =</span> <span class="fl">0.00001</span>, <span class="dt">max_iter =</span> <span class="fl">5e3</span>, <span class="dt">V0 =</span> <span class="kw">numeric</span>(<span class="kw">length</span>(states)))</code></pre>
-<pre><code>Error in mdp_value_iteration(P_gp, R, discount = discount, epsilon = 1e-05, : object &#39;P_gp&#39; not found</code></pre>
+<pre><code>[1] &quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>actions[gp$policy],  <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)</code></pre>
-<pre><code>Error in xy.coords(x, y, xlabel, ylabel, log): object &#39;gp&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-14-1.png" />
+</figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(reps) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">do</span>(<span class="kw">simulate_policy</span>(states,actions, gp$policy, f, z, <span class="dt">s0 =</span> <span class="dv">100</span>, <span class="dt">steps =</span> <span class="dv">20</span>, <span class="dt">utility =</span> pmin, <span class="dt">discount =</span> discount)[<span class="kw">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;state&quot;</span>, <span class="st">&quot;utility&quot;</span>)]) -&gt;
-<span class="st">  </span>sims </code></pre>
-<pre><code>Error: object &#39;gp&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>Error in mean(sims$utility): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;mean&#39;: Error: object &#39;sims&#39; not found</code></pre>
+<span class="st">  </span>sims 
+
+<span class="kw">mean</span>(sims$utility)</code></pre>
+<pre><code>[1] 2.381047</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
-<pre><code>Error in ggplot(sims): object &#39;sims&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-16-1.png" />
+</figure>
 <p>With this amount of data, the gp solution is too cautious, and avoids any exploitation.</p>
 <h4 id="simulate-under-the-true-model">Simulate under the true model</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(reps) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">do</span>(<span class="kw">simulate_policy</span>(states, actions, gp$policy, f, z, <span class="dt">s0 =</span> <span class="dv">100</span>, <span class="dt">steps =</span> <span class="dv">20</span>, <span class="dt">utility =</span> pmin, <span class="dt">discount =</span> discount)[<span class="kw">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;state&quot;</span>, <span class="st">&quot;utility&quot;</span>)]) -&gt;
-<span class="st">  </span>sims </code></pre>
-<pre><code>Error: object &#39;gp&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>Error in mean(sims$utility): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;mean&#39;: Error: object &#39;sims&#39; not found</code></pre>
+<span class="st">  </span>sims 
+
+<span class="kw">mean</span>(sims$utility)</code></pre>
+<pre><code>[1] 2.417014</code></pre>
 <p>(Average utility is approximate here since it does not include penalty; since a function and not a matrix is requred by this function at this time.)</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
-<pre><code>Error in ggplot(sims): object &#39;sims&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-18-1.png" />
+</figure>
 <hr />
 <pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">transition_matrix</span>(states, actions, f, pdfn)
 <span class="co">#get_utility &lt;- function(x,h) pmin(x,h)</span>
@@ -294,7 +295,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <pre><code>[1] &quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>actions[mdp$policy],  <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-25-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-21-1.png" />
 </figure>
 <p>Note that the altered award structure has almost no effect on the optimal policy given the true model, other than to avoid harvesting directly to zero even when the stock cannot persist, due to the explicit penalty for doing so.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
@@ -303,10 +304,10 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <span class="st">  </span>sims 
 
 <span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>[1] 9.38167</code></pre>
+<pre><code>[1] 9.658696</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-27-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-23-1.png" />
 </figure>
 
     </article>
@@ -326,7 +327,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 	<p><a class="btn btn-default" rel="prev" href='/2015/07/29/mdptoolbox-allen-model.html'><i class="icon-chevron-left"></i> prev</a>
   
   
-  <a class="btn btn-default" rel="next" href='/2015/08/27/nimble-model-construction.html'>next <i class="icon-chevron-right"></i></a></p>
+  <a class="btn btn-default" rel="next" href='/2015/08/03/a-drat-repository-for-ropensci.html'>next <i class="icon-chevron-right"></i></a></p>
   
 
   <br />
@@ -369,7 +370,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/fd98fbcdc08949f272dbf335a57b02b7d48cbe30/_posts/2015-07-30-gpdp-via-mdptoolbox-cont.Rmd"> fd98fbcdc08949f272dbf335a57b02b7d48cbe30</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/269f1b8b4b3c80c4c57d3a5b0fe648cc378d77e0/_posts/2015-07-30-gpdp-via-mdptoolbox-cont.Rmd"> 269f1b8b4b3c80c4c57d3a5b0fe648cc378d77e0</a></small></p>
     
   <br/>
   

@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-08-28T19:18:33+00:00</updated>
+  <updated>2015-08-31T17:18:42+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -76,11 +76,52 @@ Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&
  </entry>
  
  <entry>
+   <title>a drat repository for rOpenSci (draft for ropensci blog)</title>
+   <link href="http://www.carlboettiger.info/2015/08/03/a-drat-repository-for-ropensci.html"/>
+   <updated>2015-08-03T00:00:00+00:00</updated>
+   <id>/08/03/a-drat-repository-for-ropensci</id>
+   <content type="html">&lt;p&gt;We’re happy to announce the launch of a CRAN-style repository for rOpenSci at &lt;a href=&quot;http://packages.ropensci.org&quot; class=&quot;uri&quot;&gt;http://packages.ropensci.org&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;This repository contains the latest nightly builds from the master branch of all rOpenSci packages currently on GitHub. This allows users to install development versions of our software without specialized functions such as &lt;code&gt;install_github()&lt;/code&gt;, allows dependencies not hosted on CRAN to still be resolved automatically, and permits the use of &lt;code&gt;update.packages()&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;using-the-repository&quot;&gt;Using the repository&lt;/h2&gt;
+&lt;p&gt;To use, simply add &lt;code&gt;packages.ropensci.org&lt;/code&gt; to your existing list of R repos, such as:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;options&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;repos =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;http://packages.ropensci.org&amp;quot;&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;getOption&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;repos&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;(If you don’t have any default CRAN mirrors selected yet by &lt;code&gt;getOption(&amp;quot;repos&amp;quot;)&lt;/code&gt;, you may want to add one now). You can also include this line in specific &lt;code&gt;install.packages()&lt;/code&gt; requests:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;install.packages&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;taxize&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;repos =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;http://packages.ropensci.org&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;http://cran.rstudio.com&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;design&quot;&gt;Design&lt;/h2&gt;
+&lt;p&gt;Our goal in creating a CRAN-style package repository (yes, it’s confusing that we use the word “repository” to describe both an individual package source in a GitHub &lt;em&gt;repo&lt;/em&gt; as well as a collection of package binaries on a CRAN-like &lt;em&gt;repo&lt;/em&gt;… sorry) was to provide users with a way to install the latest development versions of rOpenSci packages that offerred an easier and more seamless alternative to the widely used method of &lt;code&gt;devtools::install_github()&lt;/code&gt;. This would be particularly useful for updating all packages at once, or installing development versions that depended on other versions of packages not yet released to CRAN. As an added benefit, we also wanted a system that would allow us to compute anonmyzed download statistics, analogous to what RStudio provides for it’s CRAN mirror. Getting this all to work required the introduction of a few additional technologies.&lt;/p&gt;
+&lt;h3 id=&quot;drat-and-drat.builder&quot;&gt;&lt;code&gt;drat&lt;/code&gt; and &lt;code&gt;drat.builder&lt;/code&gt;&lt;/h3&gt;
+&lt;p&gt;While the basic structure of a CRAN-like R repository is simple, used both platforms such as rForge as well as individual developers, kudos really goes to Dirk Eddelbuettel’s &lt;a href=&quot;https://github.com/eddelbuettel/drat&quot;&gt;drat&lt;/a&gt; package for really making this automated, simple, and fun. While &lt;code&gt;drat&lt;/code&gt; makes it easy to toss individual packages into a CRAN-like repo (which we often refer to as a &lt;code&gt;drat&lt;/code&gt; repo), we needed an easy &amp;amp; automatic way to add a whole list of packages, given their GitHub repos. Rich FitzJohn’s new &lt;a href=&quot;https://github.com/richfitz/drat.builder&quot;&gt;drat.builder&lt;/a&gt; package does precisely this; handling the downloading of packages with some clever record-keeping to avoid building and adding packages which have not changed since the last time the &lt;code&gt;drat&lt;/code&gt; repo was built. The sources for building the rOpenSci packages repository can be found in our “drat” GitHub repo: &lt;a href=&quot;https://github.com/ropensci/drat&quot; class=&quot;uri&quot;&gt;https://github.com/ropensci/drat&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;dynamic-package-lists-ropkgs&quot;&gt;Dynamic package lists: &lt;code&gt;ropkgs&lt;/code&gt;&lt;/h3&gt;
+&lt;p&gt;With rOpenSci, we wanted to take this one step further. No one wants to have to maintain one more list that must be updated every time a package is successfully on-boarded to the project. Scott Chamberlain’s work with &lt;a href=&quot;https://github.com/ropensci/ropkgs&quot;&gt;ropkgs&lt;/a&gt; provides a convenient way to query the rOpenSci software suite, automatically generating a list of available rOpenSci packages, and filtering them on relevant metadata, such as those that are in good status and installable condition, like so:&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ropkgs&amp;quot;&lt;/span&gt;)
+out &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ro_pkgs&lt;/span&gt;()
+good &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;out$packages$status ==&lt;span class=&quot;st&quot;&gt; &amp;quot;good&amp;quot;&lt;/span&gt;
+installable &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;out$packages$installable
+pkgs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;out$packages$name[installable &amp;amp;&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;good]&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;the-magic-of-continuous-integration-circleci&quot;&gt;the magic of continuous integration: CircleCI&lt;/h3&gt;
+&lt;p&gt;With &lt;code&gt;ropkgs&lt;/code&gt;, &lt;code&gt;drat&lt;/code&gt; and &lt;code&gt;drat.builder&lt;/code&gt;, we now have everything we need to automate the building of the CRAN-like package repository. Now we just need some computing resource that can do the hard work of pulling down all the GitHub packages, building the repository, and securely sending off the binaries somewhere they can be downloaded. Continuous Integration systems turn out to be perfect for this. My favorite CI platform at the moment is &lt;a href=&quot;https://circleci.com&quot;&gt;CircleCi&lt;/a&gt;, for several reasons particularly relevant here:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;it has a rich API which includes support for &lt;code&gt;POST&lt;/code&gt; requests which can trigger a build without making commits to GitHub&lt;/li&gt;
+&lt;li&gt;it supports custom Docker containers, allowing us to just download a container with most or all the dependencies we need to build packages, etc., without having to wait for them to install manually from source first.&lt;/li&gt;
+&lt;li&gt;it has a convient web interface for providing secure credentials we’ll need to publish the binary repository to GitHub or Amazon.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Circle has other advantages too, like great live help and the ability to ssh into your CI run to troubleshoot when all else fails, but otherwise works like most other CI platforms. More on that another day. You can see the daily builds here: &lt;a href=&quot;https://circleci.com/gh/ropensci/drat/tree/gh-pages&quot;&gt;CircleCi&lt;/a&gt;, which are triggered by a simple &lt;code&gt;POST&lt;/code&gt; request running as a cron job. The &lt;a href=&quot;https://github.com/ropensci/drat/blob/gh-pages/circle.yml&quot;&gt;circle.yml&lt;/a&gt; configuration file appears in the project’s drat repo – check out how simple it is!&lt;/p&gt;
+&lt;h3 id=&quot;publishing-to-amazon&quot;&gt;Publishing to Amazon&lt;/h3&gt;
+&lt;p&gt;The last step would be getting download logs; which is somewhat more complicated than it sounds. &lt;code&gt;drat&lt;/code&gt; convienently already handles pushing packages to GitHub’s gh-pages, a free and easy way to provide static hosting. This is free and easy, but isn’t ideal, particularly for large and frequently updated package collections. Also, it is impossible to get download logs from this approach. To avoid these issues, we settled on pushing our package repository to a static site hosted through Amazon’s S3 data storage “buckets.” It’s not free, but for at most a few gigs of space we’ll need it’s still very cost effective. In particular, S3 buckets can generate their own log files, which provides a way to count package downloads.&lt;/p&gt;
+&lt;p&gt;Secure communication with Amazon S3 system is accomplished using the very nacsent / actively developing &lt;a href=&quot;https://github.com/cloudyr/aws.s3&quot;&gt;aws.s3&lt;/a&gt; R package from the awesome &lt;a href=&quot;https://cloudyr.github.io/&quot;&gt;cloudyr&lt;/a&gt; project.&lt;/p&gt;
+&lt;h3 id=&quot;parsing-the-download-logs&quot;&gt;Parsing the download logs&lt;/h3&gt;
+&lt;p&gt;Amazon’s S3 logs are rather raw and require some good ol data tidying work to transform them into the conveniently parsed, tidied and IP-address-anonymized format used by RStudio’s download logs. Eventually this too can be accomplished by the CircleCI builds, but at the moment is too computationally intensive for them. A script for this workflow can be found in the project repo, &lt;a href=&quot;https://github.com/ropensci/drat/blob/gh-pages/parse_s3_logs.R&quot;&gt;parse_s3_logs.R&lt;/a&gt;. As the data accumulate we should be able to start publishing the tidy logs.&lt;/p&gt;
+&lt;p&gt;This project is still in it’s early days, and as ever, we welcome feedback, problems or ideas on the &lt;a href=&quot;https://github.com/ropensci/drat/issues&quot;&gt;issues tracker&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Now go ahead and install or update some packages from the shiny new &lt;a href=&quot;http://packages.ropensci.org&quot; class=&quot;uri&quot;&gt;http://packages.ropensci.org&lt;/a&gt;!&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
    <title>Gpdp Via Mdptoolbox Cont</title>
    <link href="http://www.carlboettiger.info/2015/07/30/gpdp-via-mdptoolbox-cont.html"/>
    <updated>2015-07-30T00:00:00+00:00</updated>
    <id>/07/30/gpdp-via-mdptoolbox-cont</id>
-   <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;#knitr::opts_chunk$set(eval=FALSE)&lt;/span&gt;
+   <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;knitr::opts_chunk$&lt;span class=&quot;kw&quot;&gt;set&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;comment=&lt;/span&gt;&lt;span class=&quot;ot&quot;&gt;NA&lt;/span&gt;)
 &lt;span class=&quot;co&quot;&gt;#devtools::install_github(&amp;quot;cboettig/gpmanagement@b3b765cbceb51c9b0b8cb2724e395353ec365df9&amp;quot;)&lt;/span&gt;
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;MDPtoolbox&amp;quot;&lt;/span&gt;)
 &lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;gpmanagement&amp;quot;&lt;/span&gt;)
@@ -129,46 +170,42 @@ priors &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
   sigGP ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
   sigOE ~&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;dunif&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1e5&lt;/span&gt;)
 })&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;(Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_setup&lt;/span&gt;(xObs, yObs, xPred)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;Cmcmc &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cmcmc 
-Cpred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred
-Cmodel &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cmodel&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Fit the GP
+&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 16.604   0.008  16.600 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples)
-  ## basic sanity check
-  testthat::&lt;span class=&quot;kw&quot;&gt;expect_identical&lt;/span&gt;(Cmodel$&lt;span class=&quot;kw&quot;&gt;getNodeNames&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;topOnly =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;TRUE&lt;/span&gt;), &lt;span class=&quot;kw&quot;&gt;colnames&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;predict from GP model using posterior MCMC samples&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
+ 22.281   0.020  22.326 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(fit$Cmcmc$mvSamples)
+
+## Perform prediction
+&lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 22.036   0.000  22.021 &lt;/code&gt;&lt;/pre&gt;
+ 28.450   0.005  28.496 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Extract variables for future use
+E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
+C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()
+samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Posteriors&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(Cmcmc$mvSamples))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error: Sextptr is not a valid external pointer&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in matrix(0.1, nrow = nrows, ncol = length(flatNames)): non-numeric matrix extent&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in UseMethod(&amp;quot;gather_&amp;quot;): no applicable method for &amp;#39;gather_&amp;#39; applied to an object of class &amp;quot;c(&amp;#39;matrix&amp;#39;, &amp;#39;double&amp;#39;, &amp;#39;numeric&amp;#39;)&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)
+&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error: ggplot2 doesn&amp;#39;t know how to deal with data of class function&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;extract predictions: E and C&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): attempt to apply non-function&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;  C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): attempt to apply non-function&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-7-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xObs, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; yObs)
-pred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xPred, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; E, &lt;span class=&quot;dt&quot;&gt;ymin =&lt;/span&gt; E -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)), &lt;span class=&quot;dt&quot;&gt;ymax =&lt;/span&gt; E +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + : object &amp;#39;E&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;ggplot2::&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(pred) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+pred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xPred, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; E, &lt;span class=&quot;dt&quot;&gt;ymin =&lt;/span&gt; E -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)), &lt;span class=&quot;dt&quot;&gt;ymax =&lt;/span&gt; E +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)))
+ggplot2::&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(pred) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_ribbon&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; x,&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; y, &lt;span class=&quot;dt&quot;&gt;ymin =&lt;/span&gt; ymin, &lt;span class=&quot;dt&quot;&gt;ymax =&lt;/span&gt; ymax), &lt;span class=&quot;dt&quot;&gt;fill =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;grey80&amp;quot;&lt;/span&gt;) +
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; x, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; y), &lt;span class=&quot;dt&quot;&gt;size=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; obs, &lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(x,y)) +
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;coord_cartesian&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;xlim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(xObs, xPred)), &lt;span class=&quot;dt&quot;&gt;ylim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(yObs,E))) +
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;theme_bw&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot2::ggplot(pred): object &amp;#39;pred&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;decision-theory&quot;&gt;Decision theory&lt;/h2&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;states &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;xPred &lt;span class=&quot;co&quot;&gt;# Vector of all possible states&lt;/span&gt;
@@ -229,34 +266,39 @@ simulate_policy &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function
 }
 
 P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_matrix&lt;/span&gt;(states, actions, E, C)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in as.integer(x): cannot coerce type &amp;#39;closure&amp;#39; to vector of type &amp;#39;integer&amp;#39;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mdp_check&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;P =&lt;/span&gt; P_gp, &lt;span class=&quot;dt&quot;&gt;R =&lt;/span&gt; R)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in mdp_check(P = P_gp, R = R): object &amp;#39;P_gp&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P_gp, R, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; discount, &lt;span class=&quot;dt&quot;&gt;epsilon =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.00001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0 =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states)))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in mdp_value_iteration(P_gp, R, discount = discount, epsilon = 1e-05, : object &amp;#39;P_gp&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;actions[gp$policy],  &lt;span class=&quot;dt&quot;&gt;xlab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Escapement&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in xy.coords(x, y, xlabel, ylabel, log): object &amp;#39;gp&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-14-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;reps =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(reps) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;simulate_policy&lt;/span&gt;(states,actions, gp$policy, f, z, &lt;span class=&quot;dt&quot;&gt;s0 =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;steps =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;20&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;utility =&lt;/span&gt; pmin, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; discount)[&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;time&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;state&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;utility&amp;quot;&lt;/span&gt;)]) -&amp;gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error: object &amp;#39;gp&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in mean(sims$utility): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;mean&amp;#39;: Error: object &amp;#39;sims&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims 
+
+&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 2.381047&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, state, &lt;span class=&quot;dt&quot;&gt;group =&lt;/span&gt; reps), &lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;darkblue&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot(sims): object &amp;#39;sims&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-16-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;p&gt;With this amount of data, the gp solution is too cautious, and avoids any exploitation.&lt;/p&gt;
 &lt;h4 id=&quot;simulate-under-the-true-model&quot;&gt;Simulate under the true model&lt;/h4&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;reps =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(reps) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;do&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;simulate_policy&lt;/span&gt;(states, actions, gp$policy, f, z, &lt;span class=&quot;dt&quot;&gt;s0 =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;100&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;steps =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;20&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;utility =&lt;/span&gt; pmin, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; discount)[&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;time&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;state&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;utility&amp;quot;&lt;/span&gt;)]) -&amp;gt;
-&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error: object &amp;#39;gp&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in mean(sims$utility): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;mean&amp;#39;: Error: object &amp;#39;sims&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims 
+
+&lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 2.417014&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;(Average utility is approximate here since it does not include penalty; since a function and not a matrix is requred by this function at this time.)&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, state, &lt;span class=&quot;dt&quot;&gt;group =&lt;/span&gt; reps), &lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;darkblue&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot(sims): object &amp;#39;sims&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-18-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;hr /&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;P &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;transition_matrix&lt;/span&gt;(states, actions, f, pdfn)
 &lt;span class=&quot;co&quot;&gt;#get_utility &amp;lt;- function(x,h) pmin(x,h)&lt;/span&gt;
@@ -267,7 +309,7 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;actions[mdp$policy],  &lt;span class=&quot;dt&quot;&gt;xlab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Escapement&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-25-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-21-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;p&gt;Note that the altered award structure has almost no effect on the optimal policy given the true model, other than to avoid harvesting directly to zero even when the stock cannot persist, due to the explicit penalty for doing so.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;reps =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -276,10 +318,10 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims 
 
 &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 9.38167&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 9.658696&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, state, &lt;span class=&quot;dt&quot;&gt;group =&lt;/span&gt; reps), &lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;darkblue&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-27-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-23-1.png&quot; /&gt;
 &lt;/figure&gt;
 </content>
  </entry>

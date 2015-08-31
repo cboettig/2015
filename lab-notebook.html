@@ -188,13 +188,64 @@ Cmcmc$<span class="kw">run</span>(<span class="dv">1000</span>)</code></pre>
         </div>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/08/03/a-drat-repository-for-ropensci.html">a drat repository for rOpenSci (draft for ropensci blog)</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 03 Aug 2015</p>
+
+<article>
+<div class="excerpt">
+<p>We’re happy to announce the launch of a CRAN-style repository for rOpenSci at <a href="http://packages.ropensci.org" class="uri">http://packages.ropensci.org</a></p>
+<p>This repository contains the latest nightly builds from the master branch of all rOpenSci packages currently on GitHub. This allows users to install development versions of our software without specialized functions such as <code>install_github()</code>, allows dependencies not hosted on CRAN to still be resolved automatically, and permits the use of <code>update.packages()</code>.</p>
+<h2 id="using-the-repository">Using the repository</h2>
+<p>To use, simply add <code>packages.ropensci.org</code> to your existing list of R repos, such as:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">repos =</span> <span class="kw">c</span>(<span class="st">&quot;http://packages.ropensci.org&quot;</span>, <span class="kw">getOption</span>(<span class="st">&quot;repos&quot;</span>))</code></pre>
+<p>(If you don’t have any default CRAN mirrors selected yet by <code>getOption(&quot;repos&quot;)</code>, you may want to add one now). You can also include this line in specific <code>install.packages()</code> requests:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;taxize&quot;</span>, <span class="dt">repos =</span> <span class="kw">c</span>(<span class="st">&quot;http://packages.ropensci.org&quot;</span>, <span class="st">&quot;http://cran.rstudio.com&quot;</span>))</code></pre>
+<h2 id="design">Design</h2>
+<p>Our goal in creating a CRAN-style package repository (yes, it’s confusing that we use the word “repository” to describe both an individual package source in a GitHub <em>repo</em> as well as a collection of package binaries on a CRAN-like <em>repo</em>… sorry) was to provide users with a way to install the latest development versions of rOpenSci packages that offerred an easier and more seamless alternative to the widely used method of <code>devtools::install_github()</code>. This would be particularly useful for updating all packages at once, or installing development versions that depended on other versions of packages not yet released to CRAN. As an added benefit, we also wanted a system that would allow us to compute anonmyzed download statistics, analogous to what RStudio provides for it’s CRAN mirror. Getting this all to work required the introduction of a few additional technologies.</p>
+<h3 id="drat-and-drat.builder"><code>drat</code> and <code>drat.builder</code></h3>
+<p>While the basic structure of a CRAN-like R repository is simple, used both platforms such as rForge as well as individual developers, kudos really goes to Dirk Eddelbuettel’s <a href="https://github.com/eddelbuettel/drat">drat</a> package for really making this automated, simple, and fun. While <code>drat</code> makes it easy to toss individual packages into a CRAN-like repo (which we often refer to as a <code>drat</code> repo), we needed an easy &amp; automatic way to add a whole list of packages, given their GitHub repos. Rich FitzJohn’s new <a href="https://github.com/richfitz/drat.builder">drat.builder</a> package does precisely this; handling the downloading of packages with some clever record-keeping to avoid building and adding packages which have not changed since the last time the <code>drat</code> repo was built. The sources for building the rOpenSci packages repository can be found in our “drat” GitHub repo: <a href="https://github.com/ropensci/drat" class="uri">https://github.com/ropensci/drat</a></p>
+<h3 id="dynamic-package-lists-ropkgs">Dynamic package lists: <code>ropkgs</code></h3>
+<p>With rOpenSci, we wanted to take this one step further. No one wants to have to maintain one more list that must be updated every time a package is successfully on-boarded to the project. Scott Chamberlain’s work with <a href="https://github.com/ropensci/ropkgs">ropkgs</a> provides a convenient way to query the rOpenSci software suite, automatically generating a list of available rOpenSci packages, and filtering them on relevant metadata, such as those that are in good status and installable condition, like so:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;ropkgs&quot;</span>)
+out &lt;-<span class="st"> </span><span class="kw">ro_pkgs</span>()
+good &lt;-<span class="st"> </span>out$packages$status ==<span class="st"> &quot;good&quot;</span>
+installable &lt;-<span class="st"> </span>out$packages$installable
+pkgs &lt;-<span class="st"> </span>out$packages$name[installable &amp;<span class="st"> </span>good]</code></pre>
+<h3 id="the-magic-of-continuous-integration-circleci">the magic of continuous integration: CircleCI</h3>
+<p>With <code>ropkgs</code>, <code>drat</code> and <code>drat.builder</code>, we now have everything we need to automate the building of the CRAN-like package repository. Now we just need some computing resource that can do the hard work of pulling down all the GitHub packages, building the repository, and securely sending off the binaries somewhere they can be downloaded. Continuous Integration systems turn out to be perfect for this. My favorite CI platform at the moment is <a href="https://circleci.com">CircleCi</a>, for several reasons particularly relevant here:</p>
+<ul>
+<li>it has a rich API which includes support for <code>POST</code> requests which can trigger a build without making commits to GitHub</li>
+<li>it supports custom Docker containers, allowing us to just download a container with most or all the dependencies we need to build packages, etc., without having to wait for them to install manually from source first.</li>
+<li>it has a convient web interface for providing secure credentials we’ll need to publish the binary repository to GitHub or Amazon.</li>
+</ul>
+<p>Circle has other advantages too, like great live help and the ability to ssh into your CI run to troubleshoot when all else fails, but otherwise works like most other CI platforms. More on that another day. You can see the daily builds here: <a href="https://circleci.com/gh/ropensci/drat/tree/gh-pages">CircleCi</a>, which are triggered by a simple <code>POST</code> request running as a cron job. The <a href="https://github.com/ropensci/drat/blob/gh-pages/circle.yml">circle.yml</a> configuration file appears in the project’s drat repo – check out how simple it is!</p>
+<h3 id="publishing-to-amazon">Publishing to Amazon</h3>
+<p>The last step would be getting download logs; which is somewhat more complicated than it sounds. <code>drat</code> convienently already handles pushing packages to GitHub’s gh-pages, a free and easy way to provide static hosting. This is free and easy, but isn’t ideal, particularly for large and frequently updated package collections. Also, it is impossible to get download logs from this approach. To avoid these issues, we settled on pushing our package repository to a static site hosted through Amazon’s S3 data storage “buckets.” It’s not free, but for at most a few gigs of space we’ll need it’s still very cost effective. In particular, S3 buckets can generate their own log files, which provides a way to count package downloads.</p>
+<p>Secure communication with Amazon S3 system is accomplished using the very nacsent / actively developing <a href="https://github.com/cloudyr/aws.s3">aws.s3</a> R package from the awesome <a href="https://cloudyr.github.io/">cloudyr</a> project.</p>
+<h3 id="parsing-the-download-logs">Parsing the download logs</h3>
+<p>Amazon’s S3 logs are rather raw and require some good ol data tidying work to transform them into the conveniently parsed, tidied and IP-address-anonymized format used by RStudio’s download logs. Eventually this too can be accomplished by the CircleCI builds, but at the moment is too computationally intensive for them. A script for this workflow can be found in the project repo, <a href="https://github.com/ropensci/drat/blob/gh-pages/parse_s3_logs.R">parse_s3_logs.R</a>. As the data accumulate we should be able to start publishing the tidy logs.</p>
+<p>This project is still in it’s early days, and as ever, we welcome feedback, problems or ideas on the <a href="https://github.com/ropensci/drat/issues">issues tracker</a>.</p>
+<p>Now go ahead and install or update some packages from the shiny new <a href="http://packages.ropensci.org" class="uri">http://packages.ropensci.org</a>!</p>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/08/03/a-drat-repository-for-ropensci.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/07/30/gpdp-via-mdptoolbox-cont.html">Gpdp Via Mdptoolbox Cont</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 30 Jul 2015</p>
 
 <article>
 <div class="excerpt">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#knitr::opts_chunk$set(eval=FALSE)</span>
+<pre class="sourceCode r"><code class="sourceCode r">knitr::opts_chunk$<span class="kw">set</span>(<span class="dt">comment=</span><span class="ot">NA</span>)
 <span class="co">#devtools::install_github(&quot;cboettig/gpmanagement@b3b765cbceb51c9b0b8cb2724e395353ec365df9&quot;)</span>
 <span class="kw">library</span>(<span class="st">&quot;MDPtoolbox&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;gpmanagement&quot;</span>)
@@ -243,46 +294,42 @@ priors &lt;-<span class="st"> </span><span class="kw">expression</span>({
   sigGP ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
   sigOE ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
 })</code></pre>
+<p>(Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).</p>
 <pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">gp_setup</span>(xObs, yObs, xPred)</code></pre>
 <pre><code>[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">Cmcmc &lt;-<span class="st"> </span>fit$Cmcmc 
-Cpred &lt;-<span class="st"> </span>fit$Cpred
-Cmodel &lt;-<span class="st"> </span>fit$Cmodel</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
+<span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 16.604   0.008  16.600 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">  samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
-  ## basic sanity check
-  testthat::<span class="kw">expect_identical</span>(Cmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>), <span class="kw">colnames</span>(samples))</code></pre>
-<p>predict from GP model using posterior MCMC samples</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
+ 22.281   0.020  22.326 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
+
+## Perform prediction
+<span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 22.036   0.000  22.021 </code></pre>
+ 28.450   0.005  28.496 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
+E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
+C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
+samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(samples)</code></pre>
 <p>Posteriors</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(Cmcmc$mvSamples))</code></pre>
-<pre><code>Error: Sextptr is not a valid external pointer</code></pre>
-<pre><code>Error in matrix(0.1, nrow = nrows, ncol = length(flatNames)): non-numeric matrix extent</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span>tidyr::<span class="kw">gather</span>(samples)</code></pre>
-<pre><code>Error in UseMethod(&quot;gather_&quot;): no applicable method for &#39;gather_&#39; applied to an object of class &quot;c(&#39;matrix&#39;, &#39;double&#39;, &#39;numeric&#39;)&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) +<span class="st"> </span>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span>tidyr::<span class="kw">gather</span>(samples)
+<span class="kw">ggplot</span>(df) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
-<pre><code>Error: ggplot2 doesn&#39;t know how to deal with data of class function</code></pre>
-<p>extract predictions: E and C</p>
-<pre class="sourceCode r"><code class="sourceCode r">  E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): attempt to apply non-function</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">  C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): attempt to apply non-function</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-7-1.png" />
+</figure>
 <pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xObs, <span class="dt">y =</span> yObs)
-pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))</code></pre>
-<pre><code>Error in data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + : object &#39;E&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
+pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))
+ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x,<span class="dt">y =</span> y, <span class="dt">ymin =</span> ymin, <span class="dt">ymax =</span> ymax), <span class="dt">fill =</span> <span class="st">&quot;grey80&quot;</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y), <span class="dt">size=</span><span class="dv">1</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> obs, <span class="kw">aes</span>(x,y)) +
 <span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">range</span>(<span class="kw">c</span>(xObs, xPred)), <span class="dt">ylim =</span> <span class="kw">range</span>(<span class="kw">c</span>(yObs,E))) +
 <span class="st">  </span><span class="kw">theme_bw</span>()</code></pre>
-<pre><code>Error in ggplot2::ggplot(pred): object &#39;pred&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png" />
+</figure>
 <hr />
 <h2 id="decision-theory">Decision theory</h2>
 <pre class="sourceCode r"><code class="sourceCode r">states &lt;-<span class="st"> </span>xPred <span class="co"># Vector of all possible states</span>
@@ -343,34 +390,39 @@ simulate_policy &lt;-<span class="st"> </span>function(states, actions, policy, 
 }
 
 P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, actions, E, C)</code></pre>
-<pre><code>Error in as.integer(x): cannot coerce type &#39;closure&#39; to vector of type &#39;integer&#39;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mdp_check</span>(<span class="dt">P =</span> P_gp, <span class="dt">R =</span> R)</code></pre>
-<pre><code>Error in mdp_check(P = P_gp, R = R): object &#39;P_gp&#39; not found</code></pre>
+<pre><code>[1] &quot;&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">gp &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P_gp, R, <span class="dt">discount =</span> discount, <span class="dt">epsilon =</span> <span class="fl">0.00001</span>, <span class="dt">max_iter =</span> <span class="fl">5e3</span>, <span class="dt">V0 =</span> <span class="kw">numeric</span>(<span class="kw">length</span>(states)))</code></pre>
-<pre><code>Error in mdp_value_iteration(P_gp, R, discount = discount, epsilon = 1e-05, : object &#39;P_gp&#39; not found</code></pre>
+<pre><code>[1] &quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>actions[gp$policy],  <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)</code></pre>
-<pre><code>Error in xy.coords(x, y, xlabel, ylabel, log): object &#39;gp&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-14-1.png" />
+</figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(reps) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">do</span>(<span class="kw">simulate_policy</span>(states,actions, gp$policy, f, z, <span class="dt">s0 =</span> <span class="dv">100</span>, <span class="dt">steps =</span> <span class="dv">20</span>, <span class="dt">utility =</span> pmin, <span class="dt">discount =</span> discount)[<span class="kw">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;state&quot;</span>, <span class="st">&quot;utility&quot;</span>)]) -&gt;
-<span class="st">  </span>sims </code></pre>
-<pre><code>Error: object &#39;gp&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>Error in mean(sims$utility): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;mean&#39;: Error: object &#39;sims&#39; not found</code></pre>
+<span class="st">  </span>sims 
+
+<span class="kw">mean</span>(sims$utility)</code></pre>
+<pre><code>[1] 2.381047</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
-<pre><code>Error in ggplot(sims): object &#39;sims&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-16-1.png" />
+</figure>
 <p>With this amount of data, the gp solution is too cautious, and avoids any exploitation.</p>
 <h4 id="simulate-under-the-true-model">Simulate under the true model</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(reps) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">do</span>(<span class="kw">simulate_policy</span>(states, actions, gp$policy, f, z, <span class="dt">s0 =</span> <span class="dv">100</span>, <span class="dt">steps =</span> <span class="dv">20</span>, <span class="dt">utility =</span> pmin, <span class="dt">discount =</span> discount)[<span class="kw">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;state&quot;</span>, <span class="st">&quot;utility&quot;</span>)]) -&gt;
-<span class="st">  </span>sims </code></pre>
-<pre><code>Error: object &#39;gp&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>Error in mean(sims$utility): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;mean&#39;: Error: object &#39;sims&#39; not found</code></pre>
+<span class="st">  </span>sims 
+
+<span class="kw">mean</span>(sims$utility)</code></pre>
+<pre><code>[1] 2.417014</code></pre>
 <p>(Average utility is approximate here since it does not include penalty; since a function and not a matrix is requred by this function at this time.)</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
-<pre><code>Error in ggplot(sims): object &#39;sims&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-18-1.png" />
+</figure>
 <hr />
 <pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">transition_matrix</span>(states, actions, f, pdfn)
 <span class="co">#get_utility &lt;- function(x,h) pmin(x,h)</span>
@@ -381,7 +433,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <pre><code>[1] &quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>actions[mdp$policy],  <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-25-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-21-1.png" />
 </figure>
 <p>Note that the altered award structure has almost no effect on the optimal policy given the true model, other than to avoid harvesting directly to zero even when the stock cannot persist, due to the explicit penalty for doing so.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
@@ -390,10 +442,10 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <span class="st">  </span>sims 
 
 <span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>[1] 9.38167</code></pre>
+<pre><code>[1] 9.658696</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-27-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-23-1.png" />
 </figure>
  
 <!-- not that raw_content depends on custom generator, 
@@ -405,6 +457,10 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/07/29/mdptoolbox-allen-model.html">Mdptoolbox Allen Model</a></h4></header>
@@ -512,10 +568,6 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/07/29/fastgp-explore.html">Fastgp Explore</a></h4></header>
@@ -767,6 +819,10 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/06/19/gp-nimble-v2.html">Gp Nimble V2</a></h4></header>
 <p><span></span></p>
@@ -841,10 +897,6 @@ ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/06/18/RAM-explore.html">Further exploration of RAM Legacy Stock Assessment data</a></h4></header>
@@ -1317,36 +1369,6 @@ C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/06/16/daniel-gp-example.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/06/03/lazy-evaluation-thoughts.html">Lazy Evaluation Thoughts</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 03 Jun 2015</p>
-
-<article>
-<div class="excerpt">
-<p>This is just a draft of my reply to Gavin’s <a href="http://www.fromthebottomoftheheap.net/2015/06/03/my-aversion-to-pipes/">thought-provoking post</a> pushing back on pipes and NSE in R.</p>
-<hr />
-<p>Gavin, really nice post and discussion here. I am still conflicted about some these issues myself.</p>
-<p>For me, the issues of NSE are somewhat separate and above my concern with pipes. I agree completely with your observation that intermediate assignment is easier to read than nested assignment, and not that much harder to read than a pipe chain. However I also agree with other commenters that not having to think about intermediate assignment variables is nice (e.g. I usually do something like replacing <code>the_data</code> with <code>tmp</code> or some such in each occurrence after the first in your example to make this more explicit). But for the most part I do not find the pipe syntax to be problematic in the same way that NSE is – indeed I can use the pipe operator with the SE versions of the same functions, or with any other SE R function.</p>
-<p>NSE to me is a whole different can of worms. It does make the syntax much more consise and more semantic, (even while it obfuscates what is a string, a numeric, or a variable). But this whole “don’t use it in programming” thing seems very impractical to me. When I first started R, I got the same advice – only it was for R itself – use it interactively, but for real programming write everything in C. Then maybe add some R wrappers on top. Um.. yeah, I actually did that for a few years… long ago. Most of the time I don’t even know if I’m programming or not. Sure, it’s easy to use the SE versions when working on some function you know will be part of an R package, but NSE has bitten me several times in various research scripts. Stupid things perhaps – where I have done things like changing a filter argument to a variable with the same name as a column (<code>filter(x == .5)</code> into a <code>filter(x == x)</code>) – but very difficult to debug since they do not throw errors.</p>
-<p>Nevertheless, both the performance and consise abstractions of common manipulation tasks make it hard to walk away from <code>dplyr</code> and friends. However, I find the syntax required to use the SE versions of the dplyr functions immensely cumbersome and opaque (e.g. http://www.carlboettiger.info/2015/02/06/fun-standardizing-non-standard-evaluation.html). Some of these can be written more concisely with a different SE syntax, but having 4 different ways to introduce a variable value, not all of which cover all the same cases, is even worse to me than just sticking with the most complex. No doubt I lack appreciation of the complexity here, but it seems like it should be possible to have a syntax that is nearly as consise as the NSE but where I can replace values with variables (e.g. <code>filter(&quot;Y&quot; == &quot;X&quot;)</code> to <code>filter(y == x)</code>) without needing something like</p>
-<pre class="sourceCode r"><code class="sourceCode r">dots &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(query), function(level){
-value &lt;-<span class="st"> </span>query[[level]]
-<span class="kw">interp</span>(~y ==<span class="st"> </span>x, 
-<span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">y =</span> <span class="kw">as.name</span>(level), <span class="dt">x =</span> value))
-})</code></pre>
-<p>Anyway, apologies for the rant – just trying to say I share your hesitation regarding NSE but pipes don’t bother me. (I do think lazy eval on pipes is a win btw – e.g. try testing out the same long pipe-string analysis on data coming from a remote database; say, just to check that the first 10 rows of output look right before evaluation the whole database)</p>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/06/03/lazy-evaluation-thoughts.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
