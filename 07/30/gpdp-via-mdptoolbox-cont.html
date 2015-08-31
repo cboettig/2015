@@ -162,13 +162,13 @@ priors &lt;-<span class="st"> </span><span class="kw">expression</span>({
 <pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
 <span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 22.281   0.020  22.326 </code></pre>
+ 17.112   0.024  17.122 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 <span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 28.450   0.005  28.496 </code></pre>
+ 22.192   0.000  22.176 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
 E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
 C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
@@ -266,7 +266,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <span class="st">  </span>sims 
 
 <span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>[1] 2.381047</code></pre>
+<pre><code>[1] 2.421142</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-16-1.png" />
@@ -279,7 +279,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <span class="st">  </span>sims 
 
 <span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>[1] 2.417014</code></pre>
+<pre><code>[1] 2.394725</code></pre>
 <p>(Average utility is approximate here since it does not include penalty; since a function and not a matrix is requred by this function at this time.)</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
 <figure>
@@ -304,7 +304,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <span class="st">  </span>sims 
 
 <span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>[1] 9.658696</code></pre>
+<pre><code>[1] 9.796826</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-23-1.png" />

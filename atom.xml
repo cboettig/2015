@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-08-31T17:18:42+00:00</updated>
+  <updated>2015-08-31T19:45:12+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -176,13 +176,13 @@ priors &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Fit the GP
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 22.281   0.020  22.326 &lt;/code&gt;&lt;/pre&gt;
+ 17.112   0.024  17.122 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 28.450   0.005  28.496 &lt;/code&gt;&lt;/pre&gt;
+ 22.192   0.000  22.176 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Extract variables for future use
 E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
 C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()
@@ -280,7 +280,7 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims 
 
 &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 2.381047&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 2.421142&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, state, &lt;span class=&quot;dt&quot;&gt;group =&lt;/span&gt; reps), &lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;darkblue&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-16-1.png&quot; /&gt;
@@ -293,7 +293,7 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims 
 
 &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 2.417014&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 2.394725&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;(Average utility is approximate here since it does not include penalty; since a function and not a matrix is requred by this function at this time.)&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, state, &lt;span class=&quot;dt&quot;&gt;group =&lt;/span&gt; reps), &lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;darkblue&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
@@ -318,7 +318,7 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims 
 
 &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 9.658696&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 9.796826&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, state, &lt;span class=&quot;dt&quot;&gt;group =&lt;/span&gt; reps), &lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;darkblue&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-23-1.png&quot; /&gt;
