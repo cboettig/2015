@@ -154,13 +154,17 @@ both uncertainty about population abundance and density dependence denoted by SS
 
 This is both clear and straight forward, we define each of the models as described.  Note that we define the models here in the notation of FKF:
 
-$$\alpha_{t+1} = d_t + T_t \alpha_t H_t \eta_t$$
+State transition equation: 
+
+$$\alpha_{t+1} = d_t + T_t \alpha_t + H_t \eta_t$$
+
+Observation:
 
 $$y_t = c_t + Z_t \alpha_t + G_t \eta_t$$
 
 
 
-Where 
+Which has the following correspondence with to the Gompertz model given before: 
 
 $$\begin{align*}
 c &\to& T_t \\
