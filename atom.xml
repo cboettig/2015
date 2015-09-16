@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-08-31T20:00:33+00:00</updated>
+  <updated>2015-09-16T07:32:16+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -2296,9 +2296,11 @@ df$logN[i] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span clas
 &lt;p&gt;Four variants of the model defined by (1) and (2) were fitted to each data set; a full model with both uncertainty about population abundance and density dependence denoted by SSG (state space Gompertz), a model with uncertainty about population abundance, but no density dependence (c fixed to one) denoted SSRW (state space random walk), a model with density dependence, but no uncertainty about population abundance (r2 fixed to zero) denoted G (Gompertz) and a model with neither uncertainty about population abundance nor density dependence (c fixed to one and r2 fixed to zero) denoted RW (random walk)&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;This is both clear and straight forward, we define each of the models as described. Note that we define the models here in the notation of FKF:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[\alpha_{t+1} = d_t + T_t \alpha_t H_t \eta_t\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;State transition equation:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[\alpha_{t+1} = d_t + T_t \alpha_t + H_t \eta_t\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Observation:&lt;/p&gt;
 &lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[y_t = c_t + Z_t \alpha_t + G_t \eta_t\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Where&lt;/p&gt;
+&lt;p&gt;Which has the following correspondence with to the Gompertz model given before:&lt;/p&gt;
 &lt;p&gt;&lt;span class=&quot;math&quot;&gt;\[\begin{align*}
 c &amp;amp;\to&amp;amp; T_t \\
 a &amp;amp;\to&amp;amp; d_t \\
