@@ -123,7 +123,7 @@
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;lazyeval&quot;</span>)</code></pre>
 <p>Can we declare the <code>nimbleCode</code> parts in sections? Such as defining the model and priors in separate, reusable code blocks? Here’s a “model” block:</p>
-<pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">expression</span>({
+<pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
   for (i in <span class="dv">1</span>:N){
     theta[i] ~<span class="st"> </span><span class="kw">dgamma</span>(alpha,beta)
     lambda[i] &lt;-<span class="st"> </span>theta[i]*t[i]
@@ -133,12 +133,12 @@
 <p>We may also wish to define the priors separately, and with specified list of hyperparameters for the priors. Perhaps the need to use <code>quote</code> and to specify each line as a list item, instead of as a block defined with <code>{</code>, is not ideal, but non-standard evaluation is a bit of a wild west still.</p>
 <pre class="sourceCode r"><code class="sourceCode r">hyperparameters &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="fl">1.0</span>, <span class="dt">a =</span> <span class="fl">0.1</span>, <span class="dt">b =</span> <span class="fl">1.0</span>)
 
-priors &lt;-<span class="st"> </span><span class="kw">list</span>(
-  <span class="kw">quote</span>(alpha ~<span class="st"> </span><span class="kw">dexp</span>(lambda)),
-  <span class="kw">quote</span>(beta ~<span class="st"> </span><span class="kw">dgamma</span>(a,b))
-)</code></pre>
+priors &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+  alpha ~<span class="st"> </span><span class="kw">dexp</span>(lambda)
+  beta ~<span class="st"> </span><span class="kw">dgamma</span>(a,b)
+})</code></pre>
 <p>Having done so, we can construct a <code>nimbleCode</code> block by passing our chosen hyperparameters to the priors and concatenating the model and priors.</p>
-<pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">as.expression</span>(<span class="kw">sapply</span>(priors, lazyeval::interp, <span class="dt">.values =</span> hyperparameters))
+<pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">as.expression</span>(<span class="kw">sapply</span>(priors, lazyeval::interp, <span class="dt">.values =</span> hyperparameters)[-<span class="dv">1</span>])
 pumpCode &lt;-<span class="st"> </span><span class="kw">c</span>(model, P)</code></pre>
 <p>The result appears to work as a functional <code>nimbleCode</code> block; though note the resulting expression is not quite identical to the one we would typically write (e.g. without commas):</p>
 <pre class="sourceCode r"><code class="sourceCode r">pumpCode</code></pre>
@@ -251,7 +251,8 @@ pkgs &lt;-<span class="st"> </span>out$packages$name[installable &amp;<span clas
 <span class="kw">library</span>(<span class="st">&quot;gpmanagement&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;tidyr&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)</code></pre>
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;lazyeval&quot;</span>)</code></pre>
 <h3 id="true-model">True model</h3>
 <pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">100</span>, <span class="dv">50</span>)
 f &lt;-<span class="st"> </span>function (x, h){
@@ -267,50 +268,60 @@ pdfn &lt;-<span class="st"> </span>function(x, mu, <span class="dt">sigma =</spa
 }
 
 z_g &lt;-<span class="st"> </span>function() <span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_g)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">  <span class="kw">set.seed</span>(<span class="dv">0</span>)
-  Tobs &lt;-<span class="st"> </span><span class="dv">40</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">0</span>)
+Tobs &lt;-<span class="st"> </span><span class="dv">40</span>
 
+W &lt;-<span class="st"> </span>Tobs
 
-  x &lt;-<span class="st"> </span><span class="kw">numeric</span>(Tobs)
-  x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">60</span>
-  for(t in <span class="dv">1</span>:(Tobs<span class="dv">-1</span>))
-    x[t<span class="dv">+1</span>] =<span class="st"> </span><span class="kw">z_g</span>() *<span class="st"> </span><span class="kw">f</span>(x[t], <span class="dt">h=</span><span class="dv">0</span>)
-  obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">0</span>, 
-                          <span class="kw">pmax</span>(<span class="kw">rep</span>(<span class="dv">0</span>,Tobs<span class="dv">-1</span>), x[<span class="dv">1</span>:(Tobs<span class="dv">-1</span>)])), 
-                    <span class="dt">y =</span> <span class="kw">c</span>(<span class="dv">0</span>, 
-                          x[<span class="dv">2</span>:Tobs]))
-  xObs &lt;-<span class="st"> </span>obs$x
-  yObs &lt;-<span class="st"> </span>obs$y
-  xPred &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">1.1</span> *<span class="st"> </span><span class="kw">max</span>(xObs), <span class="dt">length =</span> <span class="dv">50</span>)</code></pre>
+x &lt;-<span class="st"> </span><span class="kw">numeric</span>(Tobs)
+x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">60</span>
+for(t in <span class="dv">1</span>:(Tobs<span class="dv">-1</span>))
+  x[t<span class="dv">+1</span>] =<span class="st"> </span><span class="kw">z_g</span>() *<span class="st"> </span><span class="kw">f</span>(x[t], <span class="dt">h=</span><span class="dv">0</span>)
+obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span>, W), 
+                        <span class="kw">pmax</span>(<span class="kw">rep</span>(<span class="dv">0</span>,Tobs<span class="dv">-1</span>), x[<span class="dv">1</span>:(Tobs<span class="dv">-1</span>)])), 
+                  <span class="dt">y =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span>, W), 
+                        x[<span class="dv">2</span>:Tobs]))
+xObs &lt;-<span class="st"> </span>obs$x
+yObs &lt;-<span class="st"> </span>obs$y
+xPred &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">1.1</span> *<span class="st"> </span><span class="kw">max</span>(xObs), <span class="dt">length =</span> <span class="dv">50</span>)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(<span class="kw">seq_along</span>(x), x) +<span class="st"> </span><span class="kw">geom_line</span>()</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-4-1.png" />
 </figure>
 <hr />
-<p>Now the GP estimation from NIMBLE. Let’s emphasize shorter length-scales with the prior to compare:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># having this work with output from `nimbleCode` might be more natural than `expression`</span>
-priors &lt;-<span class="st"> </span><span class="kw">expression</span>({
-  rho ~<span class="st"> </span><span class="kw">dgamma</span>(<span class="dv">1</span>, <span class="dv">1</span>)
-  sigGP ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
-  sigOE ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
-})</code></pre>
+<p>Now the GP estimation from NIMBLE. Updated to compute the prior for the length scale using Daniel’s scaling argument.</p>
+<pre class="sourceCode r"><code class="sourceCode r"> priors_template &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+        rho ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, X)
+        sigGP ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
+        sigOE ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
+        })  
+
+nimbleCodeSub &lt;-<span class="st"> </span>function(code, .values){
+  <span class="kw">as.expression</span>(<span class="kw">sapply</span>(code, lazyeval::interp, <span class="dt">.values =</span> .values)[-<span class="dv">1</span>])
+}
+  
+priors &lt;-<span class="st"> </span><span class="kw">nimbleCodeSub</span>(priors_template, 
+                        <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">X =</span> <span class="kw">diff</span>(<span class="kw">range</span>(xObs))/(<span class="dv">2</span>*<span class="kw">sqrt</span>(<span class="dv">6</span>))) )</code></pre>
 <p>(Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).</p>
-<pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">gp_setup</span>(xObs, yObs, xPred)</code></pre>
-<pre><code>[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">gp_setup</span>(xObs, yObs, xPred, <span class="dt">priors =</span> priors)</code></pre>
+<pre><code>Error in collapsit(x): I can&#39;t collapse non-bracket expressions for you, dawg</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
 <span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
-<pre><code>   user  system elapsed 
- 17.112   0.024  17.122 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
-
-## Perform prediction
+<pre><code>Error in system.time(fit$Cmcmc$run(1e+05)): object &#39;fit&#39; not found</code></pre>
+<pre><code>Timing stopped at: 0 0 0 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)</code></pre>
+<pre><code>Error in as.matrix(fit$Cmcmc$mvSamples): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;as.matrix&#39;: Error: object &#39;fit&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Perform prediction
 <span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
-<pre><code>   user  system elapsed 
- 22.192   0.000  22.176 </code></pre>
+<pre><code>Error in system.time(fit$Cpred$run(samples)): object &#39;fit&#39; not found</code></pre>
+<pre><code>Timing stopped at: 0 0 0 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
-E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
-C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
-samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(samples)</code></pre>
+E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;fit&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()</code></pre>
+<pre><code>Error in eval(expr, envir, enclos): object &#39;fit&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(samples)</code></pre>
+<pre><code>Error in as.data.frame(samples): object &#39;samples&#39; not found</code></pre>
 <p>Posteriors</p>
 <pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span>tidyr::<span class="kw">gather</span>(samples)
 <span class="kw">ggplot</span>(df) +<span class="st"> </span>
@@ -320,16 +331,16 @@ samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(samp
 <img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-7-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xObs, <span class="dt">y =</span> yObs)
-pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))
-ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
+pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))</code></pre>
+<pre><code>Error in data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + : object &#39;E&#39; not found</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x,<span class="dt">y =</span> y, <span class="dt">ymin =</span> ymin, <span class="dt">ymax =</span> ymax), <span class="dt">fill =</span> <span class="st">&quot;grey80&quot;</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y), <span class="dt">size=</span><span class="dv">1</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> obs, <span class="kw">aes</span>(x,y)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> <span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">true =</span> <span class="kw">f</span>(xPred,<span class="dv">0</span>)), <span class="kw">aes</span>(x,true), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">range</span>(<span class="kw">c</span>(xObs, xPred)), <span class="dt">ylim =</span> <span class="kw">range</span>(<span class="kw">c</span>(yObs,E))) +
-<span class="st">  </span><span class="kw">theme_bw</span>()</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png" />
-</figure>
+<span class="st">  </span><span class="kw">theme_bw</span>() </code></pre>
+<pre><code>Error in ggplot2::ggplot(pred): object &#39;pred&#39; not found</code></pre>
 <hr />
 <h2 id="decision-theory">Decision theory</h2>
 <pre class="sourceCode r"><code class="sourceCode r">states &lt;-<span class="st"> </span>xPred <span class="co"># Vector of all possible states</span>
@@ -343,7 +354,7 @@ discount =<span class="st"> </span><span class="fl">0.99</span>
 
 R &lt;-<span class="st"> </span><span class="kw">sapply</span>(actions, function(h){
       <span class="kw">sapply</span>(states, function(x){
-  if(h &lt;<span class="st"> </span>x)
+  if(h &lt;<span class="st"> </span><span class="fl">0.95</span> *<span class="st"> </span>x)
     h
   else 
      -<span class="st"> </span><span class="dv">1</span> *<span class="st"> </span><span class="kw">max</span>(states)
@@ -409,7 +420,6 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <figure>
 <img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-16-1.png" />
 </figure>
-<p>With this amount of data, the gp solution is too cautious, and avoids any exploitation.</p>
 <h4 id="simulate-under-the-true-model">Simulate under the true model</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(reps) %&gt;%<span class="st"> </span>
@@ -424,6 +434,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-18-1.png" />
 </figure>
 <hr />
+<h3 id="comparison-to-true-model">Comparison to true model</h3>
 <pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">transition_matrix</span>(states, actions, f, pdfn)
 <span class="co">#get_utility &lt;- function(x,h) pmin(x,h)</span>
 <span class="co">#R &lt;- outer(states, actions, get_utility)</span></code></pre>

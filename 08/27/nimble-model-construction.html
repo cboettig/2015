@@ -110,7 +110,7 @@
     <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
 <span class="kw">library</span>(<span class="st">&quot;lazyeval&quot;</span>)</code></pre>
 <p>Can we declare the <code>nimbleCode</code> parts in sections? Such as defining the model and priors in separate, reusable code blocks? Here’s a “model” block:</p>
-<pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">expression</span>({
+<pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
   for (i in <span class="dv">1</span>:N){
     theta[i] ~<span class="st"> </span><span class="kw">dgamma</span>(alpha,beta)
     lambda[i] &lt;-<span class="st"> </span>theta[i]*t[i]
@@ -120,12 +120,12 @@
 <p>We may also wish to define the priors separately, and with specified list of hyperparameters for the priors. Perhaps the need to use <code>quote</code> and to specify each line as a list item, instead of as a block defined with <code>{</code>, is not ideal, but non-standard evaluation is a bit of a wild west still.</p>
 <pre class="sourceCode r"><code class="sourceCode r">hyperparameters &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="fl">1.0</span>, <span class="dt">a =</span> <span class="fl">0.1</span>, <span class="dt">b =</span> <span class="fl">1.0</span>)
 
-priors &lt;-<span class="st"> </span><span class="kw">list</span>(
-  <span class="kw">quote</span>(alpha ~<span class="st"> </span><span class="kw">dexp</span>(lambda)),
-  <span class="kw">quote</span>(beta ~<span class="st"> </span><span class="kw">dgamma</span>(a,b))
-)</code></pre>
+priors &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
+  alpha ~<span class="st"> </span><span class="kw">dexp</span>(lambda)
+  beta ~<span class="st"> </span><span class="kw">dgamma</span>(a,b)
+})</code></pre>
 <p>Having done so, we can construct a <code>nimbleCode</code> block by passing our chosen hyperparameters to the priors and concatenating the model and priors.</p>
-<pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">as.expression</span>(<span class="kw">sapply</span>(priors, lazyeval::interp, <span class="dt">.values =</span> hyperparameters))
+<pre class="sourceCode r"><code class="sourceCode r">P &lt;-<span class="st"> </span><span class="kw">as.expression</span>(<span class="kw">sapply</span>(priors, lazyeval::interp, <span class="dt">.values =</span> hyperparameters)[-<span class="dv">1</span>])
 pumpCode &lt;-<span class="st"> </span><span class="kw">c</span>(model, P)</code></pre>
 <p>The result appears to work as a functional <code>nimbleCode</code> block; though note the resulting expression is not quite identical to the one we would typically write (e.g. without commas):</p>
 <pre class="sourceCode r"><code class="sourceCode r">pumpCode</code></pre>
@@ -212,7 +212,7 @@ Cmcmc$<span class="kw">run</span>(<span class="dv">1000</span>)</code></pre>
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/312fd6dfccd92df0dee685b76a4c9a6bfb126d8f/_posts/2015-08-27-nimble-model-construction.Rmd"> 312fd6dfccd92df0dee685b76a4c9a6bfb126d8f</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/f7fca77660de61949a13d6511694dc0b204b6194/_posts/2015-08-27-nimble-model-construction.Rmd"> f7fca77660de61949a13d6511694dc0b204b6194</a></small></p>
     
   <br/>
   
