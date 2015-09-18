@@ -16,7 +16,7 @@ library("lazyeval")
 Can we declare the `nimbleCode` parts in sections? Such as defining the model and priors in separate, reusable code blocks? Here's a "model" block:
 
 ```{r}
-model <- expression({
+model <- nimbleCode({
   for (i in 1:N){
     theta[i] ~ dgamma(alpha,beta)
     lambda[i] <- theta[i]*t[i]
@@ -31,17 +31,17 @@ We may also wish to define the priors separately, and with specified list of hyp
 ```{r}
 hyperparameters <- list(lambda = 1.0, a = 0.1, b = 1.0)
 
-priors <- list(
-  quote(alpha ~ dexp(lambda)),
-  quote(beta ~ dgamma(a,b))
-)
+priors <- nimbleCode({
+  alpha ~ dexp(lambda)
+  beta ~ dgamma(a,b)
+})
 
 ```
 
 Having done so, we can construct a `nimbleCode` block by passing our chosen hyperparameters to the priors and concatenating the model and priors.  
 
 ```{r}
-P <- as.expression(sapply(priors, lazyeval::interp, .values = hyperparameters))
+P <- as.expression(sapply(priors, lazyeval::interp, .values = hyperparameters)[-1])
 pumpCode <- c(model, P)
 ```
 

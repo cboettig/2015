@@ -17,6 +17,7 @@ library("gpmanagement")
 library("tidyr")
 library("dplyr")
 library("ggplot2")
+library("lazyeval")
 ```
 
 
@@ -46,21 +47,22 @@ z_g <- function() rlnorm(1, 0, sigma_g)
 
 
 ```{r}  
-  set.seed(0)
-  Tobs <- 40
+set.seed(0)
+Tobs <- 40
 
+W <- Tobs
 
-  x <- numeric(Tobs)
-  x[1] <- 60
-  for(t in 1:(Tobs-1))
-    x[t+1] = z_g() * f(x[t], h=0)
-  obs <- data.frame(x = c(0, 
-                          pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
-                    y = c(0, 
-                          x[2:Tobs]))
-  xObs <- obs$x
-  yObs <- obs$y
-  xPred <- seq(0, 1.1 * max(xObs), length = 50)
+x <- numeric(Tobs)
+x[1] <- 60
+for(t in 1:(Tobs-1))
+  x[t+1] = z_g() * f(x[t], h=0)
+obs <- data.frame(x = c(rep(0, W), 
+                        pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
+                  y = c(rep(0, W), 
+                        x[2:Tobs]))
+xObs <- obs$x
+yObs <- obs$y
+xPred <- seq(0, 1.1 * max(xObs), length = 50)
 ```
 
 ```{r}
@@ -71,22 +73,30 @@ qplot(seq_along(x), x) + geom_line()
 
 -------------------------------------------------
 
-Now the GP estimation from NIMBLE.  Let's emphasize shorter length-scales with the prior to compare:
+Now the GP estimation from NIMBLE.  Updated to compute the prior for the length scale using Daniel's scaling argument.  
+
 
 ```{r}
-# having this work with output from `nimbleCode` might be more natural than `expression`
-priors <- expression({
-  rho ~ dgamma(1, 1)
-  sigGP ~ dunif(0, 1e5)
-  sigOE ~ dunif(0, 1e5)
-})
+ priors_template <- nimbleCode({
+        rho ~ dunif(0, X)
+        sigGP ~ dunif(0, 1e5)
+        sigOE ~ dunif(0, 1e5)
+        })  
 
+nimbleCodeSub <- function(code, .values){
+  as.expression(sapply(code, lazyeval::interp, .values = .values)[-1])
+}
+  
+priors <- nimbleCodeSub(priors_template, 
+                        .values = list(X = diff(range(xObs))/(2*sqrt(6))) )
 ```
+
 
 (Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).
 
+
 ```{r}
-fit <- gp_setup(xObs, yObs, xPred)
+fit <- gp_setup(xObs, yObs, xPred, priors = priors)
 
 ## Fit the GP
 system.time(fit$Cmcmc$run(100000))
@@ -121,8 +131,9 @@ ggplot2::ggplot(pred) +
   geom_ribbon(aes(x = x,y = y, ymin = ymin, ymax = ymax), fill = "grey80") +
   geom_line(aes(x = x, y = y), size=1) + 
   geom_point(data = obs, aes(x,y)) +
+  geom_line(data = data.frame(x = xPred, true = f(xPred,0)), aes(x,true), col="red") + 
   coord_cartesian(xlim = range(c(xObs, xPred)), ylim = range(c(yObs,E))) +
-  theme_bw()
+  theme_bw() 
 
 ```
 
@@ -150,7 +161,7 @@ discount = 0.99
 
 R <- sapply(actions, function(h){
       sapply(states, function(x){
-  if(h < x)
+  if(h < 0.95 * x)
     h
   else 
 	 - 1 * max(states)
@@ -251,7 +262,6 @@ ggplot(sims) + geom_line(aes(time, state, group = reps), alpha = 0.3, col = "dar
 
 
 
-With this amount of data, the gp solution is too cautious, and avoids any exploitation.
 
 
 
@@ -276,6 +286,8 @@ ggplot(sims) + geom_line(aes(time, state, group = reps), alpha = 0.3, col = "dar
 
 
 ------------
+
+### Comparison to true model
 
 
 ```{r}
