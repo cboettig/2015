@@ -32,6 +32,9 @@ RUN apt-get update && apt-get -y install r-cran-rjags \
     ropensci/rfishbase \
     cloudyr/aws.signature \
     cloudyr/aws.s3 \
+    ropensci/RNeXML \
+    richfitz/drat.builder \
+    ropensci/ropkgs \
   && rm -rf /tmp/downloaded_packages
 
 
