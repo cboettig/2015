@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-09-18T07:51:21+00:00</updated>
+  <updated>2015-09-23T17:16:07+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -179,25 +179,22 @@ nimbleCodeSub &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(c
 priors &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCodeSub&lt;/span&gt;(priors_template, 
                         &lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;X =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;diff&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(xObs))/(&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;))) )&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;(Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_setup&lt;/span&gt;(xObs, yObs, xPred, &lt;span class=&quot;dt&quot;&gt;priors =&lt;/span&gt; priors)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in collapsit(x): I can&amp;#39;t collapse non-bracket expressions for you, dawg&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Fit the GP
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_setup&lt;/span&gt;(xObs, yObs, xPred, &lt;span class=&quot;dt&quot;&gt;priors =&lt;/span&gt; priors)
+
+## Fit the GP
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in system.time(fit$Cmcmc$run(1e+05)): object &amp;#39;fit&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Timing stopped at: 0 0 0 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(fit$Cmcmc$mvSamples)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in as.matrix(fit$Cmcmc$mvSamples): error in evaluating the argument &amp;#39;x&amp;#39; in selecting a method for function &amp;#39;as.matrix&amp;#39;: Error: object &amp;#39;fit&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Perform prediction
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+ 53.882   0.035  53.989 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(fit$Cmcmc$mvSamples)
+
+## Perform prediction
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in system.time(fit$Cpred$run(samples)): object &amp;#39;fit&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Timing stopped at: 0 0 0 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;   user  system elapsed 
+ 81.951   0.024  82.063 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Extract variables for future use
-E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;fit&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in eval(expr, envir, enclos): object &amp;#39;fit&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in as.data.frame(samples): object &amp;#39;samples&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
+C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()
+samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.data.frame&lt;/span&gt;(samples)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Posteriors&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;tidyr::&lt;span class=&quot;kw&quot;&gt;gather&lt;/span&gt;(samples)
 &lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(df) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -207,16 +204,17 @@ E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span cla
 &lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-7-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xObs, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; yObs)
-pred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xPred, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; E, &lt;span class=&quot;dt&quot;&gt;ymin =&lt;/span&gt; E -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)), &lt;span class=&quot;dt&quot;&gt;ymax =&lt;/span&gt; E +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + : object &amp;#39;E&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;ggplot2::&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(pred) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+pred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xPred, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; E, &lt;span class=&quot;dt&quot;&gt;ymin =&lt;/span&gt; E -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)), &lt;span class=&quot;dt&quot;&gt;ymax =&lt;/span&gt; E +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)))
+ggplot2::&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(pred) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_ribbon&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; x,&lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; y, &lt;span class=&quot;dt&quot;&gt;ymin =&lt;/span&gt; ymin, &lt;span class=&quot;dt&quot;&gt;ymax =&lt;/span&gt; ymax), &lt;span class=&quot;dt&quot;&gt;fill =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;grey80&amp;quot;&lt;/span&gt;) +
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; x, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; y), &lt;span class=&quot;dt&quot;&gt;size=&lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; obs, &lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(x,y)) +
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;data =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xPred, &lt;span class=&quot;dt&quot;&gt;true =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;f&lt;/span&gt;(xPred,&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;)), &lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(x,true), &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;red&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;coord_cartesian&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;xlim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(xObs, xPred)), &lt;span class=&quot;dt&quot;&gt;ylim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(yObs,E))) +
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;theme_bw&lt;/span&gt;() &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error in ggplot2::ggplot(pred): object &amp;#39;pred&amp;#39; not found&lt;/code&gt;&lt;/pre&gt;
+&lt;figure&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png&quot; /&gt;
+&lt;/figure&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;decision-theory&quot;&gt;Decision theory&lt;/h2&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;states &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;xPred &lt;span class=&quot;co&quot;&gt;# Vector of all possible states&lt;/span&gt;

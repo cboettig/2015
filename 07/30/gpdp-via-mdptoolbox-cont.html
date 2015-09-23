@@ -165,25 +165,22 @@ nimbleCodeSub &lt;-<span class="st"> </span>function(code, .values){
 priors &lt;-<span class="st"> </span><span class="kw">nimbleCodeSub</span>(priors_template, 
                         <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">X =</span> <span class="kw">diff</span>(<span class="kw">range</span>(xObs))/(<span class="dv">2</span>*<span class="kw">sqrt</span>(<span class="dv">6</span>))) )</code></pre>
 <p>(Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).</p>
-<pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">gp_setup</span>(xObs, yObs, xPred, <span class="dt">priors =</span> priors)</code></pre>
-<pre><code>Error in collapsit(x): I can&#39;t collapse non-bracket expressions for you, dawg</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
+<pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">gp_setup</span>(xObs, yObs, xPred, <span class="dt">priors =</span> priors)
+
+## Fit the GP
 <span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
-<pre><code>Error in system.time(fit$Cmcmc$run(1e+05)): object &#39;fit&#39; not found</code></pre>
-<pre><code>Timing stopped at: 0 0 0 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)</code></pre>
-<pre><code>Error in as.matrix(fit$Cmcmc$mvSamples): error in evaluating the argument &#39;x&#39; in selecting a method for function &#39;as.matrix&#39;: Error: object &#39;fit&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">## Perform prediction
+<pre><code>   user  system elapsed 
+ 53.882   0.035  53.989 </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
+
+## Perform prediction
 <span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
-<pre><code>Error in system.time(fit$Cpred$run(samples)): object &#39;fit&#39; not found</code></pre>
-<pre><code>Timing stopped at: 0 0 0 </code></pre>
+<pre><code>   user  system elapsed 
+ 81.951   0.024  82.063 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
-E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;fit&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()</code></pre>
-<pre><code>Error in eval(expr, envir, enclos): object &#39;fit&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(samples)</code></pre>
-<pre><code>Error in as.data.frame(samples): object &#39;samples&#39; not found</code></pre>
+E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
+C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
+samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(samples)</code></pre>
 <p>Posteriors</p>
 <pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span>tidyr::<span class="kw">gather</span>(samples)
 <span class="kw">ggplot</span>(df) +<span class="st"> </span>
@@ -193,16 +190,17 @@ E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()</code><
 <img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-7-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xObs, <span class="dt">y =</span> yObs)
-pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))</code></pre>
-<pre><code>Error in data.frame(x = xPred, y = E, ymin = E - sqrt(diag(C)), ymax = E + : object &#39;E&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
+pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))
+ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x,<span class="dt">y =</span> y, <span class="dt">ymin =</span> ymin, <span class="dt">ymax =</span> ymax), <span class="dt">fill =</span> <span class="st">&quot;grey80&quot;</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y), <span class="dt">size=</span><span class="dv">1</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> obs, <span class="kw">aes</span>(x,y)) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> <span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">true =</span> <span class="kw">f</span>(xPred,<span class="dv">0</span>)), <span class="kw">aes</span>(x,true), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">range</span>(<span class="kw">c</span>(xObs, xPred)), <span class="dt">ylim =</span> <span class="kw">range</span>(<span class="kw">c</span>(yObs,E))) +
 <span class="st">  </span><span class="kw">theme_bw</span>() </code></pre>
-<pre><code>Error in ggplot2::ggplot(pred): object &#39;pred&#39; not found</code></pre>
+<figure>
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png" />
+</figure>
 <hr />
 <h2 id="decision-theory">Decision theory</h2>
 <pre class="sourceCode r"><code class="sourceCode r">states &lt;-<span class="st"> </span>xPred <span class="co"># Vector of all possible states</span>
