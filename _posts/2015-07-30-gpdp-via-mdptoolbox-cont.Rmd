@@ -62,14 +62,17 @@ obs <- data.frame(x = c(rep(0, W),
                         x[2:Tobs]))
 xObs <- obs$x
 yObs <- obs$y
-xPred <- seq(0, 1.1 * max(xObs), length = 50)
+xPred <- seq(0, max(xObs), length = 50)
 ```
 
 ```{r}
 qplot(seq_along(x), x) + geom_line()
 ```
 
-
+```{r}
+xObs <- rep(0,5)
+yObs <- rep(0,5)
+```
 
 -------------------------------------------------
 
@@ -240,7 +243,8 @@ gp <- mdp_value_iteration(P_gp, R, discount = discount, epsilon = 0.00001, max_i
 
 
 ```{r}
-plot(states, states - actions[gp$policy],  xlab="Population size", ylab="Escapement")
+ggplot(data.frame(stock = states, escapement = states - actions[gp$policy])) +
+  geom_point(aes(stock, escapement)) + xlab("Population size") + ylab("Escapement")
 ```
 
 
@@ -306,7 +310,12 @@ mdp <- mdp_value_iteration(P, R, discount = discount, epsilon = 0.001, max_iter 
 
 
 ```{r}
-plot(states, states - actions[mdp$policy],  xlab="Population size", ylab="Escapement")
+ggplot(data.frame(stock = states, 
+                  escapement = states - actions[gp$policy], 
+                  optimal_escapement = states - actions[mdp$policy])) +
+  geom_point(aes(stock, escapement)) + 
+  geom_point(aes(stock, optimal_escapement), col="red", alpha=.4) + 
+  xlab("Population size") + ylab("Escapement")
 ```
 
 
