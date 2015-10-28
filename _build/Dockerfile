@@ -2,7 +2,7 @@ FROM cboettig/labnotebook
 MAINTAINER Carl Boettiger cboettig@ropensci.org 
 
 ## Install additional R package dependencies ###
-RUN apt-get update && apt-get -y install r-cran-rjags \
+RUN apt-get update && apt-get -y install -t unstable r-cran-rjags \
   && install2.r --error -r http://cran.rstudio.com \
      FKF \
      dlm \
@@ -17,6 +17,9 @@ RUN apt-get update && apt-get -y install r-cran-rjags \
      bbmle \
      nlstools \
      drc \
+     RNeXML \
+     geiger \
+     phytools \
   && installGithub.r \
     yihui/servr \ 
     cboettig/earlywarning \
@@ -35,8 +38,10 @@ RUN apt-get update && apt-get -y install r-cran-rjags \
     ropensci/RNeXML \
     richfitz/drat.builder \
     ropensci/ropkgs \
+  && install2.r --repo http://packages.ropensci.org --error \
+    rrdf \
+    Sxslt \
   && rm -rf /tmp/downloaded_packages
-
 
 # break cache first
 COPY Dockerfile /tmp/Dockerfile
