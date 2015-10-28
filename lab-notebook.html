@@ -283,11 +283,13 @@ obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class
                         x[<span class="dv">2</span>:Tobs]))
 xObs &lt;-<span class="st"> </span>obs$x
 yObs &lt;-<span class="st"> </span>obs$y
-xPred &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">1.1</span> *<span class="st"> </span><span class="kw">max</span>(xObs), <span class="dt">length =</span> <span class="dv">50</span>)</code></pre>
+xPred &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="kw">max</span>(xObs), <span class="dt">length =</span> <span class="dv">50</span>)</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(<span class="kw">seq_along</span>(x), x) +<span class="st"> </span><span class="kw">geom_line</span>()</code></pre>
 <figure>
 <img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-4-1.png" />
 </figure>
+<pre class="sourceCode r"><code class="sourceCode r">xObs &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>,<span class="dv">5</span>)
+yObs &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>,<span class="dv">5</span>)</code></pre>
 <hr />
 <p>Now the GP estimation from NIMBLE. Updated to compute the prior for the length scale using Daniel’s scaling argument.</p>
 <pre class="sourceCode r"><code class="sourceCode r"> priors_template &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
@@ -303,18 +305,18 @@ nimbleCodeSub &lt;-<span class="st"> </span>function(code, .values){
 priors &lt;-<span class="st"> </span><span class="kw">nimbleCodeSub</span>(priors_template, 
                         <span class="dt">.values =</span> <span class="kw">list</span>(<span class="dt">X =</span> <span class="kw">diff</span>(<span class="kw">range</span>(xObs))/(<span class="dv">2</span>*<span class="kw">sqrt</span>(<span class="dv">6</span>))) )</code></pre>
 <p>(Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).</p>
-<pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">gp_setup</span>(xObs, yObs, xPred, <span class="dt">priors =</span> priors)
-
-## Fit the GP
+<pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">gp_setup</span>(xObs, yObs, xPred, <span class="dt">priors =</span> priors)</code></pre>
+<pre><code>NaNs were detected in model variable: logProb_rho.</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
 <span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
- 56.867   0.030  56.945 </code></pre>
+  7.627   0.008   7.641 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 <span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
- 86.278   0.010  86.502 </code></pre>
+  7.769   0.000   7.776 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
 E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
 C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
@@ -325,7 +327,7 @@ samples &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(samp
 <span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(value)) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(~key, <span class="dt">scale=</span><span class="st">&#39;free&#39;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-7-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r">obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xObs, <span class="dt">y =</span> yObs)
 pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))
@@ -337,7 +339,7 @@ ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">range</span>(<span class="kw">c</span>(xObs, xPred)), <span class="dt">ylim =</span> <span class="kw">range</span>(<span class="kw">c</span>(yObs,E))) +
 <span class="st">  </span><span class="kw">theme_bw</span>() </code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-9-1.png" />
 </figure>
 <hr />
 <h2 id="decision-theory">Decision theory</h2>
@@ -403,9 +405,10 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <pre><code>[1] &quot;&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">gp &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P_gp, R, <span class="dt">discount =</span> discount, <span class="dt">epsilon =</span> <span class="fl">0.00001</span>, <span class="dt">max_iter =</span> <span class="fl">5e3</span>, <span class="dt">V0 =</span> <span class="kw">numeric</span>(<span class="kw">length</span>(states)))</code></pre>
 <pre><code>[1] &quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>actions[gp$policy],  <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">data.frame</span>(<span class="dt">stock =</span> states, <span class="dt">escapement =</span> states -<span class="st"> </span>actions[gp$policy])) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(stock, escapement)) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Population size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Escapement&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-14-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-15-1.png" />
 </figure>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(reps) %&gt;%<span class="st"> </span>
@@ -413,10 +416,10 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <span class="st">  </span>sims 
 
 <span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>[1] 2.421142</code></pre>
+<pre><code>[1] 4.751511</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-16-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-17-1.png" />
 </figure>
 <h4 id="simulate-under-the-true-model">Simulate under the true model</h4>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
@@ -425,11 +428,11 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <span class="st">  </span>sims 
 
 <span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>[1] 2.394725</code></pre>
+<pre><code>[1] 4.751511</code></pre>
 <p>(Average utility is approximate here since it does not include penalty; since a function and not a matrix is requred by this function at this time.)</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-18-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-19-1.png" />
 </figure>
 <hr />
 <h3 id="comparison-to-true-model">Comparison to true model</h3>
@@ -440,9 +443,14 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <pre><code>[1] &quot;&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">mdp &lt;-<span class="st"> </span><span class="kw">mdp_value_iteration</span>(P, R, <span class="dt">discount =</span> discount, <span class="dt">epsilon =</span> <span class="fl">0.001</span>, <span class="dt">max_iter =</span> <span class="fl">5e3</span>, <span class="dt">V0 =</span> <span class="kw">numeric</span>(<span class="kw">length</span>(states)))</code></pre>
 <pre><code>[1] &quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(states, states -<span class="st"> </span>actions[mdp$policy],  <span class="dt">xlab=</span><span class="st">&quot;Population size&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Escapement&quot;</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">data.frame</span>(<span class="dt">stock =</span> states, 
+                  <span class="dt">escapement =</span> states -<span class="st"> </span>actions[gp$policy], 
+                  <span class="dt">optimal_escapement =</span> states -<span class="st"> </span>actions[mdp$policy])) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(stock, escapement)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(stock, optimal_escapement), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">alpha=</span>.<span class="dv">4</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Population size&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Escapement&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-21-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-22-1.png" />
 </figure>
 <p>Note that the altered award structure has almost no effect on the optimal policy given the true model, other than to avoid harvesting directly to zero even when the stock cannot persist, due to the explicit penalty for doing so.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data.frame</span>(<span class="dt">reps =</span> <span class="dv">1</span>:<span class="dv">50</span>) %&gt;%<span class="st"> </span>
@@ -451,10 +459,10 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 <span class="st">  </span>sims 
 
 <span class="kw">mean</span>(sims$utility)</code></pre>
-<pre><code>[1] 9.796826</code></pre>
+<pre><code>[1] 10.19602</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sims) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(time, state, <span class="dt">group =</span> reps), <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">col =</span> <span class="st">&quot;darkblue&quot;</span>)</code></pre>
 <figure>
-<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-23-1.png" />
+<img src="/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-24-1.png" />
 </figure>
  
 <!-- not that raw_content depends on custom generator, 

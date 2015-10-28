@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-10-28T05:13:35+00:00</updated>
+  <updated>2015-10-28T21:40:37+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -159,11 +159,13 @@ obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot
                         x[&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;:Tobs]))
 xObs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;obs$x
 yObs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;obs$y
-xPred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;fl&quot;&gt;1.1&lt;/span&gt; *&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;max&lt;/span&gt;(xObs), &lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+xPred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;seq&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;, &lt;span class=&quot;kw&quot;&gt;max&lt;/span&gt;(xObs), &lt;span class=&quot;dt&quot;&gt;length =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;qplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;seq_along&lt;/span&gt;(x), x) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;()&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
 &lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-4-1.png&quot; /&gt;
 &lt;/figure&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;xObs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;)
+yObs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;rep&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;,&lt;span class=&quot;dv&quot;&gt;5&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 &lt;p&gt;Now the GP estimation from NIMBLE. Updated to compute the prior for the length scale using Daniel’s scaling argument.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt; priors_template &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCode&lt;/span&gt;({
@@ -179,18 +181,18 @@ nimbleCodeSub &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(c
 priors &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;nimbleCodeSub&lt;/span&gt;(priors_template, 
                         &lt;span class=&quot;dt&quot;&gt;.values =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;X =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;diff&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(xObs))/(&lt;span class=&quot;dv&quot;&gt;2&lt;/span&gt;*&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;6&lt;/span&gt;))) )&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;(Note that at this time all nimble run calls must be made in one block since we cannot cache nimble pointers).&lt;/p&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_setup&lt;/span&gt;(xObs, yObs, xPred, &lt;span class=&quot;dt&quot;&gt;priors =&lt;/span&gt; priors)
-
-## Fit the GP
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;fit &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;gp_setup&lt;/span&gt;(xObs, yObs, xPred, &lt;span class=&quot;dt&quot;&gt;priors =&lt;/span&gt; priors)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;NaNs were detected in model variable: logProb_rho.&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Fit the GP
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 56.867   0.030  56.945 &lt;/code&gt;&lt;/pre&gt;
+  7.627   0.008   7.641 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
- 86.278   0.010  86.502 &lt;/code&gt;&lt;/pre&gt;
+  7.769   0.000   7.776 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Extract variables for future use
 E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
 C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()
@@ -201,7 +203,7 @@ samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_density&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(value)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;facet_wrap&lt;/span&gt;(~key, &lt;span class=&quot;dt&quot;&gt;scale=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;#39;free&amp;#39;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-7-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;obs &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xObs, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; yObs)
 pred &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;x =&lt;/span&gt; xPred, &lt;span class=&quot;dt&quot;&gt;y =&lt;/span&gt; E, &lt;span class=&quot;dt&quot;&gt;ymin =&lt;/span&gt; E -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)), &lt;span class=&quot;dt&quot;&gt;ymax =&lt;/span&gt; E +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;sqrt&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;diag&lt;/span&gt;(C)))
@@ -213,7 +215,7 @@ ggplot2::&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(pred) +&lt;span cl
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;coord_cartesian&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;xlim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(xObs, xPred)), &lt;span class=&quot;dt&quot;&gt;ylim =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;range&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;c&lt;/span&gt;(yObs,E))) +
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;theme_bw&lt;/span&gt;() &lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-8-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-9-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;h2 id=&quot;decision-theory&quot;&gt;Decision theory&lt;/h2&gt;
@@ -279,9 +281,10 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;pre&gt;&lt;code&gt;[1] &amp;quot;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P_gp, R, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; discount, &lt;span class=&quot;dt&quot;&gt;epsilon =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.00001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0 =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states)))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;actions[gp$policy],  &lt;span class=&quot;dt&quot;&gt;xlab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Escapement&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;stock =&lt;/span&gt; states, &lt;span class=&quot;dt&quot;&gt;escapement =&lt;/span&gt; states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;actions[gp$policy])) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(stock, escapement)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ylab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Escapement&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-14-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-15-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;reps =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;group_by&lt;/span&gt;(reps) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -289,10 +292,10 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims 
 
 &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 2.421142&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 4.751511&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, state, &lt;span class=&quot;dt&quot;&gt;group =&lt;/span&gt; reps), &lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;darkblue&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-16-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-17-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;h4 id=&quot;simulate-under-the-true-model&quot;&gt;Simulate under the true model&lt;/h4&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;reps =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -301,11 +304,11 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims 
 
 &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 2.394725&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 4.751511&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;(Average utility is approximate here since it does not include penalty; since a function and not a matrix is requred by this function at this time.)&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, state, &lt;span class=&quot;dt&quot;&gt;group =&lt;/span&gt; reps), &lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;darkblue&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-18-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-19-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;hr /&gt;
 &lt;h3 id=&quot;comparison-to-true-model&quot;&gt;Comparison to true model&lt;/h3&gt;
@@ -316,9 +319,14 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;pre&gt;&lt;code&gt;[1] &amp;quot;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;mdp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;mdp_value_iteration&lt;/span&gt;(P, R, &lt;span class=&quot;dt&quot;&gt;discount =&lt;/span&gt; discount, &lt;span class=&quot;dt&quot;&gt;epsilon =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.001&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;max_iter =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;5e3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;V0 =&lt;/span&gt; &lt;span class=&quot;kw&quot;&gt;numeric&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(states)))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;[1] &amp;quot;MDP Toolbox: iterations stopped, epsilon-optimal policy found&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;plot&lt;/span&gt;(states, states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;actions[mdp$policy],  &lt;span class=&quot;dt&quot;&gt;xlab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ylab=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;Escapement&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;stock =&lt;/span&gt; states, 
+                  &lt;span class=&quot;dt&quot;&gt;escapement =&lt;/span&gt; states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;actions[gp$policy], 
+                  &lt;span class=&quot;dt&quot;&gt;optimal_escapement =&lt;/span&gt; states -&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;actions[mdp$policy])) +
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(stock, escapement)) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_point&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(stock, optimal_escapement), &lt;span class=&quot;dt&quot;&gt;col=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;red&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;alpha=&lt;/span&gt;.&lt;span class=&quot;dv&quot;&gt;4&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
+&lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;xlab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Population size&amp;quot;&lt;/span&gt;) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;ylab&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;Escapement&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-21-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-22-1.png&quot; /&gt;
 &lt;/figure&gt;
 &lt;p&gt;Note that the altered award structure has almost no effect on the optimal policy given the true model, other than to avoid harvesting directly to zero even when the stock cannot persist, due to the explicit penalty for doing so.&lt;/p&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;data.frame&lt;/span&gt;(&lt;span class=&quot;dt&quot;&gt;reps =&lt;/span&gt; &lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;:&lt;span class=&quot;dv&quot;&gt;50&lt;/span&gt;) %&amp;gt;%&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;
@@ -327,10 +335,10 @@ P_gp &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quo
 &lt;span class=&quot;st&quot;&gt;  &lt;/span&gt;sims 
 
 &lt;span class=&quot;kw&quot;&gt;mean&lt;/span&gt;(sims$utility)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[1] 9.796826&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] 10.19602&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(sims) +&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;geom_line&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;aes&lt;/span&gt;(time, state, &lt;span class=&quot;dt&quot;&gt;group =&lt;/span&gt; reps), &lt;span class=&quot;dt&quot;&gt;alpha =&lt;/span&gt; &lt;span class=&quot;fl&quot;&gt;0.3&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;col =&lt;/span&gt; &lt;span class=&quot;st&quot;&gt;&amp;quot;darkblue&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
 &lt;figure&gt;
-&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-23-1.png&quot; /&gt;
+&lt;img src=&quot;/2015/assets/figures/posts/2015-07-30-gpdp-via-mdptoolbox-cont/unnamed-chunk-24-1.png&quot; /&gt;
 &lt;/figure&gt;
 </content>
  </entry>
