@@ -78,3 +78,44 @@ unlink("taxa.csv")
 ```
 
 
+----
+
+## More fun standardizing NSE
+
+The previous examples show only applications to `filter_()`.  While the general idea is the same, this pattern doesn't translate directly for other functions, such as `mutate_`.  Here's some common patterns I've adopted when using `mutate_()`.  First consider the familiar NSE useage:
+
+```{r}
+df <- mutate(mtcars, displ_l = disp / 61.0237)
+head(df)
+```
+
+Again we use `list(interp(` pattern, but note that we specify the name for our new column using `setNames` (naming the elements of the list).
+
+```{r}
+dots <- setNames(list(lazyeval::interp(~x / y, x = quote(disp), y=61.0237)), "displ_l")
+df2 <- mutate_(mtcars, .dots = dots)
+identical(df, df2)
+```
+
+Of course the use `y` could be skipped for a more direct value if that was not a variable.
+
+## More `dplyr` patterns
+
+Also thought I would scribble down some other common `dplyr` patterns I find myself re-using.
+
+- applying a function that returns a `data.frame` to each element of a `list` and coercing the combined output to a `data.frame`:
+
+```r
+mylist %>% lapply(myfun) %>% dplyr::bind_rows() 
+```
+
+To place this deeper in the `hadleyverse`, `purrr::map` could be dropped in for `lapply` in the above example.  
+
+- Another common pattern for me is `expand.grid() %>% group_by() %>% do()`, Here's a [recent example of mine](https://github.com/cboettig/multiple_uncertainty/blob/3f42aa4623f40cee70d5a9d52a8cce73617248a5/inst/scripts/table.Rmd)
+
+Also includes an example of how to define `group_by_all()` since that is usually the grouping I need from an `expand.grid()` call (that is, I want to apply over all combinations of some parameter settings, etc)
+
+
+
+Something I hope is not a common pattern but one I struggled with for a bit: making recursive calls of the above pattern for nested lists.  This code in RNeXML illustrates my solution, which required both [function recursion and function closure](https://github.com/ropensci/RNeXML/blob/b596839e3a1fc53e74b46fd935d91dca59a9da98/R/get_metadata.R#L50-L59).  
+
