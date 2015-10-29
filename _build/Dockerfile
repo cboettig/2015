@@ -38,9 +38,9 @@ RUN apt-get update && apt-get -y install -t unstable r-cran-rjags \
     ropensci/RNeXML \
     richfitz/drat.builder \
     ropensci/ropkgs \
+    cboettig/Sxslt \
   && install2.r --repo http://packages.ropensci.org --error \
     rrdf \
-    Sxslt \
   && rm -rf /tmp/downloaded_packages
 
 # break cache first
