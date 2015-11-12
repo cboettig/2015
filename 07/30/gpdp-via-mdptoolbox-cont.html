@@ -172,13 +172,13 @@ priors &lt;-<span class="st"> </span><span class="kw">nimbleCodeSub</span>(prior
 <pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
 <span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
-  8.510   0.012   8.526 </code></pre>
+  7.534   0.024   7.560 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 <span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
-  8.705   0.004   8.715 </code></pre>
+  7.528   0.000   7.530 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
 E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
 C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
@@ -352,7 +352,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
   <p> <a  onclick="recordOutboundLink(this, 'Outbound Links', 'history'); 
             return false;" 
           class="btn btn-default" 
-          href="https://github.com/cboettig/2015/commits/master/_posts/2015-07-30-gpdp-via-mdptoolbox-cont.Rmd"><i class="icon-time"></i> history</a></p>
+          href="https://github.com/cboettig/2015/commits/master/_posts/_posts/2015-07-30-gpdp-via-mdptoolbox-cont.Rmd"><i class="icon-time"></i> history</a></p>
 
   <br />
 
@@ -387,7 +387,7 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
   
 
   <br/>
-  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/70b284b452f822d7eb179026c8de2b4dee27e3e1/_posts/2015-07-30-gpdp-via-mdptoolbox-cont.Rmd"> 70b284b452f822d7eb179026c8de2b4dee27e3e1</a></small></p>
+  <p><small> <i class="icon-barcode"></i> SHA Hash: <a href="https://github.com/cboettig/2015/commit/70b284b452f822d7eb179026c8de2b4dee27e3e1/_posts/_posts/2015-07-30-gpdp-via-mdptoolbox-cont.Rmd"> 70b284b452f822d7eb179026c8de2b4dee27e3e1</a></small></p>
     
   <br/>
   

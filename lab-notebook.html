@@ -14,7 +14,7 @@
 <meta property="dc:date" content="" />
 <meta property="dc:format" content="text/html" />
 <meta property="dc:language" content="en" />
-<meta property="dc:identifier" content="/lab-notebook.html" />
+<meta property="dc:identifier" content="/lab-notebook" />
 <meta property="dc:rights" content="CC0" />
 <meta property="dc:source" content="Lab Notebook" />
 <meta property="dc:subject" content="Ecology" /> 
@@ -26,7 +26,7 @@
 <meta property="http://ogp.me/ns/profile#last_name" content="Boettiger"/>
 <meta property="http://ogp.me/ns/article#published_time" content="" />
 <meta property="og:site_name" content="Lab Notebook" /> <!-- Same as dc:source? -->
-<meta property="og:url" content="http://www.carlboettiger.info/lab-notebook.html" />
+<meta property="og:url" content="http://www.carlboettiger.info/lab-notebook" />
 <meta property="og:type" content="website" /> 
 <!-- Google Scholar Metadata -->
 <!--
@@ -78,7 +78,7 @@
           <a href="/teaching.html">Teaching</a></li>
           <li  >
           <a href="/community.html">Community</a></li>
-          <li  class="active" >
+          <li  >
           <a href="/lab-notebook.html">Lab Notebook</a></li>
 
         </ul>
@@ -310,13 +310,13 @@ priors &lt;-<span class="st"> </span><span class="kw">nimbleCodeSub</span>(prior
 <pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
 <span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
-  8.510   0.012   8.526 </code></pre>
+  7.534   0.024   7.560 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 <span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
-  8.705   0.004   8.715 </code></pre>
+  7.528   0.000   7.530 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
 E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
 C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
@@ -916,7 +916,7 @@ ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
         </div>
       
         <div class="col-md-3">
-          <header><h4><a href="/2015/06/18/RAM-explore.html">Further exploration of RAM Legacy Stock Assessment data</a></h4></header>
+          <header><h4><a href="/2015/06/18/ram-explore.html">Further exploration of RAM Legacy Stock Assessment data</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 18 Jun 2015</p>
 
@@ -1196,7 +1196,7 @@ values %&gt;%<span class="st"> </span>
 <!-- not that raw_content depends on custom generator, 
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
-<p> <a href="/2015/06/18/RAM-explore.html"> <em>Read more</em></a> </p>
+<p> <a href="/2015/06/18/ram-explore.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
@@ -1472,7 +1472,7 @@ C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre
       &amp;rft.date=
       &amp;rft.language=EN
       &amp;rft.rights=CC0
-      &amp;rft_id=http://www.carlboettiger.info/lab-notebook.html">
+      &amp;rft_id=http://www.carlboettiger.info/lab-notebook">
   </span>
 
 
