@@ -44,6 +44,7 @@ docker run --name cache2 -v $(pwd):/data busybox tar cvf /root/cache.tar /data/_
 docker commit cache2 cboettig/${YEAR}-cache
 docker push cboettig/${YEAR}-cache
 
+## FIXME run this if any of the above errors 
 ## Clean up: restore user permissions and remove containers 
 docker run --rm -v $(pwd):/data busybox chown -R 1000:1000 /data/_cache
 docker rm -v -f cache cache2 build
