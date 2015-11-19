@@ -39,6 +39,7 @@ RUN apt-get update && apt-get -y install -t unstable r-cran-rjags \
     richfitz/drat.builder \
     ropensci/ropkgs \
     cboettig/Sxslt \
+    ropensci/EML \
   && install2.r --repo http://packages.ropensci.org --error \
     rrdf \
   && rm -rf /tmp/downloaded_packages
