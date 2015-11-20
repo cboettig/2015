@@ -126,11 +126,11 @@ http://www.carlboettiger.info//07/29/mdptoolbox-allen-model.html
 http://www.carlboettiger.info//07/29/fastgp-explore.html  
 http://www.carlboettiger.info//07/14/mdptoolbox-ex-2.html  
 http://www.carlboettiger.info//06/19/gp-nimble-v2.html  
-http://www.carlboettiger.info//06/18/ram-explore.html  
+http://www.carlboettiger.info//06/18/RAM-explore.html  
 http://www.carlboettiger.info//06/16/daniel-gp-example.html  
 http://www.carlboettiger.info//06/03/lazy-evaluation-thoughts.html  
 http://www.carlboettiger.info//05/15/diagrammer.html  
-http://www.carlboettiger.info//05/13/gp-compare.html  
+http://www.carlboettiger.info//05/13/GP-compare.html  
 http://www.carlboettiger.info//05/08/ram-legacy-database-explore.html  
 http://www.carlboettiger.info//04/28/rfishbase-notes.html  
 http://www.carlboettiger.info//04/28/notes.html  
@@ -142,8 +142,8 @@ http://www.carlboettiger.info//04/06/gpdd-explore.html
 http://www.carlboettiger.info//03/26/ropensci-unconf-teaching-session.html  
 http://www.carlboettiger.info//03/24/docker-machine-notes.html  
 http://www.carlboettiger.info//03/09/simpler-nimble-dai-model.html  
-http://www.carlboettiger.info//03/04/gp-nimble-explore.html  
-http://www.carlboettiger.info//03/03/gp-nimble-setup.html  
+http://www.carlboettiger.info//03/04/GP-nimble-explore.html  
+http://www.carlboettiger.info//03/03/GP-nimble-setup.html  
 http://www.carlboettiger.info//03/02/notes.html  
 http://www.carlboettiger.info//02/25/nimble-on-dai-model.html  
 http://www.carlboettiger.info//02/24/nimble-on-dai-model.html  
@@ -153,7 +153,7 @@ http://www.carlboettiger.info//02/06/fun-standardizing-non-standard-evaluation.h
 http://www.carlboettiger.info//02/03/dockerizing-fishbase-api.html  
 http://www.carlboettiger.info//01/28/notes.html  
 http://www.carlboettiger.info//01/23/mdptoolbox-ex.html  
-http://www.carlboettiger.info//01/22/sdp-reed-controls-comparisons.html  
+http://www.carlboettiger.info//01/22/sdp-Reed-controls-comparisons.html  
 http://www.carlboettiger.info//01/22/invasives-sdp.html  
 http://www.carlboettiger.info//01/13/detrend-example.html  
 http://www.carlboettiger.info//01/07/automated-knitr-in-jekyll.html  

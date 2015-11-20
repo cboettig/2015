@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-11-19T18:22:34+00:00</updated>
+  <updated>2015-11-20T18:57:46+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -186,13 +186,13 @@ priors &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Fit the GP
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
-  7.504   0.020   7.534 &lt;/code&gt;&lt;/pre&gt;
+  7.709   0.020   7.739 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
-  7.560   0.000   7.586 &lt;/code&gt;&lt;/pre&gt;
+  7.614   0.000   7.621 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Extract variables for future use
 E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
 C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()
@@ -737,7 +737,7 @@ ggplot2::&lt;span class=&quot;kw&quot;&gt;ggplot&lt;/span&gt;(pred) +&lt;span cl
  
  <entry>
    <title>Further exploration of RAM Legacy Stock Assessment data</title>
-   <link href="http://www.carlboettiger.info/2015/06/18/ram-explore.html"/>
+   <link href="http://www.carlboettiger.info/2015/06/18/RAM-explore.html"/>
    <updated>2015-06-18T00:00:00+00:00</updated>
    <id>/06/18/RAM-explore</id>
    <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;suppressPackageStartupMessages&lt;/span&gt;({
@@ -1255,7 +1255,7 @@ target &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
  
  <entry>
    <title>Gp Compare</title>
-   <link href="http://www.carlboettiger.info/2015/05/13/gp-compare.html"/>
+   <link href="http://www.carlboettiger.info/2015/05/13/GP-compare.html"/>
    <updated>2015-05-13T00:00:00+00:00</updated>
    <id>/05/13/GP-compare</id>
    <content type="html">&lt;p&gt;Original go at nimble gp model, but this requires rather manual manipulation of parameter posteriors to get the GP posteriors.&lt;/p&gt;
@@ -2853,7 +2853,7 @@ loaded via a namespace (and not attached):
  
  <entry>
    <title>Gp Nimble Explore</title>
-   <link href="http://www.carlboettiger.info/2015/03/04/gp-nimble-explore.html"/>
+   <link href="http://www.carlboettiger.info/2015/03/04/GP-nimble-explore.html"/>
    <updated>2015-03-04T00:00:00+00:00</updated>
    <id>/03/04/GP-nimble-explore</id>
    <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;nimble&amp;quot;&lt;/span&gt;)
@@ -2984,7 +2984,7 @@ df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;
  
  <entry>
    <title>Gp Nimble Setup</title>
-   <link href="http://www.carlboettiger.info/2015/03/03/gp-nimble-setup.html"/>
+   <link href="http://www.carlboettiger.info/2015/03/03/GP-nimble-setup.html"/>
    <updated>2015-03-03T00:00:00+00:00</updated>
    <id>/03/03/GP-nimble-setup</id>
    <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;nimble&amp;quot;&lt;/span&gt;)
@@ -4130,7 +4130,7 @@ V0 &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;
  
  <entry>
    <title>Sdp Reed Controls Comparisons</title>
-   <link href="http://www.carlboettiger.info/2015/01/22/sdp-reed-controls-comparisons.html"/>
+   <link href="http://www.carlboettiger.info/2015/01/22/sdp-Reed-controls-comparisons.html"/>
    <updated>2015-01-22T00:00:00+00:00</updated>
    <id>/01/22/sdp-Reed-controls-comparisons</id>
    <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(knitr)
