@@ -24,6 +24,7 @@ RUN apt-get update && apt-get -y install -t unstable r-cran-rjags \
     yihui/servr \ 
     cboettig/earlywarning \
     cboettig/pdg_control \
+    cboettig/multiple_uncertainty \
     cboettig/knitcitations \
     cboettig/regimeshifts  \
     ropensci/rgpdd \
