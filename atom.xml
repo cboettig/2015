@@ -3,7 +3,7 @@
   <title>Lab Notebook - </title>
   <link href="//.xml" rel="self"/>
   <link href="/"/>
-  <updated>2015-11-20T18:57:46+00:00</updated>
+  <updated>2015-11-30T21:08:12+00:00</updated>
   <id>http://www.carlboettiger.info/</id>
   <author>
     <name>Carl Boettiger</name>
@@ -11,6 +11,87 @@
   </author>
 
    
+ <entry>
+   <title>Download and Parse Github Issues</title>
+   <link href="http://www.carlboettiger.info/2015/11/20/github-issues-import.html"/>
+   <updated>2015-11-20T00:00:00+00:00</updated>
+   <id>/11/20/github-issues-import</id>
+   <content type="html">&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;co&quot;&gt;# devtools::install(&amp;quot;cscheid/rgithub&amp;quot;)&lt;/span&gt;
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;github&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error in library(&amp;quot;github&amp;quot;): there is no package called &amp;#39;github&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;dplyr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;stringr&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;lubridate&amp;quot;&lt;/span&gt;)
+&lt;span class=&quot;kw&quot;&gt;library&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;readr&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;ctx =&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;interactive.login&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;Sys.getenv&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;GH_CLIENT_ID&amp;quot;&lt;/span&gt;),&lt;span class=&quot;kw&quot;&gt;Sys.getenv&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;GH_CLIENT_SECRET&amp;quot;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Thanks to @&lt;a href=&quot;https://github.com/realAkhmed&quot;&gt;realAkhmed&lt;/a&gt; for this one, see: https://github.com/cscheid/rgithub/issues/30#issuecomment-150354560&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;auto.page &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(f) {
+  f_call &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;substitute&lt;/span&gt;(f)
+  &lt;span class=&quot;kw&quot;&gt;stopifnot&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;is.call&lt;/span&gt;(f_call))
+
+  i &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;dv&quot;&gt;1&lt;/span&gt;
+  req &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;()
+  result_lst &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;list&lt;/span&gt;()
+
+  repeat {
+    &lt;span class=&quot;co&quot;&gt;# Specify the page to download&lt;/span&gt;
+    f_call$page &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;i
+
+    req &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;eval&lt;/span&gt;(f_call, &lt;span class=&quot;kw&quot;&gt;parent.frame&lt;/span&gt;())
+
+    &lt;span class=&quot;co&quot;&gt;# Last page has empty content&lt;/span&gt;
+    if (&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(req$content)&amp;lt;=&lt;span class=&quot;dv&quot;&gt;0&lt;/span&gt;) break
+
+    result_lst[[i]] &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;req$content
+    i &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;i&lt;span class=&quot;dv&quot;&gt;+1&lt;/span&gt;
+  }
+
+  result_req &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;req
+  result_req$content &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;unlist&lt;/span&gt;(result_lst, &lt;span class=&quot;dt&quot;&gt;recursive =&lt;/span&gt; &lt;span class=&quot;ot&quot;&gt;FALSE&lt;/span&gt;)
+
+  (result_req)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;issues &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;auto.page&lt;/span&gt;(github::&lt;span class=&quot;kw&quot;&gt;get.all.repository.issues.comments&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ropensci&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;RNeXML&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ctx=&lt;/span&gt;ctx))
+&lt;span class=&quot;kw&quot;&gt;length&lt;/span&gt;(issues$content)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here we get the content of interest.&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;to_df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(entry){
+        dplyr::&lt;span class=&quot;kw&quot;&gt;data_frame&lt;/span&gt;(
+             &lt;span class=&quot;dt&quot;&gt;issue =&lt;/span&gt; stringr::&lt;span class=&quot;kw&quot;&gt;str_replace&lt;/span&gt;(entry$issue_url, &lt;span class=&quot;st&quot;&gt;&amp;quot;.*/(.*$)&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;ch&quot;&gt;\\&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;1&amp;quot;&lt;/span&gt;), 
+             &lt;span class=&quot;dt&quot;&gt;comment_id =&lt;/span&gt; entry$id, 
+             &lt;span class=&quot;dt&quot;&gt;user =&lt;/span&gt; entry$user$login, 
+             &lt;span class=&quot;dt&quot;&gt;created_at =&lt;/span&gt; lubridate::&lt;span class=&quot;kw&quot;&gt;parse_date_time&lt;/span&gt;(entry$created_at,&lt;span class=&quot;st&quot;&gt;&amp;quot;%Y-%m-%d %H:%M:%S&amp;quot;&lt;/span&gt;),
+             &lt;span class=&quot;dt&quot;&gt;updated_at =&lt;/span&gt; lubridate::&lt;span class=&quot;kw&quot;&gt;parse_date_time&lt;/span&gt;(entry$updated_at,&lt;span class=&quot;st&quot;&gt;&amp;quot;%Y-%m-%d %H:%M:%S&amp;quot;&lt;/span&gt;),
+             &lt;span class=&quot;dt&quot;&gt;body =&lt;/span&gt; entry$body)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Minor problem: This doesn’t actually include the issue’s title and opening comment (or tags, status, or other metadata that all come from the issues endpoint):&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;issue_meta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;auto.page&lt;/span&gt;(github::&lt;span class=&quot;kw&quot;&gt;get.repository.issues&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ropensci&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;RNeXML&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;state=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;all&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;filter=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;all&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ctx=&lt;/span&gt;ctx))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;meta_to_df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;function(entry){
+        dplyr::&lt;span class=&quot;kw&quot;&gt;data_frame&lt;/span&gt;(
+             &lt;span class=&quot;dt&quot;&gt;issue =&lt;/span&gt; stringr::&lt;span class=&quot;kw&quot;&gt;str_replace&lt;/span&gt;(entry$html_url, &lt;span class=&quot;st&quot;&gt;&amp;quot;.*/(.*$)&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;ch&quot;&gt;\\&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;1&amp;quot;&lt;/span&gt;), 
+             &lt;span class=&quot;dt&quot;&gt;comment_id =&lt;/span&gt; entry$id, 
+             &lt;span class=&quot;dt&quot;&gt;user =&lt;/span&gt; entry$user$login, 
+             &lt;span class=&quot;dt&quot;&gt;state =&lt;/span&gt; entry$state,
+             &lt;span class=&quot;dt&quot;&gt;comments =&lt;/span&gt; entry$comments,
+             &lt;span class=&quot;dt&quot;&gt;created_at =&lt;/span&gt; lubridate::&lt;span class=&quot;kw&quot;&gt;parse_date_time&lt;/span&gt;(entry$created_at,&lt;span class=&quot;st&quot;&gt;&amp;quot;%Y-%m-%d %H:%M:%S&amp;quot;&lt;/span&gt;),
+             &lt;span class=&quot;dt&quot;&gt;updated_at =&lt;/span&gt; lubridate::&lt;span class=&quot;kw&quot;&gt;parse_date_time&lt;/span&gt;(entry$updated_at,&lt;span class=&quot;st&quot;&gt;&amp;quot;%Y-%m-%d %H:%M:%S&amp;quot;&lt;/span&gt;),
+             &lt;span class=&quot;dt&quot;&gt;title =&lt;/span&gt; entry$title,
+             &lt;span class=&quot;dt&quot;&gt;body =&lt;/span&gt; entry$body)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dplyr::&lt;span class=&quot;kw&quot;&gt;bind_rows&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(issues$content, to_df))
+meta_df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dplyr::&lt;span class=&quot;kw&quot;&gt;bind_rows&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(issue_meta$content, meta_to_df))
+issue_tbl &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dplyr::&lt;span class=&quot;kw&quot;&gt;full_join&lt;/span&gt;(df, meta_df)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;readr::&lt;span class=&quot;kw&quot;&gt;write_csv&lt;/span&gt;(issue_tbl, &lt;span class=&quot;st&quot;&gt;&amp;quot;../_data/rnexml.csv&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now let’s do &lt;code&gt;EML&lt;/code&gt;&lt;/p&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;issues &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;auto.page&lt;/span&gt;(github::&lt;span class=&quot;kw&quot;&gt;get.all.repository.issues.comments&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ropensci&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;EML&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ctx=&lt;/span&gt;ctx))
+issue_meta &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;auto.page&lt;/span&gt;(github::&lt;span class=&quot;kw&quot;&gt;get.repository.issues&lt;/span&gt;(&lt;span class=&quot;st&quot;&gt;&amp;quot;ropensci&amp;quot;&lt;/span&gt;, &lt;span class=&quot;st&quot;&gt;&amp;quot;EML&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;state=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;all&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;filter=&lt;/span&gt;&lt;span class=&quot;st&quot;&gt;&amp;quot;all&amp;quot;&lt;/span&gt;, &lt;span class=&quot;dt&quot;&gt;ctx=&lt;/span&gt;ctx))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dplyr::&lt;span class=&quot;kw&quot;&gt;bind_rows&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(issues$content, to_df))
+meta_df &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dplyr::&lt;span class=&quot;kw&quot;&gt;bind_rows&lt;/span&gt;(&lt;span class=&quot;kw&quot;&gt;lapply&lt;/span&gt;(issue_meta$content, meta_to_df))
+issue_tbl &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;dplyr::&lt;span class=&quot;kw&quot;&gt;full_join&lt;/span&gt;(df, meta_df)
+
+readr::&lt;span class=&quot;kw&quot;&gt;write_csv&lt;/span&gt;(issue_tbl, &lt;span class=&quot;st&quot;&gt;&amp;quot;../_data/eml.csv&amp;quot;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
  <entry>
    <title>Nimble Model Construction</title>
    <link href="http://www.carlboettiger.info/2015/08/27/nimble-model-construction.html"/>
@@ -186,13 +267,13 @@ priors &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&q
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Fit the GP
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cmcmc$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(&lt;span class=&quot;dv&quot;&gt;100000&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
-  7.709   0.020   7.739 &lt;/code&gt;&lt;/pre&gt;
+  8.046   0.044   8.090 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;samples &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kw&quot;&gt;as.matrix&lt;/span&gt;(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 &lt;span class=&quot;kw&quot;&gt;system.time&lt;/span&gt;(fit$Cpred$&lt;span class=&quot;kw&quot;&gt;run&lt;/span&gt;(samples))&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;   user  system elapsed 
-  7.614   0.000   7.621 &lt;/code&gt;&lt;/pre&gt;
+  8.233   0.004   8.239 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&quot;sourceCode r&quot;&gt;&lt;code class=&quot;sourceCode r&quot;&gt;## Extract variables for future use
 E &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getE&lt;/span&gt;()
 C &amp;lt;-&lt;span class=&quot;st&quot;&gt; &lt;/span&gt;fit$Cpred$&lt;span class=&quot;kw&quot;&gt;getC&lt;/span&gt;()

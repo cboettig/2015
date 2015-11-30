@@ -114,6 +114,97 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/11/20/github-issues-import.html">Download and Parse Github Issues</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 20 Nov 2015</p>
+
+<article>
+<div class="excerpt">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># devtools::install(&quot;cscheid/rgithub&quot;)</span>
+<span class="kw">library</span>(<span class="st">&quot;github&quot;</span>)</code></pre>
+<pre><code>Error in library(&quot;github&quot;): there is no package called &#39;github&#39;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;stringr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;lubridate&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;readr&quot;</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">ctx =<span class="st"> </span><span class="kw">interactive.login</span>(<span class="kw">Sys.getenv</span>(<span class="st">&quot;GH_CLIENT_ID&quot;</span>),<span class="kw">Sys.getenv</span>(<span class="st">&quot;GH_CLIENT_SECRET&quot;</span>))</code></pre>
+<p>Thanks to @<a href="https://github.com/realAkhmed">realAkhmed</a> for this one, see: https://github.com/cscheid/rgithub/issues/30#issuecomment-150354560</p>
+<pre class="sourceCode r"><code class="sourceCode r">auto.page &lt;-<span class="st"> </span>function(f) {
+  f_call &lt;-<span class="st"> </span><span class="kw">substitute</span>(f)
+  <span class="kw">stopifnot</span>(<span class="kw">is.call</span>(f_call))
+
+  i &lt;-<span class="st"> </span><span class="dv">1</span>
+  req &lt;-<span class="st"> </span><span class="kw">list</span>()
+  result_lst &lt;-<span class="st"> </span><span class="kw">list</span>()
+
+  repeat {
+    <span class="co"># Specify the page to download</span>
+    f_call$page &lt;-<span class="st"> </span>i
+
+    req &lt;-<span class="st"> </span><span class="kw">eval</span>(f_call, <span class="kw">parent.frame</span>())
+
+    <span class="co"># Last page has empty content</span>
+    if (<span class="kw">length</span>(req$content)&lt;=<span class="dv">0</span>) break
+
+    result_lst[[i]] &lt;-<span class="st"> </span>req$content
+    i &lt;-<span class="st"> </span>i<span class="dv">+1</span>
+  }
+
+  result_req &lt;-<span class="st"> </span>req
+  result_req$content &lt;-<span class="st"> </span><span class="kw">unlist</span>(result_lst, <span class="dt">recursive =</span> <span class="ot">FALSE</span>)
+
+  (result_req)
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">issues &lt;-<span class="st"> </span><span class="kw">auto.page</span>(github::<span class="kw">get.all.repository.issues.comments</span>(<span class="st">&quot;ropensci&quot;</span>, <span class="st">&quot;RNeXML&quot;</span>, <span class="dt">ctx=</span>ctx))
+<span class="kw">length</span>(issues$content)</code></pre>
+<p>Here we get the content of interest.</p>
+<pre class="sourceCode r"><code class="sourceCode r">to_df &lt;-<span class="st"> </span>function(entry){
+        dplyr::<span class="kw">data_frame</span>(
+             <span class="dt">issue =</span> stringr::<span class="kw">str_replace</span>(entry$issue_url, <span class="st">&quot;.*/(.*$)&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">1&quot;</span>), 
+             <span class="dt">comment_id =</span> entry$id, 
+             <span class="dt">user =</span> entry$user$login, 
+             <span class="dt">created_at =</span> lubridate::<span class="kw">parse_date_time</span>(entry$created_at,<span class="st">&quot;%Y-%m-%d %H:%M:%S&quot;</span>),
+             <span class="dt">updated_at =</span> lubridate::<span class="kw">parse_date_time</span>(entry$updated_at,<span class="st">&quot;%Y-%m-%d %H:%M:%S&quot;</span>),
+             <span class="dt">body =</span> entry$body)
+}</code></pre>
+<p>Minor problem: This doesn’t actually include the issue’s title and opening comment (or tags, status, or other metadata that all come from the issues endpoint):</p>
+<pre class="sourceCode r"><code class="sourceCode r">issue_meta &lt;-<span class="st"> </span><span class="kw">auto.page</span>(github::<span class="kw">get.repository.issues</span>(<span class="st">&quot;ropensci&quot;</span>, <span class="st">&quot;RNeXML&quot;</span>, <span class="dt">state=</span><span class="st">&quot;all&quot;</span>, <span class="dt">filter=</span><span class="st">&quot;all&quot;</span>, <span class="dt">ctx=</span>ctx))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">meta_to_df &lt;-<span class="st"> </span>function(entry){
+        dplyr::<span class="kw">data_frame</span>(
+             <span class="dt">issue =</span> stringr::<span class="kw">str_replace</span>(entry$html_url, <span class="st">&quot;.*/(.*$)&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">1&quot;</span>), 
+             <span class="dt">comment_id =</span> entry$id, 
+             <span class="dt">user =</span> entry$user$login, 
+             <span class="dt">state =</span> entry$state,
+             <span class="dt">comments =</span> entry$comments,
+             <span class="dt">created_at =</span> lubridate::<span class="kw">parse_date_time</span>(entry$created_at,<span class="st">&quot;%Y-%m-%d %H:%M:%S&quot;</span>),
+             <span class="dt">updated_at =</span> lubridate::<span class="kw">parse_date_time</span>(entry$updated_at,<span class="st">&quot;%Y-%m-%d %H:%M:%S&quot;</span>),
+             <span class="dt">title =</span> entry$title,
+             <span class="dt">body =</span> entry$body)
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span>dplyr::<span class="kw">bind_rows</span>(<span class="kw">lapply</span>(issues$content, to_df))
+meta_df &lt;-<span class="st"> </span>dplyr::<span class="kw">bind_rows</span>(<span class="kw">lapply</span>(issue_meta$content, meta_to_df))
+issue_tbl &lt;-<span class="st"> </span>dplyr::<span class="kw">full_join</span>(df, meta_df)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">readr::<span class="kw">write_csv</span>(issue_tbl, <span class="st">&quot;../_data/rnexml.csv&quot;</span>)</code></pre>
+<p>Now let’s do <code>EML</code></p>
+<pre class="sourceCode r"><code class="sourceCode r">issues &lt;-<span class="st"> </span><span class="kw">auto.page</span>(github::<span class="kw">get.all.repository.issues.comments</span>(<span class="st">&quot;ropensci&quot;</span>, <span class="st">&quot;EML&quot;</span>, <span class="dt">ctx=</span>ctx))
+issue_meta &lt;-<span class="st"> </span><span class="kw">auto.page</span>(github::<span class="kw">get.repository.issues</span>(<span class="st">&quot;ropensci&quot;</span>, <span class="st">&quot;EML&quot;</span>, <span class="dt">state=</span><span class="st">&quot;all&quot;</span>, <span class="dt">filter=</span><span class="st">&quot;all&quot;</span>, <span class="dt">ctx=</span>ctx))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span>dplyr::<span class="kw">bind_rows</span>(<span class="kw">lapply</span>(issues$content, to_df))
+meta_df &lt;-<span class="st"> </span>dplyr::<span class="kw">bind_rows</span>(<span class="kw">lapply</span>(issue_meta$content, meta_to_df))
+issue_tbl &lt;-<span class="st"> </span>dplyr::<span class="kw">full_join</span>(df, meta_df)
+
+readr::<span class="kw">write_csv</span>(issue_tbl, <span class="st">&quot;../_data/eml.csv&quot;</span>)</code></pre>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/11/20/github-issues-import.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/08/27/nimble-model-construction.html">Nimble Model Construction</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 27 Aug 2015</p>
@@ -238,6 +329,10 @@ pkgs &lt;-<span class="st"> </span>out$packages$name[installable &amp;<span clas
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/07/30/gpdp-via-mdptoolbox-cont.html">Gpdp Via Mdptoolbox Cont</a></h4></header>
 <p><span></span></p>
@@ -310,13 +405,13 @@ priors &lt;-<span class="st"> </span><span class="kw">nimbleCodeSub</span>(prior
 <pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
 <span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
-  7.709   0.020   7.739 </code></pre>
+  8.046   0.044   8.090 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 <span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
-  7.614   0.000   7.621 </code></pre>
+  8.233   0.004   8.239 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
 E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
 C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
@@ -474,10 +569,6 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/07/29/mdptoolbox-allen-model.html">Mdptoolbox Allen Model</a></h4></header>
@@ -660,6 +751,10 @@ Sig &lt;-<span class="st"> </span>sigma*<span class="kw">exp</span>(-<span class
 
         </div>
       
+    </div>
+
+    <div class="row">
+      
         <div class="col-md-3">
           <header><h4><a href="/2015/07/14/mdptoolbox-ex-2.html">Mdptoolbox Ex 2</a></h4></header>
 <p><span></span></p>
@@ -835,10 +930,6 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
 
 
         </div>
-      
-    </div>
-
-    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/06/19/gp-nimble-v2.html">Gp Nimble V2</a></h4></header>
@@ -1197,195 +1288,6 @@ values %&gt;%<span class="st"> </span>
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/06/18/RAM-explore.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/06/16/daniel-gp-example.html">Daniel Gp Example</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 16 Jun 2015</p>
-
-<article>
-<div class="excerpt">
-<h3 id="setup">Setup</h3>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;nimble&quot;</span>)
-<span class="kw">set.seed</span>(<span class="dv">0</span>)</code></pre>
-<p>Randomly generate some sinusoidal data</p>
-<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">100</span>
-y &lt;-<span class="st"> </span><span class="kw">sin</span>(x/<span class="dv">5</span>) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="fl">0.1</span>)
-ind &lt;-<span class="st"> </span><span class="kw">sort</span>(<span class="kw">sample</span>(<span class="dv">1</span>:<span class="dv">100</span>, <span class="dv">40</span>))</code></pre>
-<p>The next three lines are the only inputs required.</p>
-<pre class="sourceCode r"><code class="sourceCode r">xObs &lt;-<span class="st"> </span>x[ind]                ## input
-yObs &lt;-<span class="st"> </span>y[ind]                ## input
-xPred &lt;-<span class="st"> </span><span class="kw">c</span>(x, <span class="dv">101</span>:<span class="dv">120</span>)        ## input</code></pre>
-<p>Some initial processing</p>
-<pre class="sourceCode r"><code class="sourceCode r">nObs &lt;-<span class="st"> </span><span class="kw">length</span>(xObs)
-nPred &lt;-<span class="st"> </span><span class="kw">length</span>(xPred)
-f &lt;-<span class="st"> </span>function(xi, xj) (xi-xj)^<span class="dv">2</span>
-diffOO &lt;-<span class="st"> </span><span class="kw">outer</span>(xObs,  xObs,  f)
-diffPP &lt;-<span class="st"> </span><span class="kw">outer</span>(xPred, xPred, f)
-diffPO &lt;-<span class="st"> </span><span class="kw">outer</span>(xPred, xObs,  f)</code></pre>
-<h3 id="nimble-function-for-gp-prediction">NIMBLE function for GP prediction</h3>
-<p>Here’s the main function for doing the prediction from the GP model.</p>
-<p>It takes the MCMC samples as a <em>runtime</em> argument, so this can be iterated with running the MCMC for different numbers of iterations, initial values, or even different datasets!</p>
-<pre class="sourceCode r"><code class="sourceCode r">gpPred &lt;-<span class="st"> </span><span class="kw">nimbleFunction</span>(
-    <span class="dt">setup =</span> function(model, params) {
-        calcNodes &lt;-<span class="st"> </span>model$<span class="kw">getDependencies</span>(params, <span class="dt">determOnly =</span> <span class="ot">TRUE</span>)
-        nPred &lt;-<span class="st"> </span><span class="kw">dim</span>(model$SigPP)[<span class="dv">1</span>]
-        E &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dv">0</span>, <span class="kw">c</span>(nPred, <span class="dv">1</span>))
-        C &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dv">0</span>, <span class="kw">c</span>(nPred, nPred))
-    },
-    <span class="dt">run =</span> function(<span class="dt">samples =</span> <span class="kw">double</span>(<span class="dv">2</span>)) {
-        E &lt;&lt;-<span class="st"> </span>E *<span class="st"> </span><span class="dv">0</span>
-        C &lt;&lt;-<span class="st"> </span>C *<span class="st"> </span><span class="dv">0</span>
-        nSamples &lt;-<span class="st"> </span><span class="kw">dim</span>(samples)[<span class="dv">1</span>]
-        for(i in <span class="dv">1</span>:nSamples) {
-            <span class="kw">values</span>(model, params) &lt;&lt;-<span class="st"> </span>samples[i,]
-            <span class="kw">calculate</span>(model, calcNodes)
-            intermediate &lt;-<span class="st"> </span>model$SigPO %*%<span class="st"> </span><span class="kw">inverse</span>(model$SigOO)
-            Etemp &lt;-<span class="st"> </span>intermediate %*%<span class="st"> </span><span class="kw">asCol</span>(model$yObs)
-            Ctemp &lt;-<span class="st"> </span>model$SigPP -<span class="st"> </span>intermediate %*%<span class="st"> </span><span class="kw">t</span>(model$SigPO)
-            E &lt;&lt;-<span class="st"> </span>E +<span class="st"> </span>Etemp
-            C &lt;&lt;-<span class="st"> </span>C +<span class="st"> </span>Ctemp
-        }
-        E &lt;&lt;-<span class="st"> </span>E /<span class="st"> </span>nSamples
-        C &lt;&lt;-<span class="st"> </span>C /<span class="st"> </span>nSamples
-    },
-    <span class="dt">methods =</span> <span class="kw">list</span>(
-        <span class="dt">getE =</span> function() { <span class="kw">returnType</span>(<span class="kw">double</span>(<span class="dv">1</span>)); <span class="kw">return</span>(E[,<span class="dv">1</span>]) },
-        <span class="dt">getC =</span> function() { <span class="kw">returnType</span>(<span class="kw">double</span>(<span class="dv">2</span>)); <span class="kw">return</span>(C[, ]) }
-    )
-)</code></pre>
-<h3 id="gp-model">GP model</h3>
-<p>GP model defined here. Basically the same as your original, but I renamed some paramters more to my liking =)</p>
-<p>This is <em>not</em> as elegant as I had hoped. It still requires repeating (essentially) the same code three times. I discovered some limitations of NIMBLE while trying other approaches.</p>
-<p>Bottom line:<br />- This achieves relatively nice simplicity.<br />- There’s an efficiency hit to the MCMC sampling, but it doesn’t seem too bad.<br />- This works.</p>
-<pre class="sourceCode r"><code class="sourceCode r">code &lt;-<span class="st"> </span><span class="kw">nimbleCode</span>({
-   rho ~<span class="st"> </span><span class="kw">dgamma</span>(<span class="dv">10</span>, <span class="dv">1</span>)
-   sigGP ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
-   sigOE ~<span class="st"> </span><span class="kw">dunif</span>(<span class="dv">0</span>, <span class="fl">1e5</span>)
-   SigOO[<span class="dv">1</span>:nObs, <span class="dv">1</span>:nObs ] &lt;-<span class="st"> </span>sigGP^<span class="dv">2</span>*<span class="kw">exp</span>(-<span class="dv">1</span>/<span class="dv">2</span>*diffOO[<span class="dv">1</span>:nObs, <span class="dv">1</span>:nObs ]/rho^<span class="dv">2</span>) +<span class="st"> </span>sigOE^<span class="dv">2</span>*IOO[<span class="dv">1</span>:nObs, <span class="dv">1</span>:nObs ]
-   SigPP[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nPred] &lt;-<span class="st"> </span>sigGP^<span class="dv">2</span>*<span class="kw">exp</span>(-<span class="dv">1</span>/<span class="dv">2</span>*diffPP[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nPred]/rho^<span class="dv">2</span>) +<span class="st"> </span>sigOE^<span class="dv">2</span>*IPP[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nPred]
-   SigPO[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nObs ] &lt;-<span class="st"> </span>sigGP^<span class="dv">2</span>*<span class="kw">exp</span>(-<span class="dv">1</span>/<span class="dv">2</span>*diffPO[<span class="dv">1</span>:nPred,<span class="dv">1</span>:nObs ]/rho^<span class="dv">2</span>)
-   yObs[<span class="dv">1</span>:nObs] ~<span class="st"> </span><span class="kw">dmnorm</span>(mu[<span class="dv">1</span>:nObs], <span class="dt">cov =</span> SigOO[<span class="dv">1</span>:nObs,<span class="dv">1</span>:nObs])
-})
-
-constants &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">nObs=</span>nObs, <span class="dt">nPred=</span>nPred, <span class="dt">diffOO=</span>diffOO, <span class="dt">diffPP=</span>diffPP, <span class="dt">diffPO=</span>diffPO,
-                  <span class="dt">IOO=</span><span class="kw">diag</span>(nObs), <span class="dt">IPP=</span><span class="kw">diag</span>(nPred), <span class="dt">mu=</span><span class="kw">rep</span>(<span class="dv">0</span>,nObs))
-
-data &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">yObs =</span> yObs)
-
-inits &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rho =</span> <span class="dv">1</span>, <span class="dt">sigGP =</span> <span class="dv">1</span>, <span class="dt">sigOE =</span> <span class="dv">1</span>)
-
-Rmodel &lt;-<span class="st"> </span><span class="kw">nimbleModel</span>(code, constants, data, inits)</code></pre>
-<h3 id="create-compile-and-run">Create, compile, and run</h3>
-<pre class="sourceCode r"><code class="sourceCode r">## MCMC specification with no samplers
-spec &lt;-<span class="st"> </span><span class="kw">configureMCMC</span>(Rmodel, <span class="dt">nodes =</span> <span class="ot">NULL</span>)
-
-## this will be used for some checking, and setting up block sampler:
-params &lt;-<span class="st"> </span>Rmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>)
-
-## NOTE: the next line shouldn&#39;t work for you, since the MCMC API has changed.
-## you can rebuild from source off nimble branch &#39;devel&#39;.
-## otherwise, using last public release of NIMBLE (0.3-1), use this line instead:
-## spec$addSampler(&#39;RW_block&#39;, control = list(targetNodes = params))
-spec$<span class="kw">addSampler</span>(params, <span class="st">&#39;RW_block&#39;</span>)</code></pre>
-<pre><code>[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity</code></pre>
-<p>We can debate about univariate vs. block sampling at some point.</p>
-<pre class="sourceCode r"><code class="sourceCode r">## MCMC function
-Rmcmc &lt;-<span class="st"> </span><span class="kw">buildMCMC</span>(spec)
-
-## GP prediction function
-## also uses the &#39;params&#39; variable for specialization
-Rpred &lt;-<span class="st"> </span><span class="kw">gpPred</span>(Rmodel, params)
-
-## compile everything
-Cmodel &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmodel)
-Cmcmc  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rmcmc, <span class="dt">project =</span> Rmodel)
-Cpred  &lt;-<span class="st"> </span><span class="kw">compileNimble</span>(Rpred, <span class="dt">project =</span> Rmodel)
-
-## MCMC sampling
-## 100,000 iterations
-<span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
-<pre><code>   user  system elapsed 
- 49.068   0.016  49.057 </code></pre>
-<p>About 25 seconds on my computer</p>
-<p>That can be improved if necessary</p>
-<pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
-
-## quick check
-if(!<span class="kw">identical</span>(params, <span class="kw">colnames</span>(samples))) <span class="kw">stop</span>(<span class="st">&#39;problem&#39;</span>)
-
-## predict from GP model using posterior MCMC samples
-<span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
-<pre><code>   user  system elapsed 
- 64.236   0.000  64.188 </code></pre>
-<p>About 40 seconds on my computer</p>
-<p>Again, could streamline the gpPred() function if necessary</p>
-<pre class="sourceCode r"><code class="sourceCode r">## extract predictions: E and C
-E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()
-C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()</code></pre>
-<h3 id="output">Output</h3>
-<pre class="sourceCode r"><code class="sourceCode r">E</code></pre>
-<pre><code>  [1]  1.048953470  1.063690923  1.056571565  1.025025296  0.967727602
-  [6]  0.885088092  0.779046134  0.652750089  0.510403944  0.357145489
- [11]  0.198827230  0.041501513 -0.109026506 -0.247533773 -0.369716151
- [16] -0.472313950 -0.553105378 -0.610874554 -0.645461105 -0.657719603
- [21] -0.649076810 -0.621198765 -0.575868588 -0.514737033 -0.439105417
- [26] -0.349971602 -0.248371381 -0.135451833 -0.012707283  0.117353661
- [31]  0.251084159  0.383920114  0.510567530  0.625303732  0.722419735
- [36]  0.796925448  0.845259818  0.865448082  0.857113606  0.821872152
- [41]  0.763535592  0.687360014  0.599297100  0.505480001  0.411259520
- [46]  0.320288380  0.234175561  0.152695050  0.074286902 -0.003167262
- [51] -0.081466127 -0.161638385 -0.243673849 -0.325876291 -0.404833854
- [56] -0.476477835 -0.536583186 -0.580993801 -0.606153844 -0.609554981
- [61] -0.590206477 -0.548974521 -0.488316837 -0.411928777 -0.324540013
- [66] -0.231641132 -0.139114920 -0.052860394  0.021550784  0.079331411
- [71]  0.117042000  0.132978712  0.127078948  0.100689033  0.056355647
- [76] -0.002485485 -0.071873133 -0.147591543 -0.225248038 -0.300383786
- [81] -0.368679284 -0.425886710 -0.467685571 -0.489815787 -0.488669528
- [86] -0.462038368 -0.409587331 -0.332776473 -0.234523765 -0.119090537
- [91]  0.008395849  0.142692615  0.278921123  0.412628846  0.539726698
- [96]  0.656454950  0.759426449  0.845730518  0.912939607  0.959256645
-[101]  0.984015990  0.987978885  0.972988593  0.941606557  0.896909969
-[106]  0.842215301  0.780777080  0.715559458  0.649099436  0.583448236
-[111]  0.520171088  0.460385520  0.404821033  0.353887176  0.307741235
-[116]  0.266350221  0.229544512  0.197062243  0.168584714  0.143763668</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">diag</span>(C)</code></pre>
-<pre><code>  [1] 1.2679882 1.2064883 1.1541432 1.1116728 1.0784248 1.0524884
-  [7] 1.0317576 1.0147224 1.0007923 0.9900904 0.9827438 0.9787769
- [13] 0.9777564 0.9783522 0.9785871 0.9766328 0.9714366 0.9630053
- [19] 0.9522229 0.9402332 0.9284669 0.9183767 0.9109672 0.9068412
- [25] 0.9062843 0.9093517 0.9158928 0.9254797 0.9372421 0.9497874
- [31] 0.9614992 0.9705821 0.9757483 0.9766685 0.9740220 0.9691475
- [37] 0.9633160 0.9577090 0.9532083 0.9500621 0.9480639 0.9471172
- [43] 0.9473233 0.9485876 0.9506984 0.9530274 0.9546481 0.9549896
- [49] 0.9542985 0.9535398 0.9539394 0.9568409 0.9630692 0.9727686
- [55] 0.9850166 0.9979048 1.0093360 1.0177498 1.0224490 1.0235779
- [61] 1.0216894 1.0172186 1.0108482 1.0037543 0.9975825 0.9940451
- [67] 0.9942810 0.9988192 1.0071728 1.0181157 1.0297591 1.0394083
- [73] 1.0443944 1.0429170 1.0346484 1.0209019 1.0041130 0.9869394
- [79] 0.9713413 0.9580174 0.9466908 0.9370265 0.9291060 0.9233148
- [85] 0.9204774 0.9213396 0.9262437 0.9349512 0.9465634 0.9595347
- [91] 0.9721773 0.9829212 0.9902883 0.9935894 0.9933386 0.9913798
- [97] 0.9906718 0.9946403 1.0070336 1.0312845 1.0694759 1.1218007
-[103] 1.1866870 1.2612294 1.3418003 1.4247225 1.5067538 1.5853383
-[109] 1.6586720 1.7256456 1.7857277 1.8388290 1.8851737 1.9251909
-[115] 1.9594282 1.9884878 2.0129814 2.0334994 2.0505931 2.0647637</code></pre>
-<p>Black dots are the original ‘xObs’ and ‘yObs’</p>
-<p>Red dots are the predictions made at each ‘xPred’</p>
-<p>Red lines are plus/minus one standard error</p>
-<figure>
-<img src="/2015/assets/figures/posts/2015-06-16-daniel-gp-example/unnamed-chunk-13-1.png" />
-</figure>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/06/16/daniel-gp-example.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
