@@ -1,6 +1,6 @@
 #!/bin/bash
 REPO=2015
-set -e
+#set -e
 
 # Extract data from linked volume
 cd / && tar -xf /root/cache.tar
