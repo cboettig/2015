@@ -7,7 +7,7 @@ YEAR=2015
 ## Also takes advantage of any local cache files, combined with those on cache volume
 
 set -e
-source ~/.notebook-env.sh
+source ~/.credentials/github/cboettig.sh
 
 
 ## always use latest images for these
@@ -21,9 +21,10 @@ docker create --name cache \
   cboettig/${YEAR}-cache
 
 ## Copy this data locally, otherwise it will be omitted from the updated cache!
+## hmm, what does this do re permissions of cache...
 docker cp cache:/root/cache.tar .
 tar -xf cache.tar
-rsync -a data/_cache/ _cache/
+sudo rsync -a data/_cache/ _cache/
 rm -rf data
 
 ## Then build using this cached data.  Note this links
@@ -33,6 +34,7 @@ docker run --name build \
   --volumes-from cache \
   -e GH_TOKEN=$GH_TOKEN \
   -w /data \
+  --rm \
   cboettig/${YEAR} \
   bash _build/build.sh 
 
@@ -47,6 +49,6 @@ docker push cboettig/${YEAR}-cache
 ## FIXME run this if any of the above errors 
 ## Clean up: restore user permissions and remove containers 
 docker run --rm -v $(pwd):/data busybox chown -R 1000:1000 /data/_cache
-docker rm -v -f cache cache2 build
+docker rm -v -f cache cache2
 echo "Finished"
 
