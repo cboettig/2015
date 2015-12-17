@@ -1,0 +1,75 @@
+---
+published: false
+layout: post
+
+---
+
+
+I was recently asked to describe what my typical workflow would look for running R on a cloud machine, such as digitalocean.  
+So, here's a typical use:
+
+
+~~~bash
+
+## Create digitalocean machine
+docker-machine create --driver digitalocean --digitalocean-size 1gb --digitalocean-access-token $DO_TOKEN dev
+
+## Point docker-engine at the the new machine
+eval $(docker-machine env dev)
+
+## Launch the Rocker container running RStudio
+docker run -d -p 8787:8787 -e PASSWORD=$PASSWORD rocker/hadleyverse
+
+## Open browser at the IP address (e.g. mac-based terminal command)
+open http://$(docker-machine ip dev):8787
+~~~
+
+From there, login with username "rstudio" and password you chose (will default
+to rstudio if nothing was given) and you're good to go.
+RStudio has a nice git GUI which is a good way to move content on
+and off the instance, but I would also teach `docker commit` and
+`docker push` at the end as a way to capture the whole runtime (e.g.
+any packages installed, cached binaries from knitr, etc):
+
+~~~bash
+
+docker commit <hash> username/myimage
+docker push username/myimage 
+
+~~~
+
+(Using to the the private image slot if you don't want your image
+& results public)
+
+It would probably be good to cover the non-interactive case too,
+which is helpful when you want to do a really long run of something
+that needs a bigger computer than your laptop.  IMHO this is where
+docker-machine excels because it's easy to have the machine shut
+down when all is finished! e.g.
+
+~~~bash
+## As before
+docker-machine create --driver digitalocean --digitalocean-size 1gb --digitalocean-access-token $DO_TOKEN dev
+eval $(docker-machine env dev)
+
+## Let's use the committed image since it can already have my script included
+docker run --name batch username/myimage Rscript myscript.R
+
+## commit using container name & push back up
+docker commit batch username/myimage
+docker push username/myimage 
+
+## Script stops machine now
+docker-machine rm -f dev
+
+~~~
+
+Clearly that can be modified to pull scripts down with git and push
+results back up to github rather than using docker commit to snapshot
+and push the whole image every time.  Just add env vars for
+authentication.
+
+Provided runs are < 1 hr, this workflow runs rather nicely on Travis
+or Circle-CI, which both support Docker.
+
+
