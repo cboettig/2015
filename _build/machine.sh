@@ -7,7 +7,7 @@ YEAR=2015
 ## already copied onto it.
 
 set -e
-source ~/.notebook-env.sh
+source ~/.credentials/github/cboettig.sh
 
 
 ## always use latest images for these

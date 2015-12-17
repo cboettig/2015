@@ -3,7 +3,9 @@ MAINTAINER Carl Boettiger cboettig@ropensci.org
 
 ## Install additional R package dependencies ###
 RUN apt-get update && apt-get -y install -t unstable r-cran-rjags \
-  && install2.r --error -r http://cran.rstudio.com \
+  && install2.r --error \
+     -r "http://www.bioconductor.org/packages/release/bioc" \
+     -r "http://cran.rstudio.com" \
      FKF \
      dlm \
      KFAS \

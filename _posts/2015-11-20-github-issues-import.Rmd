@@ -1,0 +1,131 @@
+---
+title: "Download and Parse Github Issues"
+layout: post
+
+---
+
+
+```{r}
+# devtools::install("cscheid/rgithub")
+library("github")
+library("dplyr")
+library("stringr")
+library("lubridate")
+library("readr")
+```
+
+```{r include=FALSE}
+## Don't run online since we don't have credentials
+knitr::opts_chunk$set(eval=FALSE)
+```
+
+
+```{r}
+ctx = interactive.login(Sys.getenv("GH_CLIENT_ID"),Sys.getenv("GH_CLIENT_SECRET"))
+```
+
+Thanks to @[realAkhmed](https://github.com/realAkhmed) for this one, see: https://github.com/cscheid/rgithub/issues/30#issuecomment-150354560
+
+
+```{r}
+auto.page <- function(f) {
+  f_call <- substitute(f)
+  stopifnot(is.call(f_call))
+
+  i <- 1
+  req <- list()
+  result_lst <- list()
+
+  repeat {
+    # Specify the page to download
+    f_call$page <- i
+
+    req <- eval(f_call, parent.frame())
+
+    # Last page has empty content
+    if (length(req$content)<=0) break
+
+    result_lst[[i]] <- req$content
+    i <- i+1
+  }
+
+  result_req <- req
+  result_req$content <- unlist(result_lst, recursive = FALSE)
+
+  (result_req)
+}
+```
+
+
+```{r}
+issues <- auto.page(github::get.all.repository.issues.comments("ropensci", "RNeXML", ctx=ctx))
+length(issues$content)
+```
+
+Here we get the content of interest. 
+
+```{r}
+to_df <- function(entry){
+        dplyr::data_frame(
+             issue = stringr::str_replace(entry$issue_url, ".*/(.*$)", "\\1"), 
+             comment_id = entry$id, 
+             user = entry$user$login, 
+             created_at = lubridate::parse_date_time(entry$created_at,"%Y-%m-%d %H:%M:%S"),
+             updated_at = lubridate::parse_date_time(entry$updated_at,"%Y-%m-%d %H:%M:%S"),
+             body = entry$body)
+}
+```
+
+ Minor problem: This doesn't actually include the issue's title and opening comment (or tags, status, or other metadata that all come from the issues endpoint):
+
+```{r}
+issue_meta <- auto.page(github::get.repository.issues("ropensci", "RNeXML", state="all", filter="all", ctx=ctx))
+```
+
+
+```{r}
+meta_to_df <- function(entry){
+        dplyr::data_frame(
+             issue = stringr::str_replace(entry$html_url, ".*/(.*$)", "\\1"), 
+             comment_id = entry$id, 
+             user = entry$user$login, 
+             state = entry$state,
+             comments = entry$comments,
+             created_at = lubridate::parse_date_time(entry$created_at,"%Y-%m-%d %H:%M:%S"),
+             updated_at = lubridate::parse_date_time(entry$updated_at,"%Y-%m-%d %H:%M:%S"),
+             title = entry$title,
+             body = entry$body)
+}
+```
+
+
+
+```{r}
+df <- dplyr::bind_rows(lapply(issues$content, to_df))
+meta_df <- dplyr::bind_rows(lapply(issue_meta$content, meta_to_df))
+issue_tbl <- dplyr::full_join(df, meta_df)
+```
+
+```{r}
+readr::write_csv(issue_tbl, "../_data/rnexml.csv")
+```
+
+
+Now let's do `EML`
+
+```{r}
+issues <- auto.page(github::get.all.repository.issues.comments("ropensci", "EML", ctx=ctx))
+issue_meta <- auto.page(github::get.repository.issues("ropensci", "EML", state="all", filter="all", ctx=ctx))
+
+```
+
+```{r}
+df <- dplyr::bind_rows(lapply(issues$content, to_df))
+meta_df <- dplyr::bind_rows(lapply(issue_meta$content, meta_to_df))
+issue_tbl <- dplyr::full_join(df, meta_df)
+
+readr::write_csv(issue_tbl, "../_data/eml.csv")
+```
+
+
+
