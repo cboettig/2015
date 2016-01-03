@@ -1,5 +1,4 @@
 ---
-published: false
 layout: post
 
 ---
@@ -69,7 +68,9 @@ results back up to github rather than using docker commit to snapshot
 and push the whole image every time.  Just add env vars for
 authentication.
 
-Provided runs are < 1 hr, this workflow runs rather nicely on Travis
-or Circle-CI, which both support Docker.
+Provided runs are < 1 hr, this workflow can rather easily be applied to a continuous integration
+system such as Travis or Circle-CI, (which both support Docker),  instead of using docker-machine to create a private cloud instance.
+This provides a very simple way to bring continuous integration testing and content (re)generation to individual research results.
+
 
 
