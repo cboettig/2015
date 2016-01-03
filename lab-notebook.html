@@ -114,6 +114,88 @@
               ><i class="icon-rss" ></i> Entries</a></h4>
       
         <div class="col-md-3">
+          <header><h4><a href="/2015/12/31/reflections-on-the-open-lab-notebook.html">Reflecting on five years of the open lab notebook</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 31 Dec 2015</p>
+
+<article>
+<div class="excerpt">
+<p>I have been keeping an open lab notebook now since <a href="http://www.carlboettiger.info/2010/02/02/The-Lab-Notebook-Goes-Open-.html">February of 2010</a> <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. Those years have seen 271, 301, 164, 136, 86 and 44 posts, respectively. The notebook started on <a href="http://openwetware.org/wiki/Lab_Notebook">OpenWetWare</a>, with code on (now defunct) Google Code (using svn!). <a href="http://www.carlboettiger.info/2010/10/21/spatial-warning-signals-power-etc.html">By October</a> of that year I had moved to a Wordpress.org platform running on DreamHost, with code moving to GitHub earlier that year. Wordpress meant my own domain name, control of layout and plugins, better mobile support, and perhaps most importantly, avoided the occasional day-long down-times I had seen on OpenWetWare. By the end of 2010 I had also cobbled together <a href="http://www.carlboettiger.info/2010/12/11/socialr-an-r-package-to-track-the-status-of-computations-with-social-network-tools.html">a system</a> in which my scripts committed themselves to GitHub and automatically posted figures the generated to <a href="https://www.flickr.com/photos/cboettig">flickr</a> that included the Git hash. <a href="https://cran.r-project.org/web/packages/knitr/index.html">Knitr</a> was first released to CRAN in January of 2012, and by March I announced a <a href="http://www.carlboettiger.info/2012/03/21/knitr-github-and-a-new-phase-for-the-lab-notebook.html">new phase</a> for my lab notebook focused on notes written with knitr markdown living on GitHub. For the first time, part of the daily research narrative lived not directly in the lab notebook itself (thus the decline in total notebook posts starting that year). Most of my posts in the first two years are much more journal like; reflecting on what I have been working on or reading earlier that day, describing some equation or graph, or muddling over a sticking point. Some of this remained in the notebook, particularly for work unconnected to code (thoughts on some literature, mathematical derivations, etc), but more migrated to knitr documents outside of the notebook. While knitr brought the code, results, and discussion elements closer together, it also often meant I was writing with less distance from the results, and so the text shifted towards more technical and less reflective content. Notebook entries became more brief and bullet pointed, though also punctuated by an increasing frequency of notebook entries that really were blog posts, aimed at an audience and sometimes drawing lengthy comment sections, primarily on topics related to open science and research workflow.</p>
+<p>In May of 2012, I then shifted platforms again, this time <a href="http://www.carlboettiger.info/2012/05/01/Jekyll-vs-Wordpress.html">moving to Jekyll</a>, primarily for reasons of performance and cost (as detailed in that post). I have always experimented heavily with different features and technology connected to the lab notebook, and Jekyll also opened new possibilities. Meanwhile, it fit nicely into the git/markdown-centric workflow I had already adapted. This made it easy to turn knitr outputs into notebook entries, though I waffled back on forth on whether it was more natural to post such material in the relevant project repository in GitHub or directly into the notebook. The notebook remained the home for work not (yet) connected to a project, and for blog posts, and occasionally cross-posted material on a particular project, often capturing a key result. Meanwhile more of my other work became open – in particular, I began writing my manuscripts in public GitHub project repositories from the start, and also making greater use of GitHub issues in projects. The end of 2012 also saw me leave graduate school and begin a post-doc, luckily with advisers that were equally neutral to my open notebook habit.</p>
+<p>The start of 2015 saw the next significant evolution in platform. Though still based on Jekyll, I first I broke up what had been growing into one rather large <code>labnotebook</code> repo on GitHub into separate repos by year. This left me with a more lightweight repository and freed me to experiment with infrastructure without breaking all my old posts. I <a href="http://www.carlboettiger.info/2015/01/01/notebook-maintenance-and-scaling.html">began writing</a> all posts directly in knitr’s <code>.Rmd</code> format, allowing the code to be run automatically when the site was published, rather than executing it locally and copying over a <code>.md</code> file into the notebook. That this was possible is thanks to my adoption of Docker (making the myriad dependencies portable), Continuous integration platforms that could run the code (using the Docker container) and automatically push the compiled site, and <code>servr</code>, another Yihui Xie R package that facilitates knitr+jekyll integration. Some entries involved particularly heavy computation, including a few that required several hours on a large Amazon EC2 machine to complete. <code>knitr</code>’s caching feature made it easy to snapshot these caches (which I did in a somewhat convoluted way with another docker container) so that the whole site could still be rebuilt on a public CI service (primarily circle-ci) within the 50 minute permitted window. The Docker+knitr+CI combination brought reproducible to a new level, though still not perfectly automated, since changing dependencies can still have some effect, particularly since I allow the container to be rebuilt from Dockerfile rather than committed as a binary image. I’ve been pleased that this system has worked remarkably well the entire year, though I’m frequently nervous that some piece of its increasingly complex architecture will break. Moreover, the complicated re-running of all the R code was increasingly redundant as most of my work continued to happen in GitHub repositories which had largely adopted their own system of continuous integration and unit testing (for basic functions and final results, if not for individual notebook posts).</p>
+<p>More and more, GitHub, knitr, and other such tools have allowed me to actually perform my research openly, not just discuss it in an open notebook. Perhaps ironically, this means less and less content in the ‘lab notebook’ itself (as I <a href="http://www.carlboettiger.info/2012/09/28/Welcome-to-my-lab-notebook.html">wrote in 2012</a>, ‘the real notebook is on GitHub’). Interestingly, this has the side effect of making the ‘lab notebook’ much less visible. Living on my website, my open notebook has been hard to miss; a visitor could easily page through the entries to see what I had done recently without any of the familiarity it requires to navigate to the same material on GitHub. The idea that this was a scientist’s <em>notebook</em>, a concept both immediately familiar and yet so rarely public, perhaps gave it an out-sized significance to having the same material scattered around GitHub (some under my account and other work in various GitHub Organization accounts), where openness was already the norm. It attracted the attention of <a href="http://www.carlboettiger.info/vita#media-interviews">reporters</a> and, I’m told, my faculty search committee. So while I think <em>I</em> have benefited from this visibility, for the science it is perhaps much the same.</p>
+<p>Halfway though 2015 also saw a different kind of change to my notebook as I transitioned from a post-doc to a faculty position. Just as my homepage (now maintained in its own GitHub repo, though still appearing in the same theme as my notebook) shifted from being “me” to being “my research group,” part of my time also shifted from “my research” to mentoring the research of others. While I continue to believe in transparency in scientific process and results, I have also appreciated that as a graduate student open science was something I was allowed to choose for myself. I want those I mentor to make their own choices as well. Thus we have begun projects with students primarily in private GitHub repositories (now hosted on <a href="https://github.com/boettiger-lab">github.com/boettiger-lab</a>).</p>
+<p>So what does this mean for 2016 and the future of my open lab notebook? I suspect it will continue in its role as occasional blog and communication tool, where it’s greater visibility has a practical use, while becoming simpler technically, with the day-to-day of research (&amp; teaching, etc) activity confined to their own repositories.</p>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>though some material going back to <a href="http://www.carlboettiger.info/2000/lab-notebook">2009</a> and <a href="http://www.carlboettiger.info/2008/lab-notebook">2008</a> was posted later.<a href="#fnref1">↩</a></p></li>
+</ol>
+</section>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/12/31/reflections-on-the-open-lab-notebook.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
+          <header><h4><a href="/2015/12/17/docker-workflows.html">Docker Workflows</a></h4></header>
+<p><span></span></p>
+<p style="font-style:italic"> 17 Dec 2015</p>
+
+<article>
+<div class="excerpt">
+<p>I was recently asked to describe what my typical workflow would look for running R on a cloud machine, such as digitalocean.<br />So, here’s a typical use:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">
+<span class="co">## Create digitalocean machine</span>
+<span class="kw">docker-machine</span> create --driver digitalocean --digitalocean-size 1gb --digitalocean-access-token <span class="ot">$DO_TOKEN</span> dev
+
+<span class="co">## Point docker-engine at the the new machine</span>
+<span class="kw">eval</span> <span class="ot">$(</span><span class="kw">docker-machine</span> env dev<span class="ot">)</span>
+
+<span class="co">## Launch the Rocker container running RStudio</span>
+<span class="kw">docker</span> run -d -p 8787:8787 -e PASSWORD=<span class="ot">$PASSWORD</span> rocker/hadleyverse
+
+<span class="co">## Open browser at the IP address (e.g. mac-based terminal command)</span>
+<span class="kw">open</span> http://<span class="ot">$(</span><span class="kw">docker-machine</span> ip dev<span class="ot">)</span>:8787</code></pre>
+<p>From there, login with username “rstudio” and password you chose (will default to rstudio if nothing was given) and you’re good to go. RStudio has a nice git GUI which is a good way to move content on and off the instance, but I would also teach <code>docker commit</code> and <code>docker push</code> at the end as a way to capture the whole runtime (e.g. any packages installed, cached binaries from knitr, etc):</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">
+<span class="kw">docker</span> commit <span class="kw">&lt;</span>hash<span class="kw">&gt;</span> username/myimage
+<span class="kw">docker</span> push username/myimage </code></pre>
+<p>(Using to the the private image slot if you don’t want your image &amp; results public)</p>
+<p>It would probably be good to cover the non-interactive case too, which is helpful when you want to do a really long run of something that needs a bigger computer than your laptop. IMHO this is where docker-machine excels because it’s easy to have the machine shut down when all is finished! e.g.</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">## As before</span>
+<span class="kw">docker-machine</span> create --driver digitalocean --digitalocean-size 1gb --digitalocean-access-token <span class="ot">$DO_TOKEN</span> dev
+<span class="kw">eval</span> <span class="ot">$(</span><span class="kw">docker-machine</span> env dev<span class="ot">)</span>
+
+<span class="co">## Let&#39;s use the committed image since it can already have my script included</span>
+<span class="kw">docker</span> run --name batch username/myimage Rscript myscript.R
+
+<span class="co">## commit using container name &amp; push back up</span>
+<span class="kw">docker</span> commit batch username/myimage
+<span class="kw">docker</span> push username/myimage 
+
+<span class="co">## Script stops machine now</span>
+<span class="kw">docker-machine</span> rm -f dev</code></pre>
+<p>Clearly that can be modified to pull scripts down with git and push results back up to github rather than using docker commit to snapshot and push the whole image every time. Just add env vars for authentication.</p>
+<p>Provided runs are &lt; 1 hr, this workflow can rather easily be applied to a continuous integration system such as Travis or Circle-CI, (which both support Docker), instead of using docker-machine to create a private cloud instance. This provides a very simple way to bring continuous integration testing and content (re)generation to individual research results.</p>
+ 
+<!-- not that raw_content depends on custom generator, 
+     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
+</article> 
+<p> <a href="/2015/12/17/docker-workflows.html"> <em>Read more</em></a> </p>
+<br />
+<br />
+
+
+        </div>
+      
+        <div class="col-md-3">
           <header><h4><a href="/2015/11/20/github-issues-import.html">Download and Parse Github Issues</a></h4></header>
 <p><span></span></p>
 <p style="font-style:italic"> 20 Nov 2015</p>
@@ -203,6 +285,10 @@ readr::<span class="kw">write_csv</span>(issue_tbl, <span class="st">&quot;../_d
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/08/27/nimble-model-construction.html">Nimble Model Construction</a></h4></header>
@@ -329,10 +415,6 @@ pkgs &lt;-<span class="st"> </span>out$packages$name[installable &amp;<span clas
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/07/30/gpdp-via-mdptoolbox-cont.html">Gpdp Via Mdptoolbox Cont</a></h4></header>
 <p><span></span></p>
@@ -405,13 +487,13 @@ priors &lt;-<span class="st"> </span><span class="kw">nimbleCodeSub</span>(prior
 <pre class="sourceCode r"><code class="sourceCode r">## Fit the GP
 <span class="kw">system.time</span>(fit$Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
 <pre><code>   user  system elapsed 
-  8.046   0.044   8.090 </code></pre>
+  5.476   0.024   5.498 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit$Cmcmc$mvSamples)
 
 ## Perform prediction
 <span class="kw">system.time</span>(fit$Cpred$<span class="kw">run</span>(samples))</code></pre>
 <pre><code>   user  system elapsed 
-  8.233   0.004   8.239 </code></pre>
+  5.792   0.000   5.790 </code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">## Extract variables for future use
 E &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getE</span>()
 C &lt;-<span class="st"> </span>fit$Cpred$<span class="kw">getC</span>()
@@ -569,6 +651,10 @@ P_gp &lt;-<span class="st"> </span><span class="kw">gp_matrix</span>(states, act
 
 
         </div>
+      
+    </div>
+
+    <div class="row">
       
         <div class="col-md-3">
           <header><h4><a href="/2015/07/29/mdptoolbox-allen-model.html">Mdptoolbox Allen Model</a></h4></header>
@@ -751,10 +837,6 @@ Sig &lt;-<span class="st"> </span>sigma*<span class="kw">exp</span>(-<span class
 
         </div>
       
-    </div>
-
-    <div class="row">
-      
         <div class="col-md-3">
           <header><h4><a href="/2015/07/14/mdptoolbox-ex-2.html">Mdptoolbox Ex 2</a></h4></header>
 <p><span></span></p>
@@ -925,369 +1007,6 @@ exact_policy &lt;-<span class="st"> </span><span class="kw">sapply</span>(states
      see _plugins/jekyll-labnotebook-plugins/raw_content --> 
 </article> 
 <p> <a href="/2015/07/14/mdptoolbox-ex-2.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/06/19/gp-nimble-v2.html">Gp Nimble V2</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 19 Jun 2015</p>
-
-<article>
-<div class="excerpt">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#  devtools::install_github(&quot;cboettig/gpmanagement&quot;)</span></code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;gpmanagement&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">  <span class="kw">set.seed</span>(<span class="dv">1234</span>)
-  Tobs &lt;-<span class="st"> </span><span class="dv">40</span>
-  f &lt;-<span class="st"> </span>function (x, h, p){
-    <span class="kw">sapply</span>(x, function(x) {
-        x &lt;-<span class="st"> </span><span class="kw">pmax</span>(<span class="dv">0</span>, x -<span class="st"> </span>h)
-        x *<span class="st"> </span><span class="kw">exp</span>(p[<span class="dv">1</span>] *<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>x/p[<span class="dv">2</span>]) *<span class="st"> </span>(x -<span class="st"> </span>p[<span class="dv">3</span>])/p[<span class="dv">2</span>])
-    })
-  }
-  p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">8</span>, <span class="dv">5</span>)
-  sigma_g &lt;-<span class="st"> </span><span class="fl">0.05</span>
-  z_g &lt;-<span class="st"> </span>function() <span class="kw">rlnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_g)
-  x &lt;-<span class="st"> </span><span class="kw">numeric</span>(Tobs)
-  x[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">5.5</span>
-  for(t in <span class="dv">1</span>:(Tobs<span class="dv">-1</span>))
-    x[t<span class="dv">+1</span>] =<span class="st"> </span><span class="kw">z_g</span>() *<span class="st"> </span><span class="kw">f</span>(x[t], <span class="dt">h=</span><span class="dv">0</span>, <span class="dt">p=</span>p)
-  obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">0</span>, 
-                          <span class="kw">pmax</span>(<span class="kw">rep</span>(<span class="dv">0</span>,Tobs<span class="dv">-1</span>), x[<span class="dv">1</span>:(Tobs<span class="dv">-1</span>)])), 
-                    <span class="dt">y =</span> <span class="kw">c</span>(<span class="dv">0</span>, 
-                          x[<span class="dv">2</span>:Tobs]))
-  xObs &lt;-<span class="st"> </span>obs$x
-  yObs &lt;-<span class="st"> </span>obs$y
-  xPred &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">15</span>, <span class="dt">length=</span><span class="dv">50</span>)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">  fit &lt;-<span class="st"> </span><span class="kw">gp_setup</span>(xObs, yObs, xPred)</code></pre>
-<pre><code>[1] RW_block sampler: rho, sigGP, sigOE,  adaptive: TRUE,  adaptScaleOnly: FALSE,  adaptInterval: 200,  scale: 1,  propCov: identity</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">  Cmcmc &lt;-<span class="st"> </span>fit$Cmcmc 
-  Cpred &lt;-<span class="st"> </span>fit$Cpred
-  Cmodel &lt;-<span class="st"> </span>fit$Cmodel
-  
-  <span class="kw">system.time</span>(Cmcmc$<span class="kw">run</span>(<span class="dv">100000</span>))</code></pre>
-<pre><code>   user  system elapsed 
- 25.548   0.024  25.734 </code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">  samples &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(Cmcmc$mvSamples)
-  ## basic sanity check
-  testthat::<span class="kw">expect_identical</span>(Cmodel$<span class="kw">getNodeNames</span>(<span class="dt">topOnly =</span> <span class="ot">TRUE</span>), <span class="kw">colnames</span>(samples))</code></pre>
-<p>predict from GP model using posterior MCMC samples</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(Cpred$<span class="kw">run</span>(samples))</code></pre>
-<pre><code>   user  system elapsed 
- 26.604   0.004  26.680 </code></pre>
-<p>extract predictions: E and C</p>
-<pre class="sourceCode r"><code class="sourceCode r">  E &lt;-<span class="st"> </span>Cpred$<span class="kw">getE</span>()
-  C &lt;-<span class="st"> </span>Cpred$<span class="kw">getC</span>()
-  
-obs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xObs, <span class="dt">y =</span> yObs)
-pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> xPred, <span class="dt">y =</span> E, <span class="dt">ymin =</span> E -<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)), <span class="dt">ymax =</span> E +<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(C)))
-ggplot2::<span class="kw">ggplot</span>(pred) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x,<span class="dt">y =</span> y, <span class="dt">ymin =</span> ymin, <span class="dt">ymax =</span> ymax), <span class="dt">fill =</span> <span class="st">&quot;grey80&quot;</span>) +
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y), <span class="dt">size=</span><span class="dv">1</span>) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> obs, <span class="kw">aes</span>(x,y)) +
-<span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">range</span>(<span class="kw">c</span>(xObs, xPred)), <span class="dt">ylim =</span> <span class="kw">range</span>(<span class="kw">c</span>(yObs,E))) +
-<span class="st">  </span><span class="kw">theme_bw</span>()</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-06-19-gp-nimble-v2/unnamed-chunk-7-1.png" />
-</figure>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/06/19/gp-nimble-v2.html"> <em>Read more</em></a> </p>
-<br />
-<br />
-
-
-        </div>
-      
-        <div class="col-md-3">
-          <header><h4><a href="/2015/06/18/RAM-explore.html">Further exploration of RAM Legacy Stock Assessment data</a></h4></header>
-<p><span></span></p>
-<p style="font-style:italic"> 18 Jun 2015</p>
-
-<article>
-<div class="excerpt">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>({
-<span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;RPostgreSQL&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;devtools&quot;</span>)
-<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
-})
-
-## Perform this in data_raw to keep package dependencies minimal
-mydb &lt;-<span class="st"> </span><span class="kw">src_postgres</span>(<span class="dt">dbname =</span> <span class="st">&quot;srdb&quot;</span>, 
-                     <span class="dt">host=</span><span class="st">&quot;nautilus-vm.mathstat.dal.ca&quot;</span>, 
-                     <span class="dt">user =</span> <span class="st">&quot;srdbuser&quot;</span>, 
-                     <span class="dt">password =</span>  <span class="st">&quot;srd6us3r!&quot;</span>, 
-                     <span class="dt">port =</span> <span class="dv">5432</span>)
-
-timeseries &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries&quot;</span>)))
-values &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries_values_view&quot;</span>)))
-units &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.timeseries_units_view&quot;</span>)))
-assessment &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessment&quot;</span>)))
-area &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.area&quot;</span>)))
-stock &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.stock&quot;</span>)))
-method &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessmethod&quot;</span>)))
-assessor &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.assessor&quot;</span>)))
-management  &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.management&quot;</span>)))
-taxonomy &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.taxonomy&quot;</span>)))
-lmerefs &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.lmerefs&quot;</span>)))
-lmestock &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.lmetostocks&quot;</span>)))
-biometrics  &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.biometrics&quot;</span>)))
-bioparams &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.bioparams&quot;</span>)))
-tsmetrics &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">tbl</span>(mydb, <span class="kw">sql</span>(<span class="st">&quot;SELECT * FROM srdb.tsmetrics&quot;</span>)))</code></pre>
-<h2 id="north-atlantic-cod-data">North Atlantic Cod data</h2>
-<p>Select North Atlantic Cod, <em>Gadus morhua</em>:</p>
-<pre class="sourceCode r"><code class="sourceCode r">cod_ids &lt;-
-<span class="st">  </span>assessment %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(scientificname==<span class="st">&quot;Gadus morhua&quot;</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(assessid) %&gt;%
-<span class="st">  </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() <span class="co"># we need a char string, not a data.frame</span></code></pre>
-<p>(Note we could have selected on the <code>tsn==164712</code> to be less ambiguous but also less semantic, or on <code>commonname==&quot;Atlantic cod&quot;</code> to be more reader friendly but even more ambiguous. Fortunately the common and scientific names are well aligned with the <code>tsn</code> ids in this case and we get the same set of 22 stock assessments.)</p>
-<p>Before we can combine across these, we must verify that each assessment measures the quantities of interest using the same units, or otherwise correct those that do not:</p>
-<pre class="sourceCode r"><code class="sourceCode r">units %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, catch_landings_unit) %&gt;%<span class="st"> </span><span class="kw">group_by</span>(catch_landings_unit) %&gt;%<span class="st"> </span><span class="kw">summarise</span>(<span class="kw">length</span>(catch_landings_unit))</code></pre>
-<pre><code>Source: local data frame [1 x 2]
-
-  catch_landings_unit length(catch_landings_unit)
-1                  MT                          21</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">units %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, total_unit) %&gt;%<span class="st"> </span><span class="kw">group_by</span>(total_unit) %&gt;%<span class="st"> </span><span class="kw">summarise</span>(<span class="kw">length</span>(total_unit))</code></pre>
-<pre><code>Source: local data frame [3 x 2]
-
-  total_unit length(total_unit)
-1        E03                  1
-2         MT                 18
-3         NA                  2</code></pre>
-<p>All catches are in metric tons, so no concern there.</p>
-<p>Landing data we can plot immediately:</p>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(tsyear) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">catch =</span> <span class="kw">sum</span>(catch_landings, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>## all units are metric tons
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, catch)) +<span class="st"> </span><span class="kw">geom_line</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;Catch/Landings (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-4-1.png" />
-</figure>
-<p>Note that missing data is removed, such that any assessment without catch data is treated as zero catch. This could be the case (maybe not all assessments correspond to unique catch zones.) We also assume catch reported in one assessment is not also reported in a different assement (e.g. no double-counting). Lastly, we must bear in mind that this is catch/landings data, which may include bycatch, underreporting, etc.</p>
-<hr />
-<h2 id="handling-unit-conversions">Handling unit conversions</h2>
-<p>The units for <code>total</code> are more problematic. The <code>NA</code> simply indicates stocks that do not have the an estimate for <code>total</code>, but we also see one assessment has totals in <code>E03</code> (thousands) instead of metric tons.</p>
-<hr />
-<p><em>Sidebar</em> how do we know for sure that <code>E03</code> is abundance counts in thousands of fish?</p>
-<p>The database does not provide metadata for these unit definitions directly. the <code>values</code> data and its associated <code>units</code> metadata are actually derived tables from the raw <code>timeseries</code> table and the associated <code>tsmetrics</code> unit metadata, so we would have to dive in there to confirm this interpretation of <code>E03</code> in this case.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># tidy up the tsmetrics table:</span>
-unit_defs &lt;-<span class="st"> </span>tsmetrics %&gt;%<span class="st"> </span><span class="kw">rename</span>(<span class="dt">tsid =</span> tsunique) %&gt;%<span class="st"> </span><span class="kw">select</span>(tsid, tslong, tsunitslong) 
-
-<span class="co"># Find the assessid of the cod stock assessment that measures total in units of E03</span>
-who &lt;-<span class="st"> </span>units %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, total_unit) %&gt;%<span class="st"> </span><span class="kw">filter</span>(total_unit==<span class="st">&quot;E03&quot;</span>)
-
-<span class="co"># Find that assessid in the timeseries table, where units are written in different notation</span>
-ts_who &lt;-<span class="st"> </span>timeseries %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>who$assessid) %&gt;%<span class="st"> </span><span class="kw">select</span>(assessid, tsid) %&gt;%<span class="st">  </span><span class="kw">distinct</span>(tsid)
-
-<span class="co"># Join the tables to see the definitions</span>
-<span class="kw">left_join</span>(ts_who, unit_defs)</code></pre>
-<pre><code>Source: local data frame [5 x 4]
-
-                      assessid   tsid
-1 NAFO-SC-COD3M-1959-2008-BAUM SSB-MT
-2 NAFO-SC-COD3M-1959-2008-BAUM TN-E03
-3 NAFO-SC-COD3M-1959-2008-BAUM  R-E03
-4 NAFO-SC-COD3M-1959-2008-BAUM  F-1/T
-5 NAFO-SC-COD3M-1959-2008-BAUM  TC-MT
-Variables not shown: tslong (chr), tsunitslong (chr)</code></pre>
-<p>and we can confirm <code>E03</code> is in this case <code>TN-E03</code> (total number, in thousands).</p>
-<hr />
-<p>Converting this to metric tons will require an average weight for cod. FishBase gives us a maximum weight (in grams):</p>
-<pre class="sourceCode r"><code class="sourceCode r">rfishbase::<span class="kw">species</span>(<span class="st">&quot;Gadus morhua&quot;</span>, <span class="dt">fields=</span><span class="st">&quot;Weight&quot;</span>)</code></pre>
-<pre><code>Error in loadNamespace(name): there is no package called &#39;rfishbase&#39;</code></pre>
-<p>Wikipedia says the average is 5-12 kilograms, so let’s take 8.5 Kg for sake of argument. Clearly a more programmatic and more accurate solution is needed here.</p>
-<p><em>Sidenote</em> the database has some very limited data on biometrics by assessment, including some assessments that record a maximum (but not an average) weight (sometimes pulled from FishBase anyway). Even pooling across all Atlantic Cod assessments we can’t find even a maximum weight.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Find the unit code for max weight</span>
-biometrics %&gt;%<span class="st"> </span><span class="kw">filter</span>(biolong ==<span class="st"> &quot;Maximum weight&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">select</span>(biounique) %&gt;%<span class="st"> </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() -&gt;<span class="st"> </span>max_weight
-<span class="co"># show the unit code:</span>
-max_weight</code></pre>
-<pre><code>[1] &quot;MAX-WGT-g&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Look up all max weight values for illustration: (not filtering on cod_ids since there are no hits)</span>
-bioparams %&gt;%<span class="st"> </span><span class="kw">filter</span>(bioid %in%<span class="st"> </span>max_weight)</code></pre>
-<pre><code>Source: local data frame [17 x 5]
-
-                                  assessid     bioid  biovalue
-1      INIDEP-ARGANCHOSARG-1992-2007-Parma MAX-WGT-g        51
-2      INIDEP-ARGANCHONARG-1989-2007-Parma MAX-WGT-g        48
-3       INIDEP-ARGHAKESARG-1985-2008-Parma MAX-WGT-g   5300.00
-4       INIDEP-ARGHAKENARG-1985-2007-Parma MAX-WGT-g   5900.00
-5  INIDEP-PATGRENADIERSARG-1983-2006-Parma MAX-WGT-g      2940
-6            ICCAT-ALBANATL-1929-2005-WORM MAX-WGT-g     60000
-7         ICCAT-ATBTUNAEATL-1969-2007-WORM MAX-WGT-g    684000
-8         ICCAT-ATBTUNAWATL-1969-2007-WORM MAX-WGT-g    684000
-9   AFSC-SABLEFEBSAIGA-1956-2008-MELNYCHUK MAX-WGT-g      6200
-10           IPHC-PHALNPAC-1988-2009-Parma MAX-WGT-g available
-11     AFSC-REYEROCKBSAI-1974-2009-STANTON MAX-WGT-g      2047
-12            NEFSC-ATHAL5YZ-1800-2007-COL MAX-WGT-g    337000
-13     NEFSC-SCUPNWATLC-1960-2007-TERCEIRO MAX-WGT-g      3000
-14     NEFSC-MONKGOMNGB-1964-2006-RICHARDS MAX-WGT-g    337000
-15      NEFSC-SURFMATLC-1965-2008-JACOBSON MAX-WGT-g      600+
-16   CSERG-ANCHOVYKILKACS-1991-2007-JENSEN MAX-WGT-g      18.4
-17        ASMFC-PANDALGOM-1960-2009-IDOINE MAX-WGT-g        23
-Variables not shown: bioyear (chr), bionotes (chr)</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">e03_to_MT &lt;-<span class="st"> </span><span class="fl">7.5</span> *<span class="st"> </span><span class="fl">1e-3</span>
-
-tmpA &lt;-<span class="st"> </span>
-<span class="st">  </span>values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>who$assessid) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_mt =</span> total *<span class="st"> </span>e03_to_MT)
-
-everyone_else &lt;-<span class="st"> </span>cod_ids[!(cod_ids %in%<span class="st"> </span>who$assessid)]
-tmpB &lt;-
-<span class="st">  </span>values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>everyone_else) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_mt =</span> total)
-
-std_values &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(tmpA,tmpB)</code></pre>
-<p>(Not sure if there is a more consise way to change the values in a given column for a subset of the rows). Well, perhaps it would be simpler to treat non-standard units as missing data, but at least this illustrates a mechanism for handling the conversion.</p>
-<pre class="sourceCode r"><code class="sourceCode r">biomass &lt;-
-<span class="st">  </span>std_values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(tsyear) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">biomass =</span> <span class="kw">sum</span>(total_mt, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>## WARNING -- should check units!
-<span class="st">  </span><span class="kw">filter</span>(biomass &gt;<span class="st"> </span><span class="dv">0</span>) 
-
-biomass_dropped &lt;-
-<span class="st">  </span>values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>everyone_else) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(tsyear) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">biomass =</span> <span class="kw">sum</span>(total, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>## WARNING -- should check units!
-<span class="st">  </span><span class="kw">filter</span>(biomass &gt;<span class="st"> </span><span class="dv">0</span>) 
-
-biomass_wrong &lt;-
-<span class="st">  </span>values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(tsyear) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">biomass =</span> <span class="kw">sum</span>(total, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>## WARNING -- should check units!
-<span class="st">  </span><span class="kw">filter</span>(biomass &gt;<span class="st"> </span><span class="dv">0</span>) 
-
-<span class="kw">ggplot</span>(biomass, <span class="kw">aes</span>(tsyear, biomass)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>() +
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>biomass_wrong, <span class="dt">col=</span><span class="st">&quot;blue&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>) +
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>biomass_dropped, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>) +
-<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Biomass (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)
-  
-<span class="co"># they may look identical but they aren&#39;t:</span>
-<span class="kw">identical</span>(biomass_dropped$biomass, biomass$biomass)</code></pre>
-<pre><code>[1] FALSE</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-9-1.png" />
-</figure>
-<p>In this case, the contribution is negligible (red vs black). Even failing to convert units (blue) makes a hardly visible difference, though in general the difference could have been quite large.</p>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids, total &gt;<span class="st"> </span><span class="dv">0</span>) %&gt;%
-<span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total, <span class="dt">color=</span>assessid)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>() +
-<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Biomass (MT)&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;Year&quot;</span>)</code></pre>
-<figure>
-<img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-10-1.png" />
-</figure>
-<hr />
-<h2 id="stock-recruitment-time-series">Stock-recruitment &amp; time-series</h2>
-<pre class="sourceCode r"><code class="sourceCode r">values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids[[<span class="dv">1</span>]]) %&gt;%<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span><span class="kw">geom_point</span>()
-values %&gt;%<span class="st"> </span><span class="kw">filter</span>(assessid==<span class="st">&quot;AFWG-CODNEAR-1943-2006-MINTO&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span><span class="kw">geom_point</span>()
-
-values %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +
-<span class="st">    </span><span class="kw">geom_point</span>() +
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)
-
-
-values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>cod_ids) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
-<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-11-1.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-11-2.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-11-3.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-11-4.png" /></p>
-<p>Note that the spawning stock biomass, red, can often be significantly less than the total stock (black).</p>
-<pre class="sourceCode r"><code class="sourceCode r">herring &lt;-
-<span class="st">  </span>assessment %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(commonname==<span class="st">&quot;Herring&quot;</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(assessid) %&gt;%
-<span class="st">  </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() <span class="co"># we need a char string, not a data.frame</span>
-
-values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>herring) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)
-
-values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>herring) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-12-1.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-12-2.png" /></p>
-<pre class="sourceCode r"><code class="sourceCode r">anchovy &lt;-
-<span class="st">  </span>assessment %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(commonname==<span class="st">&quot;Anchovy&quot;</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(assessid) %&gt;%
-<span class="st">  </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() <span class="co"># we need a char string, not a data.frame</span>
-
-values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>anchovy) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)
-
-values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>anchovy) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-13-1.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-13-2.png" /></p>
-<pre class="sourceCode r"><code class="sourceCode r">bluefin &lt;-
-<span class="st">  </span>assessment %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">left_join</span>(stock) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(commonname==<span class="st">&quot;Atlantic bluefin tuna&quot;</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(assessid) %&gt;%
-<span class="st">  </span><span class="kw">unlist</span>() %&gt;%<span class="st"> </span><span class="kw">unname</span>() <span class="co"># we need a char string, not a data.frame</span>
-
-values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>bluefin) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(r), !<span class="kw">is.na</span>(ssb)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(ssb, r)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)
-
-
-values %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(assessid %in%<span class="st"> </span>bluefin) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(total)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(tsyear, total)) +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_line</span>() +<span class="st"> </span>
-<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(tsyear, ssb), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
-<span class="st">    </span><span class="kw">facet_wrap</span>(~assessid, <span class="dt">scales=</span><span class="st">&quot;free&quot;</span>)</code></pre>
-<p><img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-14-1.png" /> <img src="/2015/assets/figures/posts/2015-06-18-RAM-explore/unnamed-chunk-14-2.png" /></p>
- 
-<!-- not that raw_content depends on custom generator, 
-     see _plugins/jekyll-labnotebook-plugins/raw_content --> 
-</article> 
-<p> <a href="/2015/06/18/RAM-explore.html"> <em>Read more</em></a> </p>
 <br />
 <br />
 
