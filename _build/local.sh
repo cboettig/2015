@@ -1,6 +1,6 @@
 #!/bin/bash
 ## Run from repo root
-YEAR=2015
+export YEAR=2015
 
 ## Identical to machine.sh, but links the local volume. won't work with docker-machine,
 ## but takes advantage of local host having more up-to-date versions of posts
@@ -12,7 +12,7 @@ source ~/.credentials/github/cboettig.sh
 
 ## always use latest images for these
 docker pull cboettig/${YEAR}-cache
-docker pull cboettig/2015
+docker pull cboettig/${YEAR}
 
 
 ## First, start a volume container with the cache
@@ -32,11 +32,19 @@ rm -rf data
 docker run --name build \
   -v $(pwd):/data \
   --volumes-from cache \
-  -e GH_TOKEN=$GH_TOKEN \
   -w /data \
   --rm \
   cboettig/${YEAR} \
   bash _build/build.sh 
+
+docker run --name build \
+  -v $(pwd):/data \
+  -e GH_TOKEN=$GH_TOKEN \
+  -w /data \
+  --rm \
+  cboettig/${YEAR} \
+  bash _build/deploy.sh 
+
 
 ## Update cache to reflect build 
 ## Note this links the local working directory to obtain the cache
