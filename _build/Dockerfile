@@ -11,6 +11,7 @@ RUN apt-get update && apt-get -y install -t unstable r-cran-rjags librsvg2-dev \
      KFAS \
      mcmc \
      MDPtoolbox \
+     igraph \
      sde \
      FastGP \
      rbenchmark \
