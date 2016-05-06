@@ -160,7 +160,7 @@ $$\alpha_{t+1} = d_t + T_t \alpha_t + H_t \eta_t$$
 
 Observation:
 
-$$y_t = c_t + Z_t \alpha_t + G_t \eta_t$$
+$$y_t = c_t + Z_t \alpha_t + G_t \epsilon_t$$
 
 
 
