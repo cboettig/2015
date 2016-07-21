@@ -22,7 +22,7 @@ host: 0.0.0.0
 encoding: utf-8
 
 ## Markdown Parser 
-markdown: pandoc
+markdown: Pandoc
 markdown_ext:  markdown,md #,Rmd,rmd
 pandoc:
   extensions: 
