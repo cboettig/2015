@@ -11,6 +11,7 @@ RUN apt-get update && apt-get -y install  --no-install-recommends \
   libfftw3-dev \
   libv8-3.14-dev \
   libxslt-dev \
+  libnlopt-dev \
   jekyll \
   ruby-rouge \
   && wget https://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/Source/JAGS-4.2.0.tar.gz -O jags.tar.gz \
