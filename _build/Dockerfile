@@ -23,8 +23,14 @@ RUN apt-get update && apt-get -y install -t unstable r-cran-rjags librsvg2-dev \
      RNeXML \
      geiger \
      phytools \
+     nimble \
+     DiagrammeR \
+     servr \
+     knitcitations \
+     rfishbase \
+     RNeXML \
+     EML \
   && installGithub.r \
-    yihui/servr \ 
     cboettig/earlywarning \
     cboettig/pdg_control \
     cboettig/multiple_uncertainty \
@@ -33,22 +39,13 @@ RUN apt-get update && apt-get -y install -t unstable r-cran-rjags librsvg2-dev \
     ropensci/rgpdd \
     cboettig/nonparametric-bayes \
     cboettig/pmc \
-    rich-iannone/DiagrammeR \
-    nimble-dev/nimble/packages/nimble@stable \
     cboettig/gpmanagement \
-    ropensci/rfishbase \
     cloudyr/aws.signature \
     cloudyr/aws.s3 \
-    ropensci/RNeXML \
     richfitz/drat.builder \
     ropensci/ropkgs \
-    cboettig/Sxslt \
-    ropensci/EML \
   && install2.r --repo http://packages.ropensci.org --error \
     rrdf \
   && rm -rf /tmp/downloaded_packages
 
-# break cache first
-COPY Dockerfile /tmp/Dockerfile
-RUN rm -rf /data && git clone https://github.com/cboettig/2015 /data
 
