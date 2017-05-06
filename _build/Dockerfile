@@ -54,10 +54,6 @@ RUN apt-get update && apt-get -y install  --no-install-recommends \
     cboettig/nonparametric-bayes \
     cboettig/pmc \
     cboettig/gpmanagement \
-    cloudyr/aws.signature \
-    cloudyr/aws.s3 \
-    richfitz/drat.builder \
-    ropensci/ropkgs \
   && install2.r --repo http://packages.ropensci.org --error \
     rrdf \
   && rm -rf /tmp/downloaded_packages
