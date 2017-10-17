@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/28692069.svg)](https://zenodo.org/badge/latestdoi/28692069)
+
+
 Lab notebook for 2015
 =====================
 
